@@ -1,0 +1,7 @@
+# Native build output (rebuild with `make`)
+/bin/
+
+# Generated static-image demo output (rebuild with generate.sh)
+/output/
+
+.DS_Store

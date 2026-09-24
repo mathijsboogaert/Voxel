@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VOXEL world map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #14161a;
+    --panel: #1d2025;
+    --border: #2c3038;
+    --text: #e6e8eb;
+    --muted: #9aa0a8;
+    /* Sampled from the VOXEL logo */
+    --brand-teal: #2a9d8f;
+    --brand-teal-light: #3dbaa9;
+    --brand-orange: #ff9505;
+    --brand-gold: #ffb627;
+    --brand-rust: #cc5803;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #05060a; color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    overflow: hidden;
+  }
+  #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
+
+  /* ---- Header ------------------------------------------------------- */
+  #appHeader {
+    flex: 0 0 auto;
+    height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    z-index: 1100;
+  }
+  #brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  #brandLogo { height: 40px; width: 40px; flex: none; }
+  #brandText { display: flex; flex-direction: column; line-height: 1.1; }
+  #brandName {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+  #brandSubtitle {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand-teal-light);
+  }
+
+  #zoomButtons { display: flex; gap: 8px; flex: none; }
+  .zoom-level-btn {
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+  }
+  .zoom-level-btn:hover { background: #2a2e35; }
+  .zoom-level-btn.active { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
+  .zoom-level-btn.active:hover { background: var(--brand-teal-light); }
+
+  /* ---- Map area ------------------------------------------------------ */
+  #mapArea { position: relative; flex: 1 1 auto; min-height: 0; }
+  #map { position: absolute; inset: 0; background: #05060a; }
+  .leaflet-container { background: #05060a; }
+  .biome-tile { image-rendering: pixelated; }
+
+  /* ---- Footer --------------------------------------------------------- */
+  #appFooter {
+    flex: 0 0 auto;
+    height: 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    z-index: 1100;
+  }
+  #footerSeed { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #footerSeed b { color: var(--text); font-weight: 500; }
+  #footerHover { color: var(--text); font-weight: 500; white-space: nowrap; flex: none; margin-left: 16px; }
+
+  #zoomIndicator {
+    position: absolute; top: 16px; right: 16px; z-index: 1000;
+    background: rgba(29,32,37,0.92);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--muted);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  #drawTools {
+    position: absolute; top: 68px; right: 16px; z-index: 1000;
+    background: rgba(29,32,37,0.92);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    display: flex; flex-direction: column; gap: 6px;
+    width: 180px;
+    backdrop-filter: blur(6px);
+  }
+  #drawTools button {
+    background: #2a2e35; border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer;
+    text-align: left;
+  }
+  #drawTools button:hover { background: #363b44; }
+  #drawTools button:disabled { opacity: 0.4; cursor: default; }
+  #drawTools button.active { background: var(--brand-orange); border-color: var(--brand-orange); color: #1a1200; }
+  #drawTools button.active:hover { background: var(--brand-gold); }
+  #drawTools .hint { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+
+  .leaflet-container.drawing-mode { cursor: crosshair; }
+
+  .border-label {
+    background: rgba(20,22,26,0.85);
+    border: none;
+    box-shadow: none;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+  .border-label::before { display: none; }
+
+  .leaflet-interactive.border-line { cursor: pointer; }
+
+  #borderEditor {
+    position: absolute; top: 68px; right: 206px; z-index: 1001;
+    background: rgba(29,32,37,0.96);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    width: 200px;
+    backdrop-filter: blur(6px);
+    display: none;
+  }
+  #borderEditor.open { display: block; }
+  #borderEditor h2 { font-size: 12px; margin: 0 0 8px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  #borderLabelInput {
+    width: 100%; background: #101216; border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-bottom: 10px;
+  }
+  #colorSwatches { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .swatch-btn {
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .swatch-btn.selected { border-color: #fff; }
+  #borderEditorActions { display: flex; gap: 6px; }
+  #borderEditorActions button {
+    flex: 1; background: #2a2e35; border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer;
+  }
+  #borderEditorActions button:hover { background: #363b44; }
+  #borderSave { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
+  #borderSave:hover { background: var(--brand-teal-light); }
+  #borderDelete { color: #ff6b6b; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="appHeader">
+    <div id="brand">
+      <img src="assets/logo.png" alt="VOXEL logo" id="brandLogo">
+      <div id="brandText">
+        <span id="brandName">VOXEL</span>
+        <span id="brandSubtitle">World map</span>
+      </div>
+    </div>
+    <div id="zoomButtons"></div>
+  </header>
+
+  <div id="mapArea">
+    <div id="map"></div>
+    <div id="zoomIndicator"><span id="zoomBpp">-</span></div>
+
+    <div id="drawTools">
+      <button id="drawToggle">Draw border</button>
+      <button id="drawFinish" disabled>Finish line</button>
+      <button id="drawUndo" disabled>Undo point</button>
+      <button id="drawClear">Clear all</button>
+      <button id="drawExport">Export borders.json</button>
+      <div class="hint" id="drawHint">Click to add points, snapped to the world's pixel grid. Export when done, then drop the file into web/borders.json so it ships with the site.</div>
+    </div>
+
+    <div id="borderEditor">
+      <h2>Border</h2>
+      <input id="borderLabelInput" type="text" placeholder="Label" maxlength="40">
+      <div id="colorSwatches"></div>
+      <div id="borderEditorActions">
+        <button id="borderDelete">Delete</button>
+        <button id="borderCancel">Cancel</button>
+        <button id="borderSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <footer id="appFooter">
+    <div id="footerSeed">loading…</div>
+    <div id="footerHover">hover the map</div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="wasm/cubiomes.js"></script>
+<script>
+// --- World <-> map coordinate convention -----------------------------
+// 1 CRS.Simple unit = 4096 blocks. At zoom level NATIVE_ZOOM, that gives
+// exactly 1 screen pixel per block (the deepest native detail); each
+// zoom level out doubles blocksPerPixel. lat maps to -Z so north stays
+// up (Leaflet renders larger lat higher on screen; Minecraft's Z grows
+// south).
+const UNIT_BLOCKS = 4096;
+const NATIVE_ZOOM = 12;
+const TILE_SIZE = 256;
+
+// Zoom is restricted to exactly these three levels -- not a continuous
+// range. z=11 (blocksPerPixel=2) hit a cubiomes coordinate quirk that
+// misaligned tiles from real-world position (see wasm/seedmap_wasm.c);
+// rather than trust every in-between level is safe, we only expose the
+// specific ones that are, via labeled buttons instead of +/- zoom.
+const ALLOWED_ZOOMS = [
+  { zoom: 9, label: 'Overview' },
+  { zoom: 10, label: 'Normal' },
+  { zoom: 12, label: 'Detail' },
+];
+const MIN_ZOOM = ALLOWED_ZOOMS[0].zoom;
+const MAX_ZOOM = ALLOWED_ZOOMS[ALLOWED_ZOOMS.length - 1].zoom;
+const DEFAULT_ZOOM = 10;
+
+function blocksPerPixel(zoom) {
+  return Math.pow(2, NATIVE_ZOOM - zoom);
+}
+function worldToLatLng(x, z) {
+  return L.latLng(-z / UNIT_BLOCKS, x / UNIT_BLOCKS);
+}
+function latLngToWorld(latlng) {
+  return { x: latlng.lng * UNIT_BLOCKS, z: -latlng.lat * UNIT_BLOCKS };
+}
+
+const SEED = '2344567094';
+
+let cubiomes = null;
+let seedInitialized = false;
+
+const footerSeedEl = document.getElementById('footerSeed');
+const footerHoverEl = document.getElementById('footerHover');
+
+let tileLayer = null;
+
+const map = L.map('map', {
+  crs: L.CRS.Simple,
+  minZoom: MIN_ZOOM,
+  maxZoom: MAX_ZOOM,
+  zoomControl: false,
+  attributionControl: false,
+  // Zoom only ever changes via the labeled buttons below, which call
+  // setZoom() directly with an allowed value -- every other zoom
+  // gesture is disabled so there's no way to land on an in-between
+  // level (like the broken z=11) by scrolling, pinching, or double-
+  // clicking through it.
+  scrollWheelZoom: false,
+  doubleClickZoom: false,
+  touchZoom: false,
+  boxZoom: false,
+  keyboard: false,
+  // Tile rendering runs synchronously on the main thread (it calls into
+  // the WASM module), which can block long enough during a fast zoom
+  // gesture to desync Leaflet's animated zoom transform from the actual
+  // viewport -- borders/labels would appear to detach from the terrain
+  // and "float" at the wrong scale/position until the animation caught
+  // up. Disabling the animation makes each zoom step apply instantly
+  // and atomically instead, so nothing can render mid-transition.
+  zoomAnimation: false,
+});
+map.setView([0, 0], DEFAULT_ZOOM);
+
+const zoomBppEl = document.getElementById('zoomBpp');
+function updateZoomIndicator() {
+  const z = map.getZoom();
+  zoomBppEl.textContent = `${blocksPerPixel(z).toFixed(2)} blocks/px`;
+  document.querySelectorAll('.zoom-level-btn').forEach((btn) => {
+    btn.classList.toggle('active', Number(btn.dataset.zoom) === z);
+  });
+}
+map.on('zoom', updateZoomIndicator);
+
+const zoomButtonsEl = document.getElementById('zoomButtons');
+zoomButtonsEl.innerHTML = ALLOWED_ZOOMS.map((l) =>
+  `<button class="zoom-level-btn" data-zoom="${l.zoom}">${l.label}</button>`
+).join('');
+zoomButtonsEl.querySelectorAll('.zoom-level-btn').forEach((btn) => {
+  btn.addEventListener('click', () => map.setZoom(Number(btn.dataset.zoom)));
+});
+updateZoomIndicator();
+
+// --- Tile worker pool --------------------------------------------------
+// A single tile can take ~150ms (native resolution) to over 1s
+// (supersampled, zoomed-out) to compute, and render_tile calls straight
+// into the WASM module, which runs synchronously. Doing that on the main
+// thread would freeze panning/zooming/hover for as long as tiles take to
+// render. Each worker below loads its own cubiomes module instance and
+// seeds it independently, so tile requests run off the main thread and
+// spread across up to hardwareConcurrency workers in parallel.
+const WORKER_COUNT = Math.min(6, Math.max(2, navigator.hardwareConcurrency || 4));
+const tileWorkers = [];
+let nextWorkerIndex = 0;
+let pendingTileId = 0;
+const pendingTiles = new Map(); // id -> {resolve}
+
+function initTileWorkers(seed) {
+  for (let i = 0; i < WORKER_COUNT; i++) {
+    const worker = new Worker('wasm/tile-worker.js');
+    worker.onmessage = (e) => {
+      const msg = e.data;
+      if (msg.type === 'ready') return;
+      const entry = pendingTiles.get(msg.id);
+      if (!entry) return;
+      pendingTiles.delete(msg.id);
+      entry.resolve(msg.pixels);
+    };
+    worker.postMessage({ type: 'init', seed });
+    tileWorkers.push(worker);
+  }
+}
+
+function requestTile(worldX0, worldZ0, w, h, bpp) {
+  return new Promise((resolve) => {
+    const id = pendingTileId++;
+    pendingTiles.set(id, { resolve });
+    const worker = tileWorkers[nextWorkerIndex];
+    nextWorkerIndex = (nextWorkerIndex + 1) % tileWorkers.length;
+    worker.postMessage({ type: 'render', id, worldX0, worldZ0, w, h, bpp });
+  });
+}
+
+const BiomeLayer = L.GridLayer.extend({
+  createTile: function (coords, done) {
+    const tile = document.createElement('canvas');
+    tile.width = TILE_SIZE;
+    tile.height = TILE_SIZE;
+    tile.className = 'biome-tile';
+
+    if (!seedInitialized) {
+      setTimeout(() => done(null, tile), 0);
+      return tile;
+    }
+
+    const bpp = Math.max(1, Math.round(blocksPerPixel(coords.z)));
+    const worldX0 = coords.x * TILE_SIZE * bpp;
+    const worldZ0 = coords.y * TILE_SIZE * bpp;
+
+    requestTile(worldX0, worldZ0, TILE_SIZE, TILE_SIZE, bpp)
+      .then((pixels) => {
+        const imageData = new ImageData(pixels, TILE_SIZE, TILE_SIZE);
+        tile.getContext('2d').putImageData(imageData, 0, 0);
+        done(null, tile);
+      })
+      .catch((e) => {
+        console.error('tile render failed', e);
+        done(null, tile);
+      });
+    return tile;
+  },
+});
+
+function loadSeed(seedStr) {
+  footerSeedEl.textContent = 'generating…';
+
+  cubiomes.ccall('seed_init', null, ['string'], [seedStr]);
+  initTileWorkers(seedStr);
+  seedInitialized = true;
+
+  const mcVersion = cubiomes.ccall('get_mc_version', 'string', [], []);
+  const spawnX = cubiomes.ccall('get_spawn_x', 'number', [], []);
+  const spawnZ = cubiomes.ccall('get_spawn_z', 'number', [], []);
+
+  footerSeedEl.innerHTML =
+    `<b>Seed</b> ${seedStr} &nbsp;·&nbsp; <b>Minecraft</b> ${mcVersion} &nbsp;·&nbsp; <b>Spawn</b> X ${spawnX}, Z ${spawnZ}`;
+
+  const spawnLatLng = worldToLatLng(spawnX, spawnZ);
+  L.marker(spawnLatLng, {
+    icon: L.divIcon({
+      className: '',
+      html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))">
+        <path d="M12 2C8 2 5 5.2 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.8-3-7-7-7z" fill="#ff4d4f" stroke="#fff" stroke-width="1.2"/>
+        <circle cx="12" cy="9" r="2.6" fill="#fff"/>
+      </svg>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 22],
+    }),
+  }).addTo(map);
+
+  tileLayer = new BiomeLayer({
+    tileSize: TILE_SIZE,
+    noWrap: true,
+    updateWhenZooming: false,
+    maxNativeZoom: NATIVE_ZOOM,
+  }).addTo(map);
+
+  map.setView(spawnLatLng, DEFAULT_ZOOM);
+}
+
+let hoverPending = false;
+map.on('mousemove', (e) => {
+  if (!seedInitialized || hoverPending) return;
+  hoverPending = true;
+  requestAnimationFrame(() => {
+    hoverPending = false;
+    const w = latLngToWorld(e.latlng);
+    const x = Math.round(w.x), z = Math.round(w.z);
+    const name = cubiomes.ccall('get_biome_name_at', 'string', ['number', 'number'], [x, z]);
+    const biomeText = name ? name.replaceAll('_', ' ') : 'unknown';
+    footerHoverEl.textContent = `${biomeText} — X ${x}, Z ${z}`;
+  });
+});
+map.on('mouseout', () => { footerHoverEl.textContent = 'hover the map'; });
+
+// --- Border drawing layer --------------------------------------------
+// Borders are drawn as vector polylines whose vertices are snapped to
+// GRID_BLOCKS (the same 4-block cell size the biome raster is rendered
+// at), so lines land exactly on the biome pixel grid rather than at
+// arbitrary sub-pixel positions.
+const GRID_BLOCKS = 4;
+const STORAGE_KEY = `voxel-map-borders:${SEED}`;
+
+const drawToggleBtn = document.getElementById('drawToggle');
+const drawFinishBtn = document.getElementById('drawFinish');
+const drawUndoBtn = document.getElementById('drawUndo');
+const drawClearBtn = document.getElementById('drawClear');
+
+const PALETTE = ['#ff4d4f', '#ffa94d', '#ffd43b', '#69db7c', '#38d9a9', '#4dabf7', '#748ffc', '#e599f7', '#ffffff'];
+let nextColorIndex = 0;
+
+let drawMode = false;
+let activePoints = [];   // [{x,z}, ...] snapped world coords, in progress
+let activeLine = null;   // L.Polyline for the in-progress line
+let activeMarkers = [];  // L.CircleMarker per vertex of the in-progress line
+let borders = [];        // [{points, label, color, layer, labelTooltip}, ...]
+
+function snapWorld(x, z) {
+  return {
+    x: Math.round(x / GRID_BLOCKS) * GRID_BLOCKS,
+    z: Math.round(z / GRID_BLOCKS) * GRID_BLOCKS,
+  };
+}
+function pointsToLatLngs(points) {
+  return points.map((p) => worldToLatLng(p.x, p.z));
+}
+
+function renderActiveLine() {
+  const latlngs = pointsToLatLngs(activePoints);
+
+  if (activeLine) map.removeLayer(activeLine);
+  activeLine = latlngs.length >= 2
+    ? L.polygon(latlngs, {
+        color: '#ffd23f', weight: 2, dashArray: '6 5', fillColor: '#ffd23f', fillOpacity: 0.15,
+      }).addTo(map)
+    : null;
+
+  activeMarkers.forEach((m) => map.removeLayer(m));
+  activeMarkers = latlngs.map((ll) => L.circleMarker(ll, {
+    radius: 4, color: '#ffd23f', weight: 2, fillColor: '#1d2025', fillOpacity: 1,
+  }).addTo(map));
+
+  drawFinishBtn.disabled = activePoints.length < 2;
+  drawUndoBtn.disabled = activePoints.length === 0;
+}
+
+function updateLabelTooltip(border) {
+  if (border.labelTooltip) { map.removeLayer(border.labelTooltip); border.labelTooltip = null; }
+  if (!border.label) return;
+  // getCenter() on a closed polygon is its area-weighted centroid, not
+  // just an average of vertices, so the label sits in the visual middle
+  // of the highlighted area rather than drifting toward wherever points
+  // happen to be denser.
+  border.labelTooltip = L.tooltip({
+    permanent: true, direction: 'center', className: 'border-label', interactive: true,
+  })
+    .setLatLng(border.layer.getCenter())
+    .setContent(border.label)
+    .addTo(map);
+  border.labelTooltip.on('click', () => openBorderEditor(border));
+}
+
+function addBorderLayer(points, label, color) {
+  const layer = L.polygon(pointsToLatLngs(points), {
+    color, weight: 3, fillColor: color, fillOpacity: 0.25, className: 'border-line',
+  }).addTo(map);
+  const border = { points, label, color, layer, labelTooltip: null };
+  layer.on('click', (e) => { L.DomEvent.stopPropagation(e); openBorderEditor(border); });
+  updateLabelTooltip(border);
+  borders.push(border);
+  return border;
+}
+
+function saveBorders() {
+  const data = borders.map((b) => ({ points: b.points, label: b.label, color: b.color }));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
+}
+
+async function loadBorders() {
+  // borders.json is the checked-in, shipped snapshot (what everyone who
+  // opens this page sees, including once it's hosted). localStorage is
+  // just a local editing convenience/fallback if that file is missing or
+  // empty -- e.g. mid-session before you've exported yet.
+  let data = null;
+  try {
+    const res = await fetch('borders.json', { cache: 'no-store' });
+    if (res.ok) data = await res.json();
+  } catch (e) { /* not servable (e.g. file://) or missing -- fall back below */ }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { data = []; }
+  }
+
+  for (const b of data) addBorderLayer(b.points, b.label || '', b.color || PALETTE[0]);
+  nextColorIndex = data.length % PALETTE.length;
+}
+
+function exportBorders() {
+  const data = borders.map((b) => ({ points: b.points, label: b.label, color: b.color }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'borders.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function finishActiveLine() {
+  if (activePoints.length >= 2) {
+    const label = `Border ${borders.length + 1}`;
+    const color = PALETTE[nextColorIndex % PALETTE.length];
+    nextColorIndex++;
+    const border = addBorderLayer(activePoints, label, color);
+    saveBorders();
+    openBorderEditor(border);
+  }
+  activePoints = [];
+  renderActiveLine();
+}
+
+function undoPoint() {
+  activePoints.pop();
+  renderActiveLine();
+}
+
+function clearAllBorders() {
+  activePoints = [];
+  renderActiveLine();
+  for (const b of borders) {
+    map.removeLayer(b.layer);
+    if (b.labelTooltip) map.removeLayer(b.labelTooltip);
+  }
+  borders = [];
+  saveBorders();
+  closeBorderEditor();
+}
+
+// --- Border label/color editor ----------------------------------------
+const borderEditorEl = document.getElementById('borderEditor');
+const borderLabelInput = document.getElementById('borderLabelInput');
+const colorSwatchesEl = document.getElementById('colorSwatches');
+const borderSaveBtn = document.getElementById('borderSave');
+const borderDeleteBtn = document.getElementById('borderDelete');
+const borderCancelBtn = document.getElementById('borderCancel');
+
+let editingBorder = null;
+let editingColor = null;
+
+colorSwatchesEl.innerHTML = PALETTE.map((c) =>
+  `<div class="swatch-btn" data-color="${c}" style="background:${c}"></div>`
+).join('');
+colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((el) => {
+  el.addEventListener('click', () => {
+    editingColor = el.dataset.color;
+    colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
+    el.classList.add('selected');
+  });
+});
+
+function openBorderEditor(border) {
+  editingBorder = border;
+  editingColor = border.color;
+  borderLabelInput.value = border.label || '';
+  colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((s) => {
+    s.classList.toggle('selected', s.dataset.color === border.color);
+  });
+  borderEditorEl.classList.add('open');
+  borderLabelInput.focus();
+  borderLabelInput.select();
+}
+
+function closeBorderEditor() {
+  editingBorder = null;
+  borderEditorEl.classList.remove('open');
+}
+
+borderSaveBtn.addEventListener('click', () => {
+  if (!editingBorder) return;
+  editingBorder.label = borderLabelInput.value.trim();
+  editingBorder.color = editingColor;
+  editingBorder.layer.setStyle({ color: editingColor, fillColor: editingColor });
+  updateLabelTooltip(editingBorder);
+  saveBorders();
+  closeBorderEditor();
+});
+borderDeleteBtn.addEventListener('click', () => {
+  if (!editingBorder) return;
+  map.removeLayer(editingBorder.layer);
+  if (editingBorder.labelTooltip) map.removeLayer(editingBorder.labelTooltip);
+  borders = borders.filter((b) => b !== editingBorder);
+  saveBorders();
+  closeBorderEditor();
+});
+borderCancelBtn.addEventListener('click', closeBorderEditor);
+borderLabelInput.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'Enter') borderSaveBtn.click();
+  else if (e.key === 'Escape') closeBorderEditor();
+});
+
+function setDrawMode(on) {
+  drawMode = on;
+  drawToggleBtn.classList.toggle('active', on);
+  drawToggleBtn.textContent = on ? 'Drawing…' : 'Draw border';
+  map.getContainer().classList.toggle('drawing-mode', on);
+  if (on) {
+    map.doubleClickZoom.disable();
+  } else {
+    map.doubleClickZoom.enable();
+    finishActiveLine();
+  }
+}
+
+map.on('click', (e) => {
+  if (!drawMode) return;
+  const w = latLngToWorld(e.latlng);
+  activePoints.push(snapWorld(w.x, w.z));
+  renderActiveLine();
+});
+map.on('dblclick', (e) => {
+  if (!drawMode) return;
+  L.DomEvent.stop(e);
+  activePoints.pop(); // the second click of the double-click added a redundant point
+  finishActiveLine();
+});
+document.addEventListener('keydown', (e) => {
+  if (!drawMode) return;
+  if (e.key === 'Escape') { activePoints = []; renderActiveLine(); }
+  else if (e.key === 'Enter') finishActiveLine();
+});
+
+drawToggleBtn.addEventListener('click', () => setDrawMode(!drawMode));
+drawFinishBtn.addEventListener('click', finishActiveLine);
+drawUndoBtn.addEventListener('click', undoPoint);
+let clearArmed = false;
+let clearArmTimeout = null;
+drawClearBtn.addEventListener('click', () => {
+  if (!clearArmed) {
+    clearArmed = true;
+    drawClearBtn.textContent = 'Click again to confirm';
+    clearArmTimeout = setTimeout(() => {
+      clearArmed = false;
+      drawClearBtn.textContent = 'Clear all';
+    }, 3000);
+    return;
+  }
+  clearTimeout(clearArmTimeout);
+  clearArmed = false;
+  drawClearBtn.textContent = 'Clear all';
+  clearAllBorders();
+});
+document.getElementById('drawExport').addEventListener('click', exportBorders);
+
+loadBorders();
+
+footerSeedEl.textContent = 'loading wasm…';
+createCubiomesModule().then((mod) => {
+  cubiomes = mod;
+  loadSeed(SEED);
+});
+</script>
+</body>
+</html>
