@@ -218,19 +218,19 @@ void render_tile(int worldX0, int worldZ0, int w, int h, int blocksPerPixel, uns
     // still uses the exact height, since a single hover query is cheap
     // regardless.
 
-    // One extra row/column of heights so every output pixel can look at
-    // its east and south neighbor for the hillshade gradient, without
-    // recomputing any height more than once.
-    int gw = w + 1, gh = h + 1;
+    // A one-cell border on every side so each output pixel can see all
+    // four neighbors (not just east/south) for shading. (i+1, j+1) in
+    // this padded grid is the pixel's own height.
+    int gw = w + 2, gh = h + 2;
     int *heights = (int *)malloc(sizeof(int) * (size_t)gw * gh);
     if (!heights) return;
 
     for (int j = 0; j < gh; j++)
     {
-        int z = worldZ0 + j * blocksPerPixel;
+        int z = worldZ0 + (j - 1) * blocksPerPixel;
         for (int i = 0; i < gw; i++)
         {
-            int x = worldX0 + i * blocksPerPixel;
+            int x = worldX0 + (i - 1) * blocksPerPixel;
             heights[j * gw + i] = surfaceHeightAt(x, z);
         }
     }
@@ -241,14 +241,27 @@ void render_tile(int worldX0, int worldZ0, int w, int h, int blocksPerPixel, uns
         for (int i = 0; i < w; i++)
         {
             int x = worldX0 + i * blocksPerPixel;
-            int hc = heights[j * gw + i];
-            int hEast = heights[j * gw + (i + 1)];
-            int hSouth = heights[(j + 1) * gw + i];
+            int hc = heights[(j + 1) * gw + (i + 1)];
+            int hWest = heights[(j + 1) * gw + i];
+            int hEast = heights[(j + 1) * gw + (i + 2)];
+            int hNorth = heights[j * gw + (i + 1)];
+            int hSouth = heights[(j + 2) * gw + (i + 1)];
 
             int id = resolveVisibleBiome(biomeAtHeight(x, z, hc), hc);
 
-            double slope = (double)((hc - hEast) + (hc - hSouth));
-            double shade = 1.0 + slope * 0.012;
+            // Two complementary cues, each weak on its own but good
+            // together: a directional hillshade (light from the NW, a
+            // wider two-cell baseline so it reads the hill's overall
+            // tilt rather than single-pixel noise) handles slopes, and
+            // a curvature term (how far this point sits above/below the
+            // *average* of its four neighbors) handles the case a pure
+            // directional shade misses -- the apex of a broad, rounded
+            // hill has ~zero local slope in every direction, but it's
+            // still convex, so it should read as a subtle highlight
+            // rather than going flat.
+            double directional = (double)((hWest - hEast) + (hNorth - hSouth));
+            double curvature = (double)hc - (hWest + hEast + hNorth + hSouth) / 4.0;
+            double shade = 1.0 + directional * 0.006 + curvature * 0.05;
             if (shade < 0.55) shade = 0.55;
             else if (shade > 1.35) shade = 1.35;
 

@@ -135,13 +135,20 @@ different seed or radius doesn't touch any other seed's output.
   lush caves, deep dark) bled into the visible surface wherever the
   climate parameters happened to match underground — both were artifacts
   of ignoring real elevation, not something cubiomes gets "wrong".
-- **Hillshading**: each pixel also samples its east/south neighbors'
-  height to get a local slope, and darkens/lightens the biome color
-  accordingly (`paintPixelShaded`) — this is what gives the map visible
-  relief/texture instead of flat biome-colored regions, at the cost of
-  computing `(tileWidth+1)×(tileHeight+1)` heights per tile instead of
-  one per pixel (still cheaper than the old approach once you include
-  what it replaced — see below).
+- **Hillshading**: each pixel samples all four neighbors (not just
+  east/south) at a one-cell border around the tile, two cells apart, and
+  combines two cues: a directional component (classic NW-lit hillshade,
+  from the width-2 west/east and north/south differences) and a
+  curvature component (how far this point sits above/below the *average*
+  of its four neighbors). The directional term alone went flat on broad,
+  gently-domed hills — their apex has ~zero local slope in any one
+  direction despite clearly being a raised point, which rendered as a
+  flat, uniformly-lit patch with a shading ring only at the steep edges
+  (reported: looked like an unexplained blob in the middle of an
+  island). Curvature catches exactly that case, since the apex of a dome
+  is still measurably convex relative to its surroundings even where its
+  slope is zero. `(tileWidth+2)×(tileHeight+2)` heights get computed per
+  tile for this (one border cell on every side, not just east/south).
 - **Small islands now actually show as islands**: biome classification is
   climate-based (continentalness/erosion/etc.), which only roughly
   correlates with height — small-scale terrain noise can push a column
