@@ -51,11 +51,54 @@ void seed_init(const char *seedStr)
     memset(biomeSeenCount, 0, sizeof(biomeSeenCount));
 }
 
-// Real terrain height (the same density-function surface estimate vanilla
-// generation itself uses, not a fixed sea-level slice), in blocks.
+// Fast approximate terrain height (a spline fit over climate noise --
+// the same quick estimate vanilla generation itself uses for an initial
+// guess, not a fixed sea-level slice). Cheap, but "preliminary" is in the
+// name: it can be off by a few blocks right at a boundary, which is
+// exactly where a narrow strait between two islands would get smoothed
+// over into one connected landmass.
 static int surfaceHeightAt(int worldX, int worldZ)
 {
     return samplePreliminarySurfaceLevel(&terrain, worldX, worldZ);
+}
+
+// The overworld's 1.18+ noise column, in 4-block (XZ) x 8-block (Y)
+// cells, spanning the full world height (-64..320).
+#define OW_CELL_Y_MIN 0
+#define OW_CELL_Y_MAX 48
+#define OW_CELL_HEIGHT 8
+#define OW_WORLD_MIN_Y (-64)
+#define OW_COLUMN_LEN (OW_CELL_Y_MAX - OW_CELL_Y_MIN + 1)
+
+// Exact terrain height: evaluates the actual generated column (the same
+// density-function math real chunk generation uses to place blocks) via
+// this fork's generateColumn/sampleNoiseColumn, instead of the spline
+// approximation above. Four noise columns (one per corner of the 4-block
+// cell worldX/worldZ falls in) get bilinearly interpolated, then
+// generateColumn walks down from the top and returns the first air
+// block above solid ground -- exactly what vanilla would generate there.
+// Meaningfully more expensive (four 49-entry noise columns instead of a
+// handful of spline samples), so this is only used for the "Detail"
+// (native resolution) zoom tier; render_tile keeps the fast estimate
+// above for zoomed-out tiles where per-tile pixel count is much higher
+// and this precision isn't visually distinguishable anyway.
+static int exactSurfaceHeightAt(int worldX, int worldZ)
+{
+    int cellX = worldX >> 2;
+    int cellZ = worldZ >> 2;
+    double percentX = (worldX - (cellX << 2)) / 4.0;
+    double percentZ = (worldZ - (cellZ << 2)) / 4.0;
+
+    double ds00[OW_COLUMN_LEN], ds01[OW_COLUMN_LEN];
+    double ds10[OW_COLUMN_LEN], ds11[OW_COLUMN_LEN];
+    sampleNoiseColumn(&terrain, cellX,     cellZ,     OW_CELL_Y_MIN, OW_CELL_Y_MAX, ds00);
+    sampleNoiseColumn(&terrain, cellX,     cellZ + 1, OW_CELL_Y_MIN, OW_CELL_Y_MAX, ds01);
+    sampleNoiseColumn(&terrain, cellX + 1, cellZ,     OW_CELL_Y_MIN, OW_CELL_Y_MAX, ds10);
+    sampleNoiseColumn(&terrain, cellX + 1, cellZ + 1, OW_CELL_Y_MIN, OW_CELL_Y_MAX, ds11);
+
+    return generateColumn(NULL, ds00, ds01, ds10, ds11,
+        OW_CELL_Y_MIN, OW_CELL_Y_MAX, OW_CELL_HEIGHT,
+        percentX, percentZ, INTERP_1_18, OW_WORLD_MIN_Y, 1);
 }
 
 // The biome AT that real height -- this is what makes mountain-only
@@ -97,14 +140,16 @@ int get_spawn_z(void) { return spawnZ; }
 EMSCRIPTEN_KEEPALIVE
 const char *get_mc_version(void) { return mcVersionBuf; }
 
-// Accurate single-point lookup for hover tooltips -- samples the same
-// real-height-aware biome as render_tile, so hovering always reports
-// what's actually drawn at that pixel.
+// Accurate single-point lookup for hover tooltips. Always uses the exact
+// (not the fast-approximate) height -- it's one point, so the extra cost
+// is negligible, and hover is exactly the kind of "look closely at this
+// one spot" query where the precision is worth it even when the
+// currently-rendered zoom tier is using the fast estimate for its tiles.
 EMSCRIPTEN_KEEPALIVE
 const char *get_biome_name_at(int worldX, int worldZ)
 {
     if (!haveGenerator) return "";
-    int height = surfaceHeightAt(worldX, worldZ);
+    int height = exactSurfaceHeightAt(worldX, worldZ);
     int id = resolveVisibleBiome(biomeAtHeight(worldX, worldZ, height), height);
     const char *name = biome2str(MC_NEWEST, id);
     return name ? name : "";
@@ -158,6 +203,20 @@ void render_tile(int worldX0, int worldZ0, int w, int h, int blocksPerPixel, uns
 {
     if (!haveGenerator || w <= 0 || h <= 0) return;
     if (blocksPerPixel < 1) blocksPerPixel = 1;
+
+    // Tried using exactSurfaceHeightAt() here for native-resolution
+    // tiles -- it resolves narrow straits/channels correctly (that's the
+    // whole reason it exists), but at ~0.7ms per point it costs ~47s for
+    // a single 256x256 tile (257x257 height samples). Nowhere close to
+    // viable even restricted to one zoom tier. A properly batched/cached
+    // version (this fork's generateRegion() memoises shared corner
+    // columns across a whole chunk grid, rather than recomputing all
+    // four per point the way this does) could get there, but that's a
+    // meaningfully bigger rewrite than swapping the height function --
+    // left for later if the fast approximation's inaccuracy at narrow
+    // features keeps being a real problem. get_biome_name_at() below
+    // still uses the exact height, since a single hover query is cheap
+    // regardless.
 
     // One extra row/column of heights so every output pixel can look at
     // its east and south neighbor for the hillshade gradient, without

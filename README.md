@@ -153,6 +153,24 @@ different seed or radius doesn't touch any other seed's output.
   cubiomes' own `isOceanic()` helper and substitutes `stony_shore`'s
   color whenever an "oceanic" column has actually emerged, rather than
   trying to guess what land biome it "should" be.
+- **Known limitation: narrow straits/channels can render as one
+  landmass instead of two separate islands.** `surfaceHeightAt()`
+  (`samplePreliminarySurfaceLevel`) is a fast spline-fit approximation —
+  it's literally what vanilla generation uses for an initial guess, not
+  the final word — and it can be off by a few blocks exactly at a
+  boundary, which is exactly where a 1-2 block-wide channel between two
+  bits of land lives. This fork's `generateColumn`/`sampleNoiseColumn`
+  compute the *exact* generated height (`exactSurfaceHeightAt()`,
+  used by `get_biome_name_at()` for hover, where a single point is
+  cheap) and would fix this, but profiled at ~0.7ms per point, a full
+  256x256 tile (257×257 height samples for hillshading) would cost
+  ~47 seconds — nowhere near viable, even restricted to the native-
+  resolution zoom tier alone (tried; reverted). A properly batched
+  version using this fork's `generateRegion()` (which memoizes shared
+  corner noise columns across a whole chunk grid instead of recomputing
+  all four per point, the way `exactSurfaceHeightAt` does) could likely
+  get there, but that's a meaningfully bigger rewrite than swapping the
+  height function, and hasn't been attempted yet.
 - **Spawn point**: computed with cubiomes' `getSpawn()`, which follows the
   same grass-block heuristic the game itself uses.
 - **Performance**: direct per-pixel sampling (what both of the above use)
