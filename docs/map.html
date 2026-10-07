@@ -197,7 +197,7 @@
       <button id="drawUndo" disabled>Undo point</button>
       <button id="drawClear">Clear all</button>
       <button id="drawExport">Export borders.json</button>
-      <div class="hint" id="drawHint">Click to add points, snapped to the world's pixel grid. Export when done, then drop the file into web/borders.json so it ships with the site.</div>
+      <div class="hint" id="drawHint">Click to add points, snapped to the world's pixel grid. Export when done, then drop the file into docs/borders.json so it ships with the site.</div>
     </div>
 
     <div id="borderEditor">
@@ -231,18 +231,24 @@ const UNIT_BLOCKS = 4096;
 const NATIVE_ZOOM = 12;
 const TILE_SIZE = 256;
 
-// Zoom is restricted to exactly these three levels -- not a continuous
-// range. z=11 (blocksPerPixel=2) hit a cubiomes coordinate quirk that
-// misaligned tiles from real-world position (see wasm/seedmap_wasm.c);
-// rather than trust every in-between level is safe, we only expose the
-// specific ones that are, via labeled buttons instead of +/- zoom.
+// Zoom used to be locked to exactly these three levels: z=11
+// (blocksPerPixel=2) hit a cubiomes coordinate quirk that misaligned
+// tiles from their real-world position, and the renderer at the time
+// went through cubiomes' Range/genBiomes for every zoom level, so every
+// in-between/fractional level was a potential unknown. Both of those
+// are gone now -- the renderer was rewritten to sample real terrain
+// height directly (see wasm/seedmap_wasm.c) and no longer calls
+// Range/genBiomes at all, so there's no scale-dependent path left for
+// that bug to live in. Verified z=11 and fractional zooms (e.g. 10.5)
+// render correctly aligned. These three are now just quick-jump
+// shortcuts; scroll/pinch/double-click/keyboard zoom freely in between.
 const ALLOWED_ZOOMS = [
   { zoom: 9, label: 'Overview' },
   { zoom: 10, label: 'Normal' },
   { zoom: 12, label: 'Detail' },
 ];
-const MIN_ZOOM = ALLOWED_ZOOMS[0].zoom;
-const MAX_ZOOM = ALLOWED_ZOOMS[ALLOWED_ZOOMS.length - 1].zoom;
+const MIN_ZOOM = 0;
+const MAX_ZOOM = 16; // beyond NATIVE_ZOOM (12), Leaflet just upscales the last real tile
 const DEFAULT_ZOOM = 10;
 
 function blocksPerPixel(zoom) {
@@ -269,26 +275,26 @@ const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: MIN_ZOOM,
   maxZoom: MAX_ZOOM,
+  // Continuous zoom, not integer steps -- lets scroll/pinch feel smooth
+  // instead of snapping between whole levels.
+  zoomSnap: 0,
+  zoomDelta: 1,
+  wheelPxPerZoomLevel: 100,
   zoomControl: false,
   attributionControl: false,
-  // Zoom only ever changes via the labeled buttons below, which call
-  // setZoom() directly with an allowed value -- every other zoom
-  // gesture is disabled so there's no way to land on an in-between
-  // level (like the broken z=11) by scrolling, pinching, or double-
-  // clicking through it.
-  scrollWheelZoom: false,
-  doubleClickZoom: false,
-  touchZoom: false,
-  boxZoom: false,
-  keyboard: false,
-  // Tile rendering runs synchronously on the main thread (it calls into
-  // the WASM module), which can block long enough during a fast zoom
-  // gesture to desync Leaflet's animated zoom transform from the actual
-  // viewport -- borders/labels would appear to detach from the terrain
-  // and "float" at the wrong scale/position until the animation caught
-  // up. Disabling the animation makes each zoom step apply instantly
-  // and atomically instead, so nothing can render mid-transition.
-  zoomAnimation: false,
+  scrollWheelZoom: true,
+  doubleClickZoom: true,
+  touchZoom: true, // pinch-to-zoom on touch/mobile
+  boxZoom: true,
+  keyboard: true,
+  // Tile rendering used to run synchronously on the main thread, which
+  // could block long enough during a zoom gesture to desync Leaflet's
+  // animated zoom transform from the actual viewport. It now runs in a
+  // pool of Web Workers (below) instead, so the main thread -- and
+  // Leaflet's own zoom animation -- is never blocked by it; re-enabling
+  // the animation here is what makes zoom feel smooth rather than
+  // snapping instantly between levels.
+  zoomAnimation: true,
 });
 map.setView([0, 0], DEFAULT_ZOOM);
 

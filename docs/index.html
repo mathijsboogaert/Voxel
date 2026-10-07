@@ -145,7 +145,7 @@
 <script src="wasm/cubiomes.js"></script>
 <script>
 // This is the public, read-only viewer: it renders the same map and the
-// same web/borders.json as map.html, but has none of that file's drawing
+// same docs/borders.json as map.html, but has none of that file's drawing
 // UI or logic at all (no draw tools, no border editor, no localStorage
 // writes) -- there is nothing here for a visitor to edit. map.html is the
 // editing tool kept for local use; this is what a hosted deployment
@@ -161,18 +161,18 @@ const UNIT_BLOCKS = 4096;
 const NATIVE_ZOOM = 12;
 const TILE_SIZE = 256;
 
-// Zoom is restricted to exactly these three levels -- not a continuous
-// range. z=11 (blocksPerPixel=2) hit a cubiomes coordinate quirk that
-// misaligned tiles from real-world position (see wasm/seedmap_wasm.c);
-// rather than trust every in-between level is safe, we only expose the
-// specific ones that are, via labeled buttons instead of +/- zoom.
+// Zoom used to be locked to exactly these three levels -- see map.html
+// for the full history (a cubiomes coordinate quirk at z=11, since
+// fixed by a renderer rewrite that no longer has a scale-dependent code
+// path for that bug to live in). These are now just quick-jump
+// shortcuts; scroll/pinch/double-click/keyboard zoom freely in between.
 const ALLOWED_ZOOMS = [
   { zoom: 9, label: 'Overview' },
   { zoom: 10, label: 'Normal' },
   { zoom: 12, label: 'Detail' },
 ];
-const MIN_ZOOM = ALLOWED_ZOOMS[0].zoom;
-const MAX_ZOOM = ALLOWED_ZOOMS[ALLOWED_ZOOMS.length - 1].zoom;
+const MIN_ZOOM = 0;
+const MAX_ZOOM = 16; // beyond NATIVE_ZOOM (12), Leaflet just upscales the last real tile
 const DEFAULT_ZOOM = 10;
 
 function blocksPerPixel(zoom) {
@@ -199,14 +199,17 @@ const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: MIN_ZOOM,
   maxZoom: MAX_ZOOM,
+  zoomSnap: 0,
+  zoomDelta: 1,
+  wheelPxPerZoomLevel: 100,
   zoomControl: false,
   attributionControl: false,
-  scrollWheelZoom: false,
-  doubleClickZoom: false,
-  touchZoom: false,
-  boxZoom: false,
-  keyboard: false,
-  zoomAnimation: false,
+  scrollWheelZoom: true,
+  doubleClickZoom: true,
+  touchZoom: true,
+  boxZoom: true,
+  keyboard: true,
+  zoomAnimation: true,
 });
 map.setView([0, 0], DEFAULT_ZOOM);
 
@@ -348,7 +351,7 @@ map.on('mousemove', (e) => {
 map.on('mouseout', () => { footerHoverEl.textContent = 'hover the map'; });
 
 // --- Borders (read-only) ----------------------------------------------
-// Renders exactly what's in web/borders.json -- no editing, no
+// Renders exactly what's in docs/borders.json -- no editing, no
 // localStorage. That file is the single source of truth both here and
 // in map.html.
 function pointsToLatLngs(points) {

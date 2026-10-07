@@ -55,18 +55,24 @@ transparent, cropped) from the source art — accent colors in `map.html`'s
 `:root` (`--brand-teal`, `--brand-orange`, etc.) were sampled directly from
 it, so re-theming means re-sampling if the logo changes.
 
-**Zoom is intentionally limited to three fixed levels** — "Overview" (z=9),
-"Normal" (z=10, the default), and "Detail" (z=12, native resolution) — via
-labeled buttons in the header, not a free +/- or scroll/pinch zoom. That's a
-deliberate constraint, not a missing feature: z=11 (`blocksPerPixel=2`)
-tickles a cubiomes coordinate bug that silently misaligns tiles from their
-real position (see `canUseGenBiomes()` in `wasm/seedmap_wasm.c` for the
-fix that made z=11 itself safe again) — rather than trust every possible
-in-between/fractional zoom level is equally safe, scroll/pinch/double-
-click/keyboard zoom are all disabled outright and only these three
-pre-verified levels are reachable at all. `ALLOWED_ZOOMS` near the top of
-`map.html`'s `<script>` is the single place to add more levels later, each
-worth spot-checking against the same class of bug first.
+**Zoom is free and continuous** — scroll, pinch (touch/mobile), double-
+click, and keyboard all zoom smoothly (`zoomSnap: 0`), with
+`zoomAnimation: true` for an eased transition rather than an instant
+snap. "Overview" (z=9), "Normal" (z=10, the default), and "Detail" (z=12,
+native resolution) are quick-jump shortcuts, not the only reachable
+levels — that used to be the case: z=11 (`blocksPerPixel=2`) once hit a
+cubiomes coordinate bug that silently misaligned tiles from their real
+position, and the renderer at the time went through cubiomes'
+`Range`/`genBiomes` for every zoom level, so every in-between/fractional
+level was an unknown risk worth avoiding outright. Both of those are
+gone now: the renderer was rewritten (see "Real terrain height" below)
+to sample real terrain height directly and no longer calls
+`Range`/`genBiomes` at all, so there's no scale-dependent path left for
+that class of bug to live in, and tile rendering moved off the main
+thread into a worker pool, which is what made it safe to re-enable the
+animation (see `docs/map.html` for the fuller history in comments).
+Verified z=11 and fractional zooms (e.g. 10.5) render correctly aligned
+before re-enabling free zoom.
 
 **Drawing borders**: the "Draw border" tool (top-right) lets you click to
 place points for a custom border line, snapped to the same 4-block grid the
