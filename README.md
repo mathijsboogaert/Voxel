@@ -142,6 +142,17 @@ different seed or radius doesn't touch any other seed's output.
   computing `(tileWidth+1)×(tileHeight+1)` heights per tile instead of
   one per pixel (still cheaper than the old approach once you include
   what it replaced — see below).
+- **Small islands now actually show as islands**: biome classification is
+  climate-based (continentalness/erosion/etc.), which only roughly
+  correlates with height — small-scale terrain noise can push a column
+  above sea level even where the surrounding area's climate reads as
+  "ocean" (a real little rocky island in-game). Coloring strictly by
+  biome ID painted those the same flat ocean blue as the water around
+  them, so they never read as land. `resolveVisibleBiome()` in
+  `wasm/seedmap_wasm.c` checks real height against sea level (63) via
+  cubiomes' own `isOceanic()` helper and substitutes `stony_shore`'s
+  color whenever an "oceanic" column has actually emerged, rather than
+  trying to guess what land biome it "should" be.
 - **Spawn point**: computed with cubiomes' `getSpawn()`, which follows the
   same grass-block heuristic the game itself uses.
 - **Performance**: direct per-pixel sampling (what both of the above use)

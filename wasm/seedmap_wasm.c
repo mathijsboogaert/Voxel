@@ -1,6 +1,7 @@
 // WebAssembly bridge: exposes seed setup, spawn lookup, and on-demand
 // biome tile rendering so the browser can pan/zoom an unbounded map,
 // computing only the tiles actually visible instead of a fixed image.
+#include "biomes.h"
 #include "generator.h"
 #include "finders.h"
 #include "terrainnoise.h"
@@ -68,6 +69,25 @@ static int biomeAtHeight(int worldX, int worldZ, int height)
     return sampleBiomeNoise(&g.bn, np, worldX >> 2, height >> 2, worldZ >> 2, 0, 0);
 }
 
+// Vanilla Java Edition sea level.
+#define SEA_LEVEL 63
+
+// Biome classification is climate-based (continentalness/erosion/etc.),
+// which only roughly correlates with height -- small-scale terrain noise
+// can still push a column above sea level even where the broader area's
+// climate reads as "ocean". That's a real island in-game (a little rocky
+// outcrop poking out of the water), but coloring strictly by biome ID
+// paints it the same flat ocean blue as the water around it, so it never
+// reads as land. Once real height clears sea level, show rock instead of
+// the ocean biome's color -- cheaper and more robust than trying to
+// classify what the emergent biome "should" be.
+static int resolveVisibleBiome(int id, int height)
+{
+    if (height >= SEA_LEVEL && isOceanic(id))
+        return stony_shore;
+    return id;
+}
+
 EMSCRIPTEN_KEEPALIVE
 int get_spawn_x(void) { return spawnX; }
 
@@ -85,7 +105,7 @@ const char *get_biome_name_at(int worldX, int worldZ)
 {
     if (!haveGenerator) return "";
     int height = surfaceHeightAt(worldX, worldZ);
-    int id = biomeAtHeight(worldX, worldZ, height);
+    int id = resolveVisibleBiome(biomeAtHeight(worldX, worldZ, height), height);
     const char *name = biome2str(MC_NEWEST, id);
     return name ? name : "";
 }
@@ -166,7 +186,7 @@ void render_tile(int worldX0, int worldZ0, int w, int h, int blocksPerPixel, uns
             int hEast = heights[j * gw + (i + 1)];
             int hSouth = heights[(j + 1) * gw + i];
 
-            int id = biomeAtHeight(x, z, hc);
+            int id = resolveVisibleBiome(biomeAtHeight(x, z, hc), hc);
 
             double slope = (double)((hc - hEast) + (hc - hSouth));
             double shade = 1.0 + slope * 0.012;
