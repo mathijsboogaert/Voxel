@@ -124,29 +124,40 @@ different seed or radius doesn't touch any other seed's output.
   2026-09-15) — includes the new Dappled Forest biome. If a future Minecraft
   version changes biome generation again, re-vendor a newer `xpple/cubiomes`
   checkout the same way (see below) to stay current.
-- **Surface only**: biomes are sampled at sea level (y≈60, matching
-  cubiomes' own "image of the world" example), not the real per-column
-  terrain height. No structures, caves-as-dimension, or nether/end are
-  computed. Note that a handful of "cave" biomes (dripstone caves, lush
-  caves, deep dark) can still show up scattered across the surface sample —
-  that's not a bug here, it's how Minecraft's 1.18+ climate-based biome
-  field actually behaves at fixed height, and other seed-map tools (e.g.
-  Chunkbase) show the same texture.
+- **Real terrain height, not a fixed sea-level slice**: `render_tile` in
+  `wasm/seedmap_wasm.c` calls `samplePreliminarySurfaceLevel()` — the same
+  density-function surface estimate vanilla terrain generation itself uses
+  internally (added to this fork's `terrainnoise.c`) — per pixel, then
+  samples the biome *at that real height* (`biomeAtHeight()`) rather than
+  at a fixed y. Earlier versions of this tool sampled at a fixed sea-level
+  plane (y≈60), which is simpler but means mountain-only biomes (jagged
+  peaks, snowy slopes) never showed up, and cave biomes (dripstone caves,
+  lush caves, deep dark) bled into the visible surface wherever the
+  climate parameters happened to match underground — both were artifacts
+  of ignoring real elevation, not something cubiomes gets "wrong".
+- **Hillshading**: each pixel also samples its east/south neighbors'
+  height to get a local slope, and darkens/lightens the biome color
+  accordingly (`paintPixelShaded`) — this is what gives the map visible
+  relief/texture instead of flat biome-colored regions, at the cost of
+  computing `(tileWidth+1)×(tileHeight+1)` heights per tile instead of
+  one per pixel (still cheaper than the old approach once you include
+  what it replaced — see below).
 - **Spawn point**: computed with cubiomes' `getSpawn()`, which follows the
   same grass-block heuristic the game itself uses.
-- **Tile rendering only ever calls `genBiomes()`/`Range` for `blocksPerPixel`
-  == 1 or == 4** (`canUseGenBiomes()` in `wasm/seedmap_wasm.c`); every other
-  value goes through direct per-pixel `sampleBiomeNoise()` calls instead,
-  supersampled 3×3 with a majority vote once zoomed out far enough that a
-  lone sample would alias. Two separate cubiomes quirks make this
-  necessary: its generic sampler treats `Range.x/z` as already-in-quart
-  coordinates for *any* `scale` in `(1,4]`, not just `scale==4`, so e.g.
-  `scale=2` silently samples the wrong world position (this actually
-  shipped once — borders/terrain rendered fine at every zoom level except
-  the one where `blocksPerPixel` worked out to exactly 2, where everything
-  was quietly offset); and for `scale>4` it switches to a documented
-  fast/imprecise sampling mode meant for structure placement, which reads
-  as visible speckling if used for a biome map image.
+- **Performance**: direct per-pixel sampling (what both of the above use)
+  sidesteps a cubiomes quirk the previous fixed-height, `Range`/
+  `genBiomes()`-based renderer had to special-case around: its generic
+  sampler hard-codes assumptions about `Range.scale` that silently
+  misplace samples for some scale values, and uses a documented fast/
+  imprecise mode for others. Direct sampling is also meaningfully faster
+  at zoomed-out levels where that renderer had to supersample 3×3 per
+  pixel to avoid visible aliasing (profiled: ~1.1s/tile before, ~280ms/
+  tile now) — real height varies more smoothly across neighboring pixels
+  than the old fixed-height biome field did, so a single sample per pixel
+  holds up without supersampling. Native-resolution tiles are somewhat
+  slower than before (~230ms vs ~150ms) since real height estimation
+  costs more than the old flat sample, which is a reasonable trade given
+  it all runs off the main thread in the worker pool regardless.
 - **Tile rendering runs in a pool of Web Workers** (`docs/wasm/tile-worker.js`,
   sized to `navigator.hardwareConcurrency`, capped 2–6), not the main
   thread. A single tile call into `render_tile()` genuinely costs
