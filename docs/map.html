@@ -63,13 +63,40 @@
 
   #headerActions { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
 
-  #searchWrap { position: relative; flex: 1 1 140px; min-width: 100px; max-width: 220px; }
+  /* Collapsed to a round icon button by default; clicking it expands
+     #searchWrap to fill the header (see #appHeader.search-open below),
+     which hides the logo and "Return to spawn" button until the search
+     is closed again. */
+  #searchWrap { position: relative; display: flex; align-items: center; justify-content: flex-end; flex: 1 1 auto; max-width: 520px; }
+  #searchIconBtn {
+    width: 36px; height: 36px; flex: none; padding: 0;
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  #searchIconBtn:hover { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
+  #searchIconBtn svg { width: 16px; height: 16px; }
+  #searchWrap.expanded #searchIconBtn { display: none; }
+
+  #searchInputRow { display: none; position: relative; align-items: center; flex: 1 1 auto; }
+  #searchWrap.expanded #searchInputRow { display: flex; }
   #searchInput {
     width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    border-radius: 999px; padding: 8px 14px; font-size: 13px;
+    border-radius: 999px; padding: 8px 34px 8px 14px; font-size: 13px;
   }
   #searchInput::placeholder { color: var(--muted); }
   #searchInput:focus { outline: none; border-color: var(--brand-teal); }
+  #searchCloseBtn {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px; flex: none; padding: 0;
+    background: transparent; border: none; color: var(--muted);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  #searchCloseBtn:hover { background: #2a2e35; color: #fff; }
+  #searchCloseBtn svg { width: 12px; height: 12px; }
+
+  #appHeader.search-open #brand,
+  #appHeader.search-open #returnToSpawnBtn { display: none; }
+
   #searchResults {
     position: absolute; top: calc(100% + 6px); left: 0; right: 0;
     background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
@@ -254,7 +281,20 @@
     </div>
     <div id="headerActions">
       <div id="searchWrap">
-        <input id="searchInput" type="text" placeholder="Search borders & shops…" autocomplete="off">
+        <button id="searchIconBtn" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div id="searchInputRow">
+          <input id="searchInput" type="text" placeholder="Search borders & shops…" autocomplete="off">
+          <button id="searchCloseBtn" aria-label="Close search">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
         <div id="searchResults"></div>
       </div>
       <button id="returnToSpawnBtn">
@@ -938,10 +978,32 @@ document.getElementById('shopExport').addEventListener('click', exportShops);
 // from the live `borders`/`shops` arrays on every keystroke rather than
 // cached, since both can change at any time while editing.
 const DETAIL_ZOOM = 13;
+const appHeaderEl = document.getElementById('appHeader');
+const searchWrapEl = document.getElementById('searchWrap');
+const searchIconBtn = document.getElementById('searchIconBtn');
+const searchCloseBtn = document.getElementById('searchCloseBtn');
 const searchInput = document.getElementById('searchInput');
 const searchResultsEl = document.getElementById('searchResults');
 let currentResults = [];
 let searchActiveIndex = -1;
+
+// Collapsed to just the icon button by default. Expanding it takes over
+// the header -- the logo and "Return to spawn" button hide (see
+// #appHeader.search-open in the CSS) so the search box has room to grow.
+function openSearch() {
+  searchWrapEl.classList.add('expanded');
+  appHeaderEl.classList.add('search-open');
+  searchInput.focus();
+}
+function closeSearch() {
+  searchWrapEl.classList.remove('expanded');
+  appHeaderEl.classList.remove('search-open');
+  searchInput.value = '';
+  closeSearchResults();
+  searchInput.blur();
+}
+searchIconBtn.addEventListener('click', openSearch);
+searchCloseBtn.addEventListener('click', closeSearch);
 
 function buildSearchIndex() {
   const idx = [];
@@ -997,9 +1059,7 @@ function selectSearchResult(i) {
   } else {
     map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM);
   }
-  searchInput.value = r.label;
-  closeSearchResults();
-  searchInput.blur();
+  closeSearch();
 }
 
 searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
@@ -1009,10 +1069,10 @@ searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowDown') { e.preventDefault(); moveSearchActive(1); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); moveSearchActive(-1); }
   else if (e.key === 'Enter') { e.preventDefault(); if (searchActiveIndex >= 0) selectSearchResult(searchActiveIndex); }
-  else if (e.key === 'Escape') { closeSearchResults(); searchInput.blur(); }
+  else if (e.key === 'Escape') { closeSearch(); }
 });
 document.addEventListener('click', (e) => {
-  if (!document.getElementById('searchWrap').contains(e.target)) closeSearchResults();
+  if (searchWrapEl.classList.contains('expanded') && !searchWrapEl.contains(e.target)) closeSearch();
 });
 
 loadBorders();
