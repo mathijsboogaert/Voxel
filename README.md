@@ -95,6 +95,29 @@ backend — editing means redrawing locally and re-exporting/committing;
 see "Notes / limitations" below for what a real shared-editing backend
 would need.
 
+**Placing shops**: the "Place shop" tool drops a small pixel-art icon
+(`docs/assets/shop-icon.png`) at a single click (no multi-point line like
+borders), snapped to the same grid, and immediately opens an editor to
+name it. Unlike a border's permanent label, a shop's name is hidden until
+someone taps the icon — the editor on `map.html` (tap = edit), a plain
+popup with just the name on `docs/index.html` (tap = view, no editing).
+Clicking "Place shop" and "Draw border" are mutually exclusive — turning
+one on turns the other off. Shops autosave to `localStorage` the same way
+borders do, and **`docs/shops.json`** is their checked-in source of truth;
+export it with **"Export shops.json"** and commit it the same way as
+`borders.json`. The icon is rendered with `image-rendering: pixelated`
+(plus the `crisp-edges` fallback) so its edges stay hard at any zoom
+instead of being smoothed/blurred like a photo.
+
+**Search**: the header search box (both pages) matches labeled borders
+and shops by substring as you type, and zooms to whichever result you
+pick — `fitBounds()` on the border's shape for a border, or `setView()`
+at a fixed close-up zoom (`DETAIL_ZOOM = 13`) for a shop. The dropdown
+supports arrow-key navigation and Enter to select, and closes on Escape
+or a click outside it. It's rebuilt from the live `borders`/`shops`
+arrays on every keystroke rather than cached, since both can change at
+any time while editing on `map.html`.
+
 If you change `wasm/seedmap_wasm.c` (or re-vendor cubiomes), rebuild with:
 
 ```bash
@@ -219,11 +242,11 @@ different seed or radius doesn't touch any other seed's output.
 - The live map has no legend — hover a spot to see that biome's name. The
   static image still shows a legend with exact percentages for its fixed
   region.
-- **Borders have no real backend yet**: `docs/borders.json` is a static file
-  that ships with the site, so anyone who opens it can *see* the borders,
-  but nobody (including you, once hosted) can edit them live — publishing a
-  change means re-exporting and committing. Making it "everyone can see,
-  only I can edit" *live* needs a real backend that holds a secret
+- **Borders and shops have no real backend yet**: `docs/borders.json` and
+  `docs/shops.json` are static files that ship with the site, so anyone who
+  opens it can *see* them, but nobody (including you, once hosted) can edit
+  them live — publishing a change means re-exporting and committing. Making
+  it "everyone can see, only I can edit" *live* needs a real backend that holds a secret
   server-side (a password or token checked before accepting writes) —
   putting that secret in this page's JavaScript wouldn't work, since a
   static site's source is fully visible to anyone who opens dev tools.

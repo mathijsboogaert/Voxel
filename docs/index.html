@@ -42,9 +42,9 @@
     border-bottom: 1px solid var(--border);
     z-index: 1100;
   }
-  #brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  #brand { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; min-width: 0; }
   #brandLogo { height: 40px; width: 40px; flex: none; }
-  #brandText { display: flex; flex-direction: column; line-height: 1.1; }
+  #brandText { display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap; overflow: hidden; }
   #brandName {
     font-family: "Space Grotesk", sans-serif;
     font-weight: 700;
@@ -61,6 +61,27 @@
     color: var(--brand-teal-light);
   }
 
+  #headerActions { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
+
+  #searchWrap { position: relative; flex: 1 1 140px; min-width: 100px; max-width: 220px; }
+  #searchInput {
+    width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    border-radius: 999px; padding: 8px 14px; font-size: 13px;
+  }
+  #searchInput::placeholder { color: var(--muted); }
+  #searchInput:focus { outline: none; border-color: var(--brand-teal); }
+  #searchResults {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    max-height: 280px; overflow-y: auto; display: none; z-index: 1300;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  #searchResults.open { display: block; }
+  .search-result { padding: 8px 12px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .search-result .result-icon { width: 14px; height: 14px; flex: none; border-radius: 3px; }
+  .search-result:hover, .search-result.active { background: #2a2e35; }
+  .search-empty { padding: 10px 12px; font-size: 12.5px; color: var(--muted); }
+
   #returnToSpawnBtn {
     display: flex; align-items: center; gap: 8px; flex: none;
     background: var(--panel); border: 1px solid var(--border); color: var(--text);
@@ -74,6 +95,27 @@
   #map { position: absolute; inset: 0; background: #05060a; }
   .leaflet-container { background: #05060a; }
   .biome-tile { image-rendering: pixelated; }
+
+  /* Pixel art shop icon -- nearest-neighbor scaling keeps its edges crisp
+     instead of letting the browser smooth/blur it like a photo. */
+  .shop-marker-icon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+  .shop-popup .leaflet-popup-content-wrapper {
+    background: rgba(20,22,26,0.92);
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .shop-popup .leaflet-popup-content {
+    margin: 6px 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  }
+  .shop-popup .leaflet-popup-tip { background: rgba(20,22,26,0.92); }
 
   /* ---- Footer --------------------------------------------------------- */
   #appFooter {
@@ -126,13 +168,19 @@
         <span id="brandSubtitle">World map</span>
       </div>
     </div>
-    <button id="returnToSpawnBtn">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C8 2 5 5.2 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.8-3-7-7-7z" fill="#ff4d4f"/>
-        <circle cx="12" cy="9" r="2.6" fill="#fff"/>
-      </svg>
-      Return to spawn
-    </button>
+    <div id="headerActions">
+      <div id="searchWrap">
+        <input id="searchInput" type="text" placeholder="Search borders & shops…" autocomplete="off">
+        <div id="searchResults"></div>
+      </div>
+      <button id="returnToSpawnBtn">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C8 2 5 5.2 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.8-3-7-7-7z" fill="#ff4d4f"/>
+          <circle cx="12" cy="9" r="2.6" fill="#fff"/>
+        </svg>
+        Return to spawn
+      </button>
+    </div>
   </header>
 
   <div id="mapArea">
@@ -340,6 +388,10 @@ map.on('mousemove', (e) => {
 });
 map.on('mouseout', () => { footerHoverEl.textContent = 'hover the map'; });
 
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 // --- Borders (read-only) ----------------------------------------------
 // Renders exactly what's in docs/borders.json -- no editing, no
 // localStorage. That file is the single source of truth both here and
@@ -348,10 +400,13 @@ function pointsToLatLngs(points) {
   return points.map((p) => worldToLatLng(p.x, p.z));
 }
 
+let borders = []; // [{label, color, layer}, ...] -- kept only for search
+
 function addBorderLayer(points, label, color) {
   const layer = L.polygon(pointsToLatLngs(points), {
     color, weight: 3, fillColor: color, fillOpacity: 0.25,
   }).addTo(map);
+  borders.push({ label, color, layer });
 
   if (!label) return;
   // getCenter() on a closed polygon is its area-weighted centroid, so
@@ -370,7 +425,118 @@ async function loadBorders() {
     for (const b of data) addBorderLayer(b.points, b.label || '', b.color || '#ff4d4f');
   } catch (e) { /* missing/unservable -- just show no borders */ }
 }
+
+// --- Shop points (read-only) --------------------------------------------
+// Renders docs/shops.json as small pixel-art icons. Unlike border names,
+// a shop's name is hidden until tapped -- clicking a marker opens its
+// (non-editable) popup via Leaflet's default marker-click behavior.
+const shopIcon = L.icon({
+  iconUrl: 'assets/shop-icon.png',
+  className: 'shop-marker-icon',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+  popupAnchor: [0, -16],
+});
+let shops = []; // [{x, z, label, marker}, ...]
+
+function addShopLayer(x, z, label) {
+  const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon }).addTo(map);
+  if (label) marker.bindPopup(escapeHtml(label), { closeButton: false, className: 'shop-popup' });
+  shops.push({ x, z, label, marker });
+}
+
+async function loadShops() {
+  try {
+    const res = await fetch('shops.json', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    for (const s of data) addShopLayer(s.x, s.z, s.label || '');
+  } catch (e) { /* missing/unservable -- just show no shops */ }
+}
+
+// --- Search ---------------------------------------------------------
+// Searches labeled borders and shops by substring match and zooms the map
+// to a close-up view of whichever result is picked.
+const DETAIL_ZOOM = 13;
+const searchInput = document.getElementById('searchInput');
+const searchResultsEl = document.getElementById('searchResults');
+let currentResults = [];
+let searchActiveIndex = -1;
+
+function buildSearchIndex() {
+  const idx = [];
+  for (const b of borders) if (b.label) idx.push({ type: 'border', label: b.label, color: b.color, ref: b });
+  for (const s of shops) if (s.label) idx.push({ type: 'shop', label: s.label, ref: s });
+  return idx;
+}
+
+function renderSearchResults(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) { closeSearchResults(); return; }
+
+  currentResults = buildSearchIndex()
+    .filter((r) => r.label.toLowerCase().includes(q))
+    .slice(0, 8);
+  searchActiveIndex = currentResults.length ? 0 : -1;
+
+  searchResultsEl.innerHTML = currentResults.length
+    ? currentResults.map((r, i) => {
+        const icon = r.type === 'border'
+          ? `<span class="result-icon" style="background:${r.color}"></span>`
+          : `<img class="result-icon shop-marker-icon" src="assets/shop-icon.png" alt="">`;
+        return `<div class="search-result${i === 0 ? ' active' : ''}" data-index="${i}">${icon}${escapeHtml(r.label)}</div>`;
+      }).join('')
+    : `<div class="search-empty">No matches</div>`;
+
+  searchResultsEl.querySelectorAll('.search-result').forEach((el) => {
+    el.addEventListener('click', () => selectSearchResult(Number(el.dataset.index)));
+  });
+  searchResultsEl.classList.add('open');
+}
+
+function closeSearchResults() {
+  searchResultsEl.classList.remove('open');
+  searchResultsEl.innerHTML = '';
+  currentResults = [];
+  searchActiveIndex = -1;
+}
+
+function moveSearchActive(delta) {
+  if (!currentResults.length) return;
+  searchActiveIndex = (searchActiveIndex + delta + currentResults.length) % currentResults.length;
+  searchResultsEl.querySelectorAll('.search-result').forEach((el, i) => {
+    el.classList.toggle('active', i === searchActiveIndex);
+  });
+}
+
+function selectSearchResult(i) {
+  const r = currentResults[i];
+  if (!r) return;
+  if (r.type === 'border') {
+    map.fitBounds(r.ref.layer.getBounds(), { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
+  } else {
+    map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM);
+  }
+  searchInput.value = r.label;
+  closeSearchResults();
+  searchInput.blur();
+}
+
+searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
+searchInput.addEventListener('focus', () => { if (searchInput.value) renderSearchResults(searchInput.value); });
+searchInput.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'ArrowDown') { e.preventDefault(); moveSearchActive(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); moveSearchActive(-1); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (searchActiveIndex >= 0) selectSearchResult(searchActiveIndex); }
+  else if (e.key === 'Escape') { closeSearchResults(); searchInput.blur(); }
+});
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('searchWrap').contains(e.target)) closeSearchResults();
+});
+
 loadBorders();
+loadShops();
 
 footerSeedEl.textContent = 'loading wasm…';
 createCubiomesModule().then((mod) => {
