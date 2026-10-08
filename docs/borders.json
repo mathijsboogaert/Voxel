@@ -31,7 +31,8 @@
       }
     ],
     "label": "Spawn Town",
-    "color": "#69db7c"
+    "color": "#69db7c",
+    "hideLabel": true
   },
   {
     "points": [
@@ -69,7 +70,8 @@
       }
     ],
     "label": "Kaja & Tyse",
-    "color": "#ffa94d"
+    "color": "#ffa94d",
+    "hideLabel": false
   },
   {
     "points": [
@@ -111,7 +113,8 @@
       }
     ],
     "label": "Daniel & Nout",
-    "color": "#748ffc"
+    "color": "#748ffc",
+    "hideLabel": false
   },
   {
     "points": [
@@ -165,7 +168,8 @@
       }
     ],
     "label": "Iris & Jay",
-    "color": "#38d9a9"
+    "color": "#38d9a9",
+    "hideLabel": false
   },
   {
     "points": [
@@ -211,7 +215,8 @@
       }
     ],
     "label": "Farren",
-    "color": "#ff4d4f"
+    "color": "#ff4d4f",
+    "hideLabel": false
   },
   {
     "points": [
@@ -245,7 +250,8 @@
       }
     ],
     "label": "Dexter",
-    "color": "#ffffff"
+    "color": "#ffffff",
+    "hideLabel": false
   },
   {
     "points": [
@@ -295,7 +301,8 @@
       }
     ],
     "label": "Angela",
-    "color": "#ff4d4f"
+    "color": "#ff4d4f",
+    "hideLabel": false
   },
   {
     "points": [
@@ -365,7 +372,8 @@
       }
     ],
     "label": "Michael",
-    "color": "#e599f7"
+    "color": "#e599f7",
+    "hideLabel": false
   },
   {
     "points": [
@@ -399,61 +407,7 @@
       }
     ],
     "label": "Nynke & David",
-    "color": "#ffa94d"
-  },
-  {
-    "points": [
-      {
-        "x": -140,
-        "z": 256
-      },
-      {
-        "x": -180,
-        "z": 188
-      },
-      {
-        "x": -148,
-        "z": 140
-      },
-      {
-        "x": -4,
-        "z": 128
-      },
-      {
-        "x": -8,
-        "z": 44
-      },
-      {
-        "x": 60,
-        "z": 68
-      },
-      {
-        "x": 116,
-        "z": 136
-      },
-      {
-        "x": 228,
-        "z": 176
-      },
-      {
-        "x": 236,
-        "z": 288
-      },
-      {
-        "x": 164,
-        "z": 320
-      },
-      {
-        "x": 40,
-        "z": 252
-      },
-      {
-        "x": -16,
-        "z": 280
-      }
-    ],
-    "label": "Shopping District",
-    "color": "#ffd43b",
-    "hideLabel": true
+    "color": "#ffa94d",
+    "hideLabel": false
   }
 ]
