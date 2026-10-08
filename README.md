@@ -47,9 +47,9 @@ what anyone else sees. If that residual exposure still bothers you, don't
 upload `map.html` (and the draw-tools bits of `borders.json` tooling) to
 the public repo at all; keep it as a separate local-only file.
 
-The page is a fixed header (logo + "VOXEL / World map" wordmark, zoom
-buttons) / map / footer (seed + Minecraft version + spawn on the left,
-live hover biome+coords on the right) layout. The logo is
+The page is a fixed header (logo + "VOXEL / World map" wordmark, "Return
+to spawn" button) / map / footer (seed + Minecraft version + spawn on the
+left, live hover biome+coords on the right) layout. The logo is
 `docs/assets/logo.png`, pre-processed (white background keyed to
 transparent, cropped) from the source art — accent colors in `map.html`'s
 `:root` (`--brand-teal`, `--brand-orange`, etc.) were sampled directly from
@@ -58,13 +58,15 @@ it, so re-theming means re-sampling if the logo changes.
 **Zoom is free and continuous** — scroll, pinch (touch/mobile), double-
 click, and keyboard all zoom smoothly (`zoomSnap: 0`), with
 `zoomAnimation: true` for an eased transition rather than an instant
-snap. "Overview" (z=9), "Normal" (z=10, the default), and "Detail" (z=12,
-native resolution) are quick-jump shortcuts, not the only reachable
-levels — that used to be the case: z=11 (`blocksPerPixel=2`) once hit a
-cubiomes coordinate bug that silently misaligned tiles from their real
-position, and the renderer at the time went through cubiomes'
-`Range`/`genBiomes` for every zoom level, so every in-between/fractional
-level was an unknown risk worth avoiding outright. Both of those are
+snap. The header's "Return to spawn" button is a quick-jump shortcut back
+to the spawn point at the default zoom (z=10); it doesn't restrict zoom in
+any way — every level, including fractional ones, is freely reachable.
+That wasn't always true: z=11 (`blocksPerPixel=2`) once hit a cubiomes
+coordinate bug that silently misaligned tiles from their real position,
+and the renderer at the time went through cubiomes' `Range`/`genBiomes`
+for every zoom level, so every in-between/fractional level was an unknown
+risk worth avoiding outright (zoom used to be locked to three preset
+buttons — Overview/Normal/Detail — for this reason). Both of those are
 gone now: the renderer was rewritten (see "Real terrain height" below)
 to sample real terrain height directly and no longer calls
 `Range`/`genBiomes` at all, so there's no scale-dependent path left for

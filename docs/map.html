@@ -61,14 +61,13 @@
     color: var(--brand-teal-light);
   }
 
-  #zoomButtons { display: flex; gap: 8px; flex: none; }
-  .zoom-level-btn {
+  #returnToSpawnBtn {
+    display: flex; align-items: center; gap: 8px; flex: none;
     background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+    border-radius: 999px; padding: 8px 16px 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer;
   }
-  .zoom-level-btn:hover { background: #2a2e35; }
-  .zoom-level-btn.active { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
-  .zoom-level-btn.active:hover { background: var(--brand-teal-light); }
+  #returnToSpawnBtn:hover { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
+  #returnToSpawnBtn svg { width: 15px; height: 15px; flex: none; }
 
   /* ---- Map area ------------------------------------------------------ */
   #mapArea { position: relative; flex: 1 1 auto; min-height: 0; }
@@ -184,7 +183,13 @@
         <span id="brandSubtitle">World map</span>
       </div>
     </div>
-    <div id="zoomButtons"></div>
+    <button id="returnToSpawnBtn">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C8 2 5 5.2 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.8-3-7-7-7z" fill="#ff4d4f"/>
+        <circle cx="12" cy="9" r="2.6" fill="#fff"/>
+      </svg>
+      Return to spawn
+    </button>
   </header>
 
   <div id="mapArea">
@@ -240,13 +245,7 @@ const TILE_SIZE = 256;
 // height directly (see wasm/seedmap_wasm.c) and no longer calls
 // Range/genBiomes at all, so there's no scale-dependent path left for
 // that bug to live in. Verified z=11 and fractional zooms (e.g. 10.5)
-// render correctly aligned. These three are now just quick-jump
-// shortcuts; scroll/pinch/double-click/keyboard zoom freely in between.
-const ALLOWED_ZOOMS = [
-  { zoom: 9, label: 'Overview' },
-  { zoom: 10, label: 'Normal' },
-  { zoom: 12, label: 'Detail' },
-];
+// render correctly aligned before re-enabling free zoom.
 const MIN_ZOOM = 0;
 const MAX_ZOOM = 16; // beyond NATIVE_ZOOM (12), Leaflet just upscales the last real tile
 const DEFAULT_ZOOM = 10;
@@ -302,20 +301,16 @@ const zoomBppEl = document.getElementById('zoomBpp');
 function updateZoomIndicator() {
   const z = map.getZoom();
   zoomBppEl.textContent = `${blocksPerPixel(z).toFixed(2)} blocks/px`;
-  document.querySelectorAll('.zoom-level-btn').forEach((btn) => {
-    btn.classList.toggle('active', Number(btn.dataset.zoom) === z);
-  });
 }
 map.on('zoom', updateZoomIndicator);
-
-const zoomButtonsEl = document.getElementById('zoomButtons');
-zoomButtonsEl.innerHTML = ALLOWED_ZOOMS.map((l) =>
-  `<button class="zoom-level-btn" data-zoom="${l.zoom}">${l.label}</button>`
-).join('');
-zoomButtonsEl.querySelectorAll('.zoom-level-btn').forEach((btn) => {
-  btn.addEventListener('click', () => map.setZoom(Number(btn.dataset.zoom)));
-});
 updateZoomIndicator();
+
+// Set once loadSeed() knows the real spawn point; falls back to world
+// origin if clicked before the seed has finished loading.
+let spawnLatLngForReturn = L.latLng(0, 0);
+document.getElementById('returnToSpawnBtn').addEventListener('click', () => {
+  map.setView(spawnLatLngForReturn, DEFAULT_ZOOM);
+});
 
 // --- Tile worker pool --------------------------------------------------
 // A single tile can take ~150ms (native resolution) to over 1s
@@ -402,6 +397,7 @@ function loadSeed(seedStr) {
     `<b>Seed</b> ${seedStr} &nbsp;·&nbsp; <b>Minecraft</b> ${mcVersion} &nbsp;·&nbsp; <b>Spawn</b> X ${spawnX}, Z ${spawnZ}`;
 
   const spawnLatLng = worldToLatLng(spawnX, spawnZ);
+  spawnLatLngForReturn = spawnLatLng;
   L.marker(spawnLatLng, {
     icon: L.divIcon({
       className: '',
