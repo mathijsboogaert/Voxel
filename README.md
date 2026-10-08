@@ -85,10 +85,11 @@ opens a small editor to name it and pick a color from the palette — the
 name is shown as a permanent label at the line's midpoint by default, and
 clicking either the line or its label reopens the editor (with a "Delete"
 option). Unchecking **"Show label on map"** in that editor keeps the name
-(still matched by search) but stops it from rendering, for a border where
-the label would otherwise sit on top of content you want visible — e.g.
-"Shopping District" has this off so its permanent label doesn't cover the
-shop icons placed inside it.
+(still matched by search) but stops it from rendering, and also drops the
+fill down to fully transparent, leaving just the outline — for a border
+where the label and tinted fill would otherwise sit on top of content you
+want visible. E.g. "Shopping District" has this off so its outline marks
+the area without covering the shop icons placed inside it.
 While drawing, borders autosave to the browser's `localStorage` (keyed by
 seed) as a convenience/backup — but that's local to your browser only and
 won't ship with the site. **`docs/borders.json`** is the real, checked-in
@@ -112,7 +113,11 @@ borders do, and **`docs/shops.json`** is their checked-in source of truth;
 export it with **"Export shops.json"** and commit it the same way as
 `borders.json`. The icon is rendered with `image-rendering: pixelated`
 (plus the `crisp-edges` fallback) so its edges stay hard at any zoom
-instead of being smoothed/blurred like a photo.
+instead of being smoothed/blurred like a photo. Shop icons only render
+once you've zoomed in past `SHOP_VISIBLE_MAX_BPP = 3` blocks/px — at the
+default zoom (4 blocks/px) and wider they'd just be fixed-size clutter
+sitting on top of biomes much larger than they are, so they stay hidden
+until zoomed in close enough to mean something.
 
 **Search**: the header search box (both pages) matches labeled borders
 and shops by substring as you type, and zooms to whichever result you

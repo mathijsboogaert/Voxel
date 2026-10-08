@@ -647,7 +647,10 @@ function updateLabelTooltip(border) {
 
 function addBorderLayer(points, label, color, hideLabel) {
   const layer = L.polygon(pointsToLatLngs(points), {
-    color, weight: 3, fillColor: color, fillOpacity: 0.25, className: 'border-line',
+    // A border with its label hidden shows only the outline -- the fill
+    // is what the label was mainly there to explain, so leaving it in
+    // would still visually claim the area and crowd out shop icons.
+    color, weight: 3, fillColor: color, fillOpacity: hideLabel ? 0 : 0.25, className: 'border-line',
   }).addTo(map);
   const border = { points, label, color, hideLabel: !!hideLabel, layer, labelTooltip: null };
   layer.on('click', (e) => { L.DomEvent.stopPropagation(e); openBorderEditor(border); });
@@ -706,8 +709,26 @@ const shopIcon = L.icon({
 });
 let shops = []; // [{x, z, label, marker}, ...]
 
+// Shop icons are a fixed screen size, so zoomed far enough out they'd
+// just be clutter sitting on top of biomes much larger than they are --
+// hide them past this many blocks/px and only show them once you've
+// zoomed in close enough for them to mean something.
+const SHOP_VISIBLE_MAX_BPP = 3;
+function shopsVisibleAtCurrentZoom() {
+  return blocksPerPixel(map.getZoom()) <= SHOP_VISIBLE_MAX_BPP;
+}
+function updateShopVisibility() {
+  const visible = shopsVisibleAtCurrentZoom();
+  for (const s of shops) {
+    if (visible) { if (!map.hasLayer(s.marker)) s.marker.addTo(map); }
+    else if (map.hasLayer(s.marker)) map.removeLayer(s.marker);
+  }
+}
+map.on('zoom', updateShopVisibility);
+
 function addShopLayer(x, z, label) {
-  const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon }).addTo(map);
+  const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon });
+  if (shopsVisibleAtCurrentZoom()) marker.addTo(map);
   const shop = { x, z, label, marker };
   marker.on('click', (e) => { L.DomEvent.stopPropagation(e); openShopEditor(shop); });
   shops.push(shop);
@@ -828,7 +849,7 @@ borderSaveBtn.addEventListener('click', () => {
   editingBorder.label = borderLabelInput.value.trim();
   editingBorder.hideLabel = !borderShowLabelInput.checked;
   editingBorder.color = editingColor;
-  editingBorder.layer.setStyle({ color: editingColor, fillColor: editingColor });
+  editingBorder.layer.setStyle({ color: editingColor, fillColor: editingColor, fillOpacity: editingBorder.hideLabel ? 0 : 0.25 });
   updateLabelTooltip(editingBorder);
   saveBorders();
   closeBorderEditor();

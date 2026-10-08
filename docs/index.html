@@ -444,7 +444,7 @@ let borders = []; // [{label, color, layer}, ...] -- kept only for search
 
 function addBorderLayer(points, label, color, hideLabel) {
   const layer = L.polygon(pointsToLatLngs(points), {
-    color, weight: 3, fillColor: color, fillOpacity: 0.25,
+    color, weight: 3, fillColor: color, fillOpacity: hideLabel ? 0 : 0.25,
   }).addTo(map);
   borders.push({ label, color, layer });
 
@@ -479,8 +479,26 @@ const shopIcon = L.icon({
 });
 let shops = []; // [{x, z, label, marker}, ...]
 
+// Shop icons are a fixed screen size, so zoomed far enough out they'd
+// just be clutter sitting on top of biomes much larger than they are --
+// hide them past this many blocks/px and only show them once you've
+// zoomed in close enough for them to mean something.
+const SHOP_VISIBLE_MAX_BPP = 3;
+function shopsVisibleAtCurrentZoom() {
+  return blocksPerPixel(map.getZoom()) <= SHOP_VISIBLE_MAX_BPP;
+}
+function updateShopVisibility() {
+  const visible = shopsVisibleAtCurrentZoom();
+  for (const s of shops) {
+    if (visible) { if (!map.hasLayer(s.marker)) s.marker.addTo(map); }
+    else if (map.hasLayer(s.marker)) map.removeLayer(s.marker);
+  }
+}
+map.on('zoom', updateShopVisibility);
+
 function addShopLayer(x, z, label) {
-  const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon }).addTo(map);
+  const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon });
+  if (shopsVisibleAtCurrentZoom()) marker.addTo(map);
   if (label) marker.bindPopup(escapeHtml(label), { closeButton: false, className: 'shop-popup' });
   shops.push({ x, z, label, marker });
 }
