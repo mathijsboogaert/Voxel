@@ -82,8 +82,13 @@ biome tiles are rendered at. Double-click, Enter, or the "Finish line"
 button ends the current line; Escape or "Undo point" discards/steps back;
 "Clear all" needs two clicks within 3 seconds to confirm. Finishing a line
 opens a small editor to name it and pick a color from the palette — the
-name is shown as a permanent label at the line's midpoint, and clicking
-either the line or its label reopens the editor (with a "Delete" option).
+name is shown as a permanent label at the line's midpoint by default, and
+clicking either the line or its label reopens the editor (with a "Delete"
+option). Unchecking **"Show label on map"** in that editor keeps the name
+(still matched by search) but stops it from rendering, for a border where
+the label would otherwise sit on top of content you want visible — e.g.
+"Shopping District" has this off so its permanent label doesn't cover the
+shop icons placed inside it.
 While drawing, borders autosave to the browser's `localStorage` (keyed by
 seed) as a convenience/backup — but that's local to your browser only and
 won't ship with the site. **`docs/borders.json`** is the real, checked-in

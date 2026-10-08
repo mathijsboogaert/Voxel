@@ -442,13 +442,13 @@ function pointsToLatLngs(points) {
 
 let borders = []; // [{label, color, layer}, ...] -- kept only for search
 
-function addBorderLayer(points, label, color) {
+function addBorderLayer(points, label, color, hideLabel) {
   const layer = L.polygon(pointsToLatLngs(points), {
     color, weight: 3, fillColor: color, fillOpacity: 0.25,
   }).addTo(map);
   borders.push({ label, color, layer });
 
-  if (!label) return;
+  if (!label || hideLabel) return;
   // getCenter() on a closed polygon is its area-weighted centroid, so
   // the label sits in the visual middle of the shape.
   L.tooltip({ permanent: true, direction: 'center', className: 'border-label' })
@@ -462,7 +462,7 @@ async function loadBorders() {
     const res = await fetch('borders.json', { cache: 'no-store' });
     if (!res.ok) return;
     const data = await res.json();
-    for (const b of data) addBorderLayer(b.points, b.label || '', b.color || '#ff4d4f');
+    for (const b of data) addBorderLayer(b.points, b.label || '', b.color || '#ff4d4f', b.hideLabel);
   } catch (e) { /* missing/unservable -- just show no borders */ }
 }
 

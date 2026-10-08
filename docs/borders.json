@@ -453,6 +453,7 @@
       }
     ],
     "label": "Shopping District",
-    "color": "#ffd43b"
+    "color": "#ffd43b",
+    "hideLabel": true
   }
 ]
