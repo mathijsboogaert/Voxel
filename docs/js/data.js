@@ -52,7 +52,7 @@ export function compute({ sessions, hourly, events, roster, meta }) {
 
   const players = {};
   const P = (n) => (players[n] ||= {
-    name: n, minutes: 0, sessions: 0, longestMin: 0, longestOn: '', lastEnd: '', online: false,
+    name: n, minutes: 0, sessions: 0, longestMin: 0, longestOn: '', lastEnd: '',
     byHour: new Array(24).fill(0), weekendMin: 0, nightMin: 0, earlyMin: 0, dayMin: {},
     deaths: 0, deathCauses: {}, chat: 0, adv: [],
   });
@@ -62,7 +62,6 @@ export function compute({ sessions, hourly, events, roster, meta }) {
     p.minutes += m; p.sessions += 1;
     if (m > p.longestMin) { p.longestMin = m; p.longestOn = s.start_local.slice(0, 10); }
     if (s.end_utc > p.lastEnd) p.lastEnd = s.end_utc;
-    if (s.still_online === 'yes') p.online = true;
   }
   for (const r of H) {
     const p = P(r.player), m = Number(r.minutes), hr = +r.hour;
@@ -180,7 +179,6 @@ export function compute({ sessions, hourly, events, roster, meta }) {
     changePct: p7a ? Math.round(((l7a - p7a) / p7a) * 100) : null,
     busiestHour: byHourAll.reduce((bi, v, i, a) => (v > a[bi] ? i : bi), 0),
     peakPlayers: peak, peakAt,
-    online: all.filter((p) => p.online).map((p) => p.name),
   };
 
   const board = (f) => all.map((p) => ({ name: p.name, value: f(p) })).filter((r) => r.value > 0)
@@ -205,8 +203,8 @@ export function compute({ sessions, hourly, events, roster, meta }) {
       advancements: board((p) => p.advPoints),
       chat: board((p) => p.chat),
     },
-    /** Players ordered for lists: online first, then most recently seen. */
-    roster_sorted: [...all].sort((a, c) => (c.online - a.online) || (a.lastEnd < c.lastEnd ? 1 : -1)),
+    /** Players ordered for lists: most recently seen first. */
+    roster_sorted: [...all].sort((a, c) => (a.lastEnd < c.lastEnd ? 1 : -1)),
     /** Challenges and goals, newest first, with how many players have each. */
     big: E.filter((e) => BIG.includes(e.type)).reverse()
       .map((e) => ({ type: e.type, player: e.player, name: e.detail, at: e.time_utc, earners: who[e.detail].size })),

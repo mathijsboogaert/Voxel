@@ -15,13 +15,13 @@ function render(st) {
   $('none').hidden = rows.length > 0;
   $('plist').replaceChildren(...rows.map((p) =>
     el('li', {}, el('a', { class: 'pcard', href: playerHref(p.name) },
-      el('span', { class: 'pface' }, faceEl(p.name, 'lg'), p.online ? el('span', { class: 'dot-online', title: 'Online now' }) : null),
+      el('span', { class: 'pface' }, faceEl(p.name, 'lg')),
       el('span', { class: 'pcard__body' },
         el('span', { class: 'pcard__top' },
           el('span', { class: 'pcard__name' }, `${p.rank}. ${p.name}`),
           el('span', { class: 'pcard__value' }, fmtHours(p.minutes / 60))),
         el('span', { class: 'pbar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(3, (p.minutes / max) * 100)}%` })),
-        el('span', { class: 'small' }, p.online ? 'Online now' : `Last seen ${relTime(p.lastEnd)}`))))));
+        el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`))))));
 }
 
 loadStats().then((st) => {

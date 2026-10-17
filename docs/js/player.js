@@ -45,12 +45,11 @@ function render(st, places) {
   const hero = el('section', { class: 'page-head' },
     el('p', {}, el('a', { class: 'back', href: url('players/') }, '← All players')),
     el('div', { class: 'phero' },
-      el('span', { class: 'pface' }, faceEl(p.name, 'xl'), p.online ? el('span', { class: 'dot-online', title: 'Online now' }) : null),
+      el('span', { class: 'pface' }, faceEl(p.name, 'xl')),
       el('div', { class: 'phero__who' },
         el('h1', {}, p.name),
         el('div', { class: 'status' },
-          p.online ? el('span', { class: 'tag tag--teal' }, 'Online now') : null,
-          el('span', { class: 'small' }, p.online ? '' : `Last seen ${relTime(p.lastEnd)}`)))),
+          el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`)))),
     p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'tag tag--orange' }, b))) : null);
 
   const cause = p.topCause ? `mostly ${p.topCause.toLowerCase()}` : null;

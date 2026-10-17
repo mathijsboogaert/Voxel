@@ -45,7 +45,6 @@
 .frieze svg { display: block; width: 100%; height: auto; }
 .hero .eyebrow { margin-bottom: var(--space-2); }
 .lede { font-size: 18px; line-height: 28px; margin-top: var(--space-3); max-width: 34ch; }
-.hero__status { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-4); }
 .faces { display: flex; }
 .faces .face { margin-right: -8px; }
 .faces .face:last-child { margin-right: 0; }
@@ -121,7 +120,6 @@
 .pcell { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; color: var(--ink); text-decoration: none; min-width: 0; }
 .pcell__name { font-size: 13px; line-height: 16px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pface { position: relative; display: block; }
-.dot-online { position: absolute; right: -5px; top: -5px; width: 14px; height: 14px; background: var(--teal); border: var(--stroke-2) solid var(--line); }
 .section-cta { margin-top: var(--space-4); }
 
 main > .wrap { padding-bottom: var(--space-6); }

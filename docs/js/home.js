@@ -13,22 +13,6 @@ async function getJSON(path, fallback) {
 
 $('[data-frieze]').append(pattern(['square', 'disc', 'leaf', 'square', 'cut@90', 'disc@180']));
 
-/* ---- Hero status -------------------------------------------------------------- */
-function renderHero(st) {
-  const box = $('#hero-status');
-  const on = st.overview.online;
-  box.replaceChildren();
-  if (on.length) {
-    box.append(
-      el('div', { class: 'faces' }, on.slice(0, 5).map((n) => faceEl(n, 'sm'))),
-      el('p', {}, el('strong', {}, `${on.length} online now`), el('span', { class: 'small' }, ' ' + on.slice(0, 3).join(', ') + (on.length > 3 ? '…' : ''))),
-    );
-  } else {
-    const last = st.roster_sorted[0];
-    box.append(el('p', {}, el('strong', {}, 'Quiet right now'), last ? el('span', { class: 'small' }, ` Last seen: ${last.name}, ${relTime(last.lastEnd)}`) : ''));
-  }
-}
-
 function renderUpdated(st) {
   const g = st.meta && st.meta.generated_at;
   $('#updated').textContent = g ? `Updated ${relTime(g)}. Numbers refresh from the server every hour.` : '';
@@ -190,7 +174,7 @@ function renderPlayers(st) {
   const list = st.roster_sorted;
   $('#players-grid').replaceChildren(...list.slice(0, 12).map((p) =>
     el('li', {}, el('a', { class: 'pcell', href: playerHref(p.name) },
-      el('span', { class: 'pface' }, faceEl(p.name, 'lg'), p.online ? el('span', { class: 'dot-online', title: 'Online now' }) : null),
+      el('span', { class: 'pface' }, faceEl(p.name, 'lg')),
       el('span', { class: 'pcell__name' }, p.name)))));
   $('#players-all').textContent = `All ${list.length} players`;
 }
@@ -223,7 +207,6 @@ function initPreview() {
 
 /* ---- Go ----------------------------------------------------------------------------- */
 async function render(st) {
-  renderHero(st);
   renderUpdated(st);
   renderStats(st);
   renderPlayers(st);
