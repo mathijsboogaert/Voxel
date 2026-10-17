@@ -71,7 +71,11 @@
     ],
     "label": "Kaja & Tyse",
     "color": "#ffa94d",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "Mathi_Craft",
+      "kayushka"
+    ]
   },
   {
     "points": [
@@ -114,7 +118,11 @@
     ],
     "label": "Daniel & Nout",
     "color": "#748ffc",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "Pantless_Hobo",
+      "Noot_Noot__"
+    ]
   },
   {
     "points": [
@@ -169,7 +177,11 @@
     ],
     "label": "Iris & Jay",
     "color": "#38d9a9",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "Cute_Iris",
+      "JayGoGamer"
+    ]
   },
   {
     "points": [
@@ -216,7 +228,10 @@
     ],
     "label": "Farren",
     "color": "#ff4d4f",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "_Farren"
+    ]
   },
   {
     "points": [
@@ -251,7 +266,10 @@
     ],
     "label": "Dexter",
     "color": "#ffffff",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "Roefus"
+    ]
   },
   {
     "points": [
@@ -302,7 +320,10 @@
     ],
     "label": "Angela",
     "color": "#ff4d4f",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "EmrysPendragon"
+    ]
   },
   {
     "points": [
@@ -373,7 +394,10 @@
     ],
     "label": "Michael",
     "color": "#e599f7",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "Detective_Mikey"
+    ]
   },
   {
     "points": [
@@ -408,7 +432,11 @@
     ],
     "label": "Nynke & David",
     "color": "#ffa94d",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "FriendOfTyse",
+      "chimmochi_"
+    ]
   },
   {
     "points": [
@@ -502,6 +530,43 @@
     ],
     "label": "Lucas",
     "color": "#ff4d4f",
-    "hideLabel": false
+    "hideLabel": false,
+    "owners": [
+      "EchoinSilence"
+    ]
+  },
+  {
+    "points": [
+      {
+        "x": -784,
+        "z": 708
+      },
+      {
+        "x": -828,
+        "z": 696
+      },
+      {
+        "x": -864,
+        "z": 740
+      },
+      {
+        "x": -860,
+        "z": 800
+      },
+      {
+        "x": -780,
+        "z": 828
+      },
+      {
+        "x": -748,
+        "z": 800
+      }
+    ],
+    "label": "Daniel",
+    "color": "#ffd43b",
+    "hideLabel": false,
+    "owners": [
+      "Pantless_Hobo"
+    ]
   }
 ]
