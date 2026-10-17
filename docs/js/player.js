@@ -1,7 +1,7 @@
 // One player's page: face, status, a few fun numbers, when they play, who they play with,
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
 import { loadStats } from './data.js';
-import { el, url, faceEl, playerHref, fmtInt, fmtHours, fmtMinutes, relTime, hourLabel } from './ui.js';
+import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, hourLabel } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const name = new URLSearchParams(location.search).get('name') || '';
@@ -53,11 +53,9 @@ function render(st, places) {
     p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'tag tag--orange' }, b))) : null);
 
   const cause = p.topCause ? `mostly ${p.topCause.toLowerCase()}` : null;
-  const tiles = el('div', { class: 'tiles' },
+  const tiles = el('div', { class: 'tiles tiles--2' },
     tile(fmtHours(p.hours), 'played', `#${p.rank} of ${Object.keys(st.players).length}`),
-    tile(fmtInt(p.sessions), 'sessions', `longest ${fmtMinutes(p.longestMin)}`),
-    tile(fmtInt(p.deaths), p.deaths === 1 ? 'death' : 'deaths', cause),
-    tile(fmtInt(p.adv.length), 'advancements', p.rarest ? `rarest: ${p.rarest.name}` : null));
+    tile(fmtInt(p.deaths), p.deaths === 1 ? 'death' : 'deaths', cause));
 
   const sections = [];
 
@@ -72,13 +70,21 @@ function render(st, places) {
       el('p', { class: 'small', style: 'margin-top:8px' }, `Usually around ${hourLabel(p.favHour)}, Dutch time.`)));
   }
 
-  // Plays with
+  // Plays with: bars scaled to the longest stretch together
   if (p.buddies.length) {
+    const top = p.buddies[0].hours || 1;
+    const withOthers = Math.round(p.togetherShare * 100);
     sections.push(el('div', { class: 'card' },
       el('p', { class: 'label' }, 'Plays with'),
-      el('ul', { class: 'arows', style: 'margin-top:8px' }, p.buddies.map((b) =>
+      el('div', { class: 'split', role: 'img', 'aria-label': `${withOthers}% of their time with others, ${100 - withOthers}% on their own` },
+        el('i', { style: `width:${withOthers}%` })),
+      el('p', { class: 'small split__caption' }, `${withOthers}% with others, ${100 - withOthers}% on their own`),
+      el('ul', { class: 'arows' }, p.buddies.map((b) =>
         el('li', {}, el('a', { class: 'brow', href: playerHref(b.name) }, faceEl(b.name),
-          el('span', {}, el('span', { class: 'brow__name' }, b.name), el('span', { class: 'small', style: 'display:block' }, `${b.hours} h together, ${b.share}% of their time`))))))));
+          el('span', { class: 'pcard__body' },
+            el('span', { class: 'pcard__top' }, el('span', { class: 'pcard__name' }, b.name), el('span', { class: 'pcard__value' }, fmtHours(b.hours))),
+            el('span', { class: 'pbar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(4, (b.hours / top) * 100)}%` })),
+            el('span', { class: 'small' }, `${b.share}% of their time`))))))));
   }
 
   // Places: borders owned by this player, and their shops
@@ -92,12 +98,16 @@ function render(st, places) {
           el('a', { href: pl.href }, 'On the map'))))));
   }
 
-  // Recent achievements
+  // Advancements: the count lives here, with the rarest and the latest few
   const recent = [...p.adv].sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 5);
   if (recent.length) {
     sections.push(el('div', { class: 'card' },
-      el('p', { class: 'label' }, 'Latest achievements'),
-      el('ul', { class: 'arows', style: 'margin-top:8px' }, recent.map((a) =>
+      el('p', { class: 'label' }, 'Advancements'),
+      el('div', { class: 'adv-head' },
+        el('span', { class: 'num' }, fmtInt(p.adv.length)),
+        el('span', { class: 'small' }, p.rarest ? `earned. Rarest: ${p.rarest.name}` : 'earned')),
+      el('p', { class: 'label', style: 'margin-top:16px' }, 'Latest'),
+      el('ul', { class: 'arows', style: 'margin-top:4px' }, recent.map((a) =>
         el('li', { class: 'arow' },
           el('div', { class: 'arow__name' }, a.name, el('p', { class: 'small' }, a.earners === 1 ? 'Only they have it' : `${a.earners} players have it`)),
           el('span', { class: 'small' }, relTime(a.at)))))));

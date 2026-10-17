@@ -163,8 +163,13 @@
 .plist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: minmax(0, 1fr); }
 .pcard { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--paper-sunken); border: var(--stroke-2) solid var(--line); color: var(--ink); text-decoration: none; min-height: 88px; }
 .pcard:hover { background: var(--paper); }
-.pcard__body { min-width: 0; }
+.pcard__body { flex: 1; min-width: 0; display: block; }
+.pcard__top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
 .pcard__name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcard__value { font-weight: 600; font-variant-numeric: tabular-nums; flex: none; }
+.pbar { display: block; height: 8px; margin: 6px 0; background: var(--paper); border: var(--stroke-1) solid var(--line-soft); }
+.pbar > i { display: block; height: 100%; background: var(--teal); }
+.pcard__body .small { display: block; }
 .empty { padding: var(--space-5) 0; color: var(--ink-muted); }
 
 .back { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
@@ -193,3 +198,12 @@
   .pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); align-items: start; }
   .pgrid > .card { margin-top: 0 !important; }
 }
+
+/* Player page extras: two-up tiles, the alone/together split, the advancements header. */
+.tiles--2 { grid-template-columns: repeat(2, 1fr); }
+.split { display: block; height: 12px; margin-top: var(--space-2); background: var(--paper); border: var(--stroke-2) solid var(--line); }
+.split > i { display: block; height: 100%; background: var(--teal); }
+.split__caption { margin-top: 6px; margin-bottom: var(--space-2); }
+.brow { grid-template-columns: 40px minmax(0, 1fr); }
+.adv-head { display: flex; align-items: baseline; gap: var(--space-2); margin-top: var(--space-2); flex-wrap: wrap; }
+.adv-head .num { font-size: 34px; line-height: 38px; }

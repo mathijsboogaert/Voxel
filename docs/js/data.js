@@ -107,9 +107,10 @@ export function compute({ sessions, hourly, events, roster, meta }) {
     const total = (iv[p.name] || []).reduce((t, x) => t + x[1] - x[0], 0);
     const ov = Object.entries(overlap[p.name] || {}).sort((a, b) => b[1] - a[1]);
     p.partners = ov.filter(([, ms]) => ms >= 18e5).length; // 30+ min together
-    p.buddies = ov.slice(0, 3).map(([name, ms]) => ({ name, hours: r1(ms / 36e5), share: total ? Math.round((ms / total) * 100) : 0 }));
+    p.buddies = ov.filter(([, ms]) => ms >= 18e5).slice(0, 5).map(([name, ms]) => ({ name, hours: r1(ms / 36e5), share: total ? Math.round((ms / total) * 100) : 0 }));
     p.buddy = p.buddies[0] || null;
     p.soloShare = total ? (soloMs[p.name] || 0) / total : 0;
+    p.togetherShare = total ? 1 - p.soloShare : 0;
     // Longest run of days with 10+ minutes, and how many such days.
     const days = Object.entries(p.dayMin).filter(([, m]) => m >= 10).map(([d]) => dayMs(d)).sort((a, b) => a - b);
     let run = days.length ? 1 : 0, top = run;
