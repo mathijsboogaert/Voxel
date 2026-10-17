@@ -70,7 +70,7 @@ and "How Did We Get Here?" 10. Each advancement counts once per player. The log 
 points up for the homepage leaderboard (the Advancements tab) and the Advancements card on each player page. The numbers live in one place,
 `ADV_POINTS` and `POINTS_BY_NAME` at the top of `docs/js/data.js`; add a name to `POINTS_BY_NAME` to give any single advancement its own value.
 
-With the Advancements tab open, the homepage also draws the **advancement race**: each of the top five players' running point total, one step per advancement, from launch to the latest data. The five lines differ in colour and pattern, with a legend underneath.
+With the Advancements tab open, the homepage also draws the **advancement race**: each of the top five players' running point total, one step per advancement, from launch to the latest data. The five lines differ in colour and pattern, with a legend underneath. Each player page has the same graph in its Advancements card: that player's line is the bold rust one, drawn against the four leaders (the chart code is `docs/js/race.js`).
 
 ## News
 

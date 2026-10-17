@@ -1,6 +1,7 @@
 // One player's page: face, status, a few fun numbers, when they play, who they play with,
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
 import { loadStats } from './data.js';
+import { raceBlock } from './race.js';
 import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, hourLabel } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
@@ -106,7 +107,8 @@ function render(st, places) {
         el('span', { class: 'num' }, fmtInt(p.advPoints)),
         el('span', { class: 'small' }, `points from ${p.adv.length} ${p.adv.length === 1 ? 'advancement' : 'advancements'}`)),
       p.rarest ? el('p', { class: 'small', style: 'margin-top:4px' }, `Rarest: ${p.rarest.name}`) : null,
-      el('p', { class: 'label', style: 'margin-top:16px' }, 'Latest'),
+      ...raceBlock(st, { focus: p.name, heading: 'Compared with the leaders' }),
+      el('p', { class: 'label', style: 'margin-top:24px' }, 'Latest'),
       el('ul', { class: 'arows', style: 'margin-top:4px' }, recent.map((a) =>
         el('li', { class: 'arow' },
           el('div', { class: 'arow__name' }, a.name, el('p', { class: 'small' }, a.earners === 1 ? 'Only they have it' : `${a.earners} players have it`)),

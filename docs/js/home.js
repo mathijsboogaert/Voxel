@@ -2,6 +2,7 @@
 import { loadStats } from './data.js';
 import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, fmtDay, hourLabel } from './ui.js';
 import { pattern } from './pattern.js';
+import { raceBlock } from './race.js';
 
 const $ = (sel) => document.querySelector(sel);
 const DAY = 864e5;
@@ -140,68 +141,6 @@ let boardKey = 'playtime';
 
 function tile(num, label, extra) {
   return el('div', { class: 'card tile' }, el('span', { class: 'num' }, num), el('p', { class: 'small' }, label), extra);
-}
-
-/* The advancement race: running points per player, a step at every advancement. Five players, told
-   apart by colour and by line pattern (so it doesn't rely on hue alone), with a legend underneath. */
-const SVG_NS = 'http://www.w3.org/2000/svg';
-const sv = (tag, attrs = {}) => { const n = document.createElementNS(SVG_NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); return n; };
-const RACE_STYLES = [
-  { color: 'var(--teal-text)', dash: '' },
-  { color: 'var(--rust)', dash: '' },
-  { color: 'var(--ink)', dash: '' },
-  { color: 'var(--teal)', dash: '8 4' },
-  { color: 'var(--ink-muted)', dash: '2 4' },
-];
-const dayLabel = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
-
-function niceStep(max) {
-  const raw = max / 3, pow = 10 ** Math.floor(Math.log10(raw));
-  return [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw);
-}
-
-function raceChart(st) {
-  const { start, end, series } = st.race;
-  if (!series.length) return null;
-  const W = 320, H = 200, L = 34, R = 8, T = 10, B = 26;
-  const pw = W - L - R, ph = H - T - B;
-  const span = Math.max(end - start, DAY);
-  const step = niceStep(series[0].total), yMax = Math.ceil(series[0].total / step) * step;
-  const x = (t) => (L + ((Math.min(t, end) - start) / span) * pw).toFixed(1);
-  const y = (v) => (T + ph - (v / yMax) * ph).toFixed(1);
-
-  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, class: 'race', role: 'img',
-    'aria-label': `Advancement points over time. ${series.map((s) => `${s.name} ${s.total}`).join(', ')}.` });
-  for (let v = 0; v <= yMax; v += step) {
-    svg.append(sv('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'race__grid' }));
-    const t = sv('text', { x: L - 6, y: Number(y(v)) + 4, 'text-anchor': 'end' }); t.textContent = v; svg.append(t);
-  }
-  const every = (span > 12 * DAY ? 7 : 2) * DAY;
-  for (let t = start; t <= end; t += every) {
-    const label = sv('text', { x: x(t), y: H - 8, 'text-anchor': t === start ? 'start' : 'middle' });
-    label.textContent = dayLabel.format(t); svg.append(label);
-  }
-  // Lowest-ranked first, so the leader is drawn on top.
-  series.map((s, i) => ({ s, i })).reverse().forEach(({ s, i }) => {
-    let d = `M${x(start)} ${y(0)}`;
-    for (const p of s.steps) d += ` H${x(p.t)} V${y(p.v)}`;
-    d += ` H${x(end)}`;
-    svg.append(sv('path', { d, fill: 'none', style: `stroke:${RACE_STYLES[i].color};stroke-width:2.5;stroke-linejoin:miter;stroke-dasharray:${RACE_STYLES[i].dash || 'none'}` }));
-  });
-  return svg;
-}
-
-function raceBlock(st) {
-  const chart = raceChart(st);
-  if (!chart) return [];
-  const sample = (i) => { const s = sv('svg', { viewBox: '0 0 28 8', class: 'race-swatch', 'aria-hidden': 'true' });
-    s.append(sv('path', { d: 'M0 4H28', style: `stroke:${RACE_STYLES[i].color};stroke-width:3;stroke-dasharray:${RACE_STYLES[i].dash || 'none'}` })); return s; };
-  return [
-    el('p', { class: 'label', style: 'margin-top:24px' }, 'Advancement race'),
-    chart,
-    el('ul', { class: 'race-legend' }, st.race.series.map((s, i) =>
-      el('li', {}, sample(i), faceEl(s.name, 'sm'), el('span', { class: 'race-legend__name' }, s.name), el('span', { class: 'small' }, `${fmtInt(s.total)} pts`)))),
-  ];
 }
 
 function renderBoard(st, holder) {

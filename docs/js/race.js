@@ -1,0 +1,84 @@
+// The advancement race: running advancement points over time, a step at every advancement.
+// Used on the homepage (the top five) and on player pages (this player highlighted against the leaders).
+// Lines differ in colour and in pattern so they don't rely on hue alone.
+import { el, faceEl, fmtInt } from './ui.js';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const DAY = 864e5;
+const sv = (tag, attrs = {}) => { const n = document.createElementNS(SVG_NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); return n; };
+const dayLabel = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
+
+const STYLES = [
+  { color: 'var(--teal-text)', dash: '', width: 2.5 },
+  { color: 'var(--rust)', dash: '', width: 2.5 },
+  { color: 'var(--ink)', dash: '', width: 2.5 },
+  { color: 'var(--teal)', dash: '8 4', width: 2.5 },
+  { color: 'var(--ink-muted)', dash: '2 4', width: 2.5 },
+];
+// On a player page their own line is the bold rust one; the leaders use the other four styles.
+const FOCUS = { color: 'var(--rust)', dash: '', width: 4.5 };
+const OTHERS = [STYLES[0], STYLES[2], STYLES[3], STYLES[4]];
+
+/** The lines to draw: the top five, or this player plus the top four others. */
+export function raceSeries(st, focus) {
+  const ranked = Object.values(st.players).filter((p) => p.advPoints > 0).sort((a, b) => b.advPoints - a.advPoints);
+  const make = (p, style) => ({ name: p.name, total: p.advPoints, steps: p.advSteps, style });
+  if (!focus) return ranked.slice(0, 5).map((p, i) => make(p, STYLES[i]));
+  const me = st.players[focus];
+  if (!me || !me.advPoints) return [];
+  return [make(me, FOCUS), ...ranked.filter((p) => p.name !== focus).slice(0, 4).map((p, i) => make(p, OTHERS[i]))];
+}
+
+function niceStep(max) {
+  const raw = max / 3, pow = 10 ** Math.floor(Math.log10(raw));
+  return [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw);
+}
+
+function raceChart(st, series) {
+  const { start, end } = st.race;
+  const top = Math.max(...series.map((s) => s.total));
+  const W = 320, H = 200, L = 34, R = 8, T = 10, B = 26;
+  const pw = W - L - R, ph = H - T - B;
+  const span = Math.max(end - start, DAY);
+  const step = niceStep(top), yMax = Math.ceil(top / step) * step;
+  const x = (t) => (L + ((Math.min(t, end) - start) / span) * pw).toFixed(1);
+  const y = (v) => (T + ph - (v / yMax) * ph).toFixed(1);
+
+  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, class: 'race', role: 'img',
+    'aria-label': `Advancement points over time. ${series.map((s) => `${s.name} ${s.total}`).join(', ')}.` });
+  for (let v = 0; v <= yMax; v += step) {
+    svg.append(sv('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'race__grid' }));
+    const t = sv('text', { x: L - 6, y: Number(y(v)) + 4, 'text-anchor': 'end' }); t.textContent = v; svg.append(t);
+  }
+  const every = (span > 12 * DAY ? 7 : 2) * DAY;
+  for (let t = start; t <= end; t += every) {
+    const label = sv('text', { x: x(t), y: H - 8, 'text-anchor': t === start ? 'start' : 'middle' });
+    label.textContent = dayLabel.format(t); svg.append(label);
+  }
+  // First series is the one that matters (the leader, or the player in focus), so it is drawn last, on top.
+  [...series].reverse().forEach((s) => {
+    let d = `M${x(start)} ${y(0)}`;
+    for (const p of s.steps) d += ` H${x(p.t)} V${y(p.v)}`;
+    d += ` H${x(end)}`;
+    svg.append(sv('path', { d, fill: 'none', style: `stroke:${s.style.color};stroke-width:${s.style.width};stroke-linejoin:miter;stroke-dasharray:${s.style.dash || 'none'}` }));
+  });
+  return svg;
+}
+
+const swatch = (style) => {
+  const s = sv('svg', { viewBox: '0 0 28 8', class: 'race-swatch', 'aria-hidden': 'true' });
+  s.append(sv('path', { d: 'M0 4H28', style: `stroke:${style.color};stroke-width:${Math.min(style.width, 4) + 0.5};stroke-dasharray:${style.dash || 'none'}` }));
+  return s;
+};
+
+/** Heading, chart and legend as an array of elements. focus = a player name for the player-page version. */
+export function raceBlock(st, { focus = null, heading = 'Advancement race' } = {}) {
+  const series = raceSeries(st, focus);
+  if (!series.length) return [];
+  return [
+    el('p', { class: 'label', style: 'margin-top:24px' }, heading),
+    raceChart(st, series),
+    el('ul', { class: 'race-legend' }, series.map((s) =>
+      el('li', {}, swatch(s.style), faceEl(s.name, 'sm'), el('span', { class: 'race-legend__name' }, s.name), el('span', { class: 'small' }, `${fmtInt(s.total)} pts`)))),
+  ];
+}
