@@ -70,7 +70,7 @@ async function exploredLayer() {
           const size = TILE / f;                    // source pixels shown in this tile
           if (f <= 1) ctx.drawImage(img, 0, 0);
           else {
-            const ox = (coords.x % f) * size, oy = (coords.y % f) * size;
+            const ox = (((coords.x % f) + f) % f) * size, oy = (((coords.y % f) + f) % f) * size;   // JS % is negative for negative tiles
             ctx.drawImage(img, ox, oy, size, size, 0, 0, TILE, TILE);
           }
         }
