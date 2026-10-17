@@ -126,6 +126,29 @@ A player page shows their base and shop when the map data says who owns them. In
 Export `borders.json` and `shops.json` and commit them as usual. A new player appears on the site automatically at the next stats
 update, with a letter tile until their head has been fetched.
 
+## The explored world (real map tiles)
+
+The map shows the real, built world, drawn from the server's region files, not the seed. Everything
+that has been explored is on the map; builds are readable close to where people live.
+
+To update it, download a new world backup (the `.tar` from the panel) and run:
+
+```
+python3 tools/world/render_world.py ~/Downloads/archive-….tar
+```
+
+It reads the regions straight out of the tar (nothing is unpacked), draws a top-down view with shading,
+biome tints and water depth, and writes `docs/tiles/` (WebP tiles plus `manifest.json`). Commit the
+tiles and push. Only changed regions are redone; the cache lives in `~/.cache/voxel-world`.
+
+- Full detail (1 and 2 blocks per pixel) is drawn around every border, shop and the spawn, `--margin`
+  blocks beyond them (default 768). The rest of the explored world is drawn from 4 blocks per pixel and
+  out, and the map scales those tiles up when you zoom in. `--detail all` renders everything at full
+  detail (about six times the size, roughly 125 MB).
+- Block colours are in `tools/world/colors.json` (see `tools/world/NOTICE.md` for where they come from).
+  Blocks it doesn't know are drawn grey and listed at the end of the run.
+- Each update rewrites the tiles that changed, which grows the repo history, so don't render every day.
+
 ## The map
 
 Drag, scroll, pinch or double-tap to zoom smoothly (`zoomSnap: 0`). The Map page has search, a spawn button, zoom buttons and a readout of the

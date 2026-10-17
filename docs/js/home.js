@@ -204,8 +204,8 @@ function initPreview() {
     started = true;
     try {
       const { createWorldMap } = await import('./map-core.js');
-      const { map, tiles } = await createWorldMap(holder, { interactive: false, labels: false, center: { x: 40, z: 120 }, zoom: 10.5, workers: 2, shopSize: 24 });
-      tiles.once('load', () => { loading.hidden = true; });
+      const { map, tiles } = await createWorldMap(holder, { interactive: false, labels: false, center: { x: 40, z: 120 }, zoom: 10.5, shopSize: 24 });
+      if (tiles) tiles.once('load', () => { loading.hidden = true; }); else loading.hidden = true;
       setTimeout(() => { loading.hidden = true; }, 8000);
       new ResizeObserver(() => map.invalidateSize()).observe(holder);
     } catch (e) {

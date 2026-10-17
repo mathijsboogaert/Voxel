@@ -1,8 +1,8 @@
 // The world map, shared by the homepage preview and the full map page:
-// Leaflet on top of the cubiomes WASM biome renderer (tiles are drawn in Web Workers),
+// Leaflet showing the explored world from pre-rendered tiles (tools/world/render_world.py),
 // plus the borders, shops and spawn marker from the site's JSON files.
 // Leaflet itself is loaded by the page as a global (window.L).
-import { url, el, SEED, SPAWN } from './ui.js';
+import { url, el, SPAWN } from './ui.js';
 
 // 1 map unit = 4096 blocks. At NATIVE_ZOOM that is exactly one pixel per block; every
 // zoom level out doubles blocks per pixel. Latitude is -Z so north stays up.
@@ -23,47 +23,63 @@ async function fetchJSON(path, fallback = []) {
   } catch { return fallback; }
 }
 
-class TilePool {
-  constructor(seed, count) {
-    this.workers = []; this.pending = new Map(); this.nextId = 0; this.nextWorker = 0;
-    for (let i = 0; i < count; i++) {
-      const w = new Worker(url('wasm/tile-worker.js'));
-      w.onmessage = (e) => {
-        const m = e.data;
-        if (m.type === 'ready') return;
-        const done = this.pending.get(m.id);
-        if (done) { this.pending.delete(m.id); done(m.pixels); }
-      };
-      w.postMessage({ type: 'init', seed });
-      this.workers.push(w);
+// The explored world: pre-rendered tiles listed in tiles/manifest.json. Only tiles that exist are
+// requested; where a detailed tile is missing (outside the base neighbourhoods) the nearest coarser
+// tile is cropped and scaled up instead, so the whole explored area shows at every zoom.
+async function exploredLayer() {
+  const manifest = await fetchJSON('tiles/manifest.json', null);
+  if (!manifest) return null;
+  const have = {};
+  for (const [z, list] of Object.entries(manifest.tiles)) have[z] = new Set(list.map(([x, y]) => x + ',' + y));
+  const images = new Map();
+  const load = (z, x, y) => {
+    const key = `${z}/${x}/${y}`;
+    if (!images.has(key)) {
+      images.set(key, new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = url(`tiles/${key}.${manifest.format}`);
+      }));
     }
-  }
-  request(worldX0, worldZ0, w, h, bpp) {
-    return new Promise((resolve) => {
-      const id = this.nextId++;
-      this.pending.set(id, resolve);
-      const worker = this.workers[this.nextWorker];
-      this.nextWorker = (this.nextWorker + 1) % this.workers.length;
-      worker.postMessage({ type: 'render', id, worldX0, worldZ0, w, h, bpp });
-    });
-  }
-}
-
-function biomeLayer(pool) {
+    return images.get(key);
+  };
+  // Find the tile to draw: the exact one, else the closest ancestor (z-1, z-2, ...) down to minZoom.
+  const source = (z, x, y) => {
+    for (let d = 0; z - d >= manifest.minZoom; d++) {
+      const zz = z - d, xx = x >> d, yy = y >> d;
+      if (have[zz] && have[zz].has(xx + ',' + yy)) return { z: zz, x: xx, y: yy, d };
+    }
+    return null;
+  };
   const Layer = L.GridLayer.extend({
     createTile(coords, done) {
       const tile = document.createElement('canvas');
       tile.width = tile.height = TILE;
       tile.className = 'biome-tile';
-      const bpp = Math.max(1, Math.round(blocksPerPixel(coords.z)));
-      pool.request(coords.x * TILE * bpp, coords.y * TILE * bpp, TILE, TILE, bpp).then((pixels) => {
-        tile.getContext('2d').putImageData(new ImageData(pixels, TILE, TILE), 0, 0);
+      const z = Math.min(coords.z, manifest.maxZoom), shift = coords.z - z;   // beyond native: stretch
+      const src = source(z, coords.x >> shift, coords.y >> shift);
+      if (!src) { setTimeout(() => done(null, tile)); return tile; }
+      load(src.z, src.x, src.y).then((img) => {
+        if (img) {
+          const ctx = tile.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+          const f = 2 ** (src.d + shift);           // how many tile pixels each source pixel covers
+          const size = TILE / f;                    // source pixels shown in this tile
+          if (f <= 1) ctx.drawImage(img, 0, 0);
+          else {
+            const ox = (coords.x % f) * size, oy = (coords.y % f) * size;
+            ctx.drawImage(img, ox, oy, size, size, 0, 0, TILE, TILE);
+          }
+        }
         done(null, tile);
       });
       return tile;
     },
   });
-  return new Layer({ tileSize: TILE, noWrap: true, updateWhenZooming: false, maxNativeZoom: NATIVE_ZOOM });
+  const layer = new Layer({ tileSize: TILE, noWrap: true, updateWhenZooming: false, maxNativeZoom: 16, minZoom: 0 });
+  layer.manifest = manifest;
+  return layer;
 }
 
 const spawnIcon = () => L.divIcon({
@@ -77,13 +93,12 @@ const spawnIcon = () => L.divIcon({
  *   interactive   pan/zoom/tap on (default) or a still picture
  *   labels        show border name labels (labels hidden per border in borders.json still stay hidden)
  *   center, zoom  starting view; center is a world {x, z}
- *   workers       tile workers to start
  *   shopSize      shop icon size in px
  */
 export async function createWorldMap(element, opts = {}) {
   const {
     interactive = true, labels = true, center = SPAWN, zoom = DEFAULT_ZOOM,
-    workers = Math.min(4, Math.max(2, navigator.hardwareConcurrency || 2)), shopSize = 28,
+    shopSize = 28,
   } = opts;
 
   const map = L.map(element, {
@@ -93,7 +108,13 @@ export async function createWorldMap(element, opts = {}) {
     touchZoom: interactive, boxZoom: interactive, keyboard: interactive,
   });
   map.setView(worldToLatLng(center.x, center.z), zoom);
-  const tiles = biomeLayer(new TilePool(SEED, workers)).addTo(map);
+  const tiles = await exploredLayer();
+  if (tiles) {
+    const m = tiles.manifest.bounds, pad = 512;
+    tiles.addTo(map);
+    map.setMaxBounds(L.latLngBounds(worldToLatLng(m.x0 - pad, m.z1 + pad), worldToLatLng(m.x1 + pad, m.z0 - pad)));
+    map.setMinZoom(tiles.manifest.minZoom - 1);
+  }
 
   const spawnMarker = L.marker(worldToLatLng(SPAWN.x, SPAWN.z), { icon: spawnIcon(), interactive: false, keyboard: false }).addTo(map);
 
