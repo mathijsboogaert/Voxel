@@ -13,6 +13,8 @@ export const latLngToWorld = (ll) => ({ x: ll.lng * UNIT, z: -ll.lat * UNIT });
 
 // Shop icons are a fixed screen size, so zoomed far out they would only be clutter.
 export const SHOP_MAX_BPP = 3;
+// Border names are hidden once you are closer than this, so they don't cover the builds.
+export const LABEL_MAX_BPP = 4;
 export const DEFAULT_ZOOM = 10;
 export const DETAIL_ZOOM = 13;
 
@@ -124,7 +126,7 @@ export async function createWorldMap(element, opts = {}) {
     const color = b.color || '#ffa94d';
     const hideLabel = !!b.hideLabel;
     const layer = L.polygon(b.points.map((p) => worldToLatLng(p.x, p.z)), {
-      color, weight: interactive ? 3 : 2, fillColor: color, fillOpacity: hideLabel ? 0 : 0.25, interactive,
+      color, weight: interactive ? 3 : 2, fill: false, interactive,
     }).addTo(map);
     let tooltip = null;
     if (labels && b.label && !hideLabel) {
@@ -150,8 +152,10 @@ export async function createWorldMap(element, opts = {}) {
       else if (!show && map.hasLayer(s.marker)) map.removeLayer(s.marker);
     }
   };
-  map.on('zoom', syncShops);
+  const syncLabels = () => element.classList.toggle('labels-off', blocksPerPixel(map.getZoom()) < LABEL_MAX_BPP);
+  map.on('zoom', () => { syncShops(); syncLabels(); });
   syncShops();
+  syncLabels();
 
   return { map, tiles, borders, shops, spawnMarker };
 }

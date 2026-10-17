@@ -82,3 +82,5 @@ body.map-page { height: 100vh; height: 100dvh; display: flex; flex-direction: co
   .mapui--br { right: var(--space-4); bottom: var(--space-4); }
   .mapinfo { left: var(--space-4); bottom: var(--space-4); }
 }
+
+.labels-off .border-label { display: none; }
