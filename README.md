@@ -10,7 +10,7 @@ the stats come from the server's own logs.
 
 | Page | File | What it is |
 | --- | --- | --- |
-| Home | `docs/index.html` | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview, and who is around |
+| Home | `docs/index.html` | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who is around |
 | Map | `docs/map/index.html` | The full pannable, zoomable world map with borders, shops and search. Read-only |
 | Players | `docs/players/index.html` | Everyone, with face, playtime and when they were last on |
 | Player | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements |
@@ -69,6 +69,8 @@ Advancements are scored the way the server's advancement datapack scores them, b
 and "How Did We Get Here?" 10. Each advancement counts once per player. The log says which kind each one is, and the site adds the
 points up for the homepage leaderboard (the Advancements tab) and the Advancements card on each player page. The numbers live in one place,
 `ADV_POINTS` and `POINTS_BY_NAME` at the top of `docs/js/data.js`; add a name to `POINTS_BY_NAME` to give any single advancement its own value.
+
+With the Advancements tab open, the homepage also draws the **advancement race**: each of the top five players' running point total, one step per advancement, from launch to the latest data. The five lines differ in colour and pattern, with a legend underneath.
 
 ## News
 

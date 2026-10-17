@@ -186,11 +186,22 @@ export function compute({ sessions, hourly, events, roster, meta }) {
   const board = (f) => all.map((p) => ({ name: p.name, value: f(p) })).filter((r) => r.value > 0)
     .sort((a, c) => c.value - a.value || a.name.localeCompare(c.name, 'en', { sensitivity: 'base' }));
 
+  // The advancement race: each leader's running points total, one step per advancement.
+  const dataEnd = Date.parse(S.reduce((m, s) => (s.end_utc > m ? s.end_utc : m), '')) || Date.now();
+  const race = {
+    start: dayMs(LAUNCH), end: dataEnd,
+    series: [...all].filter((p) => p.advPoints > 0).sort((a, b) => b.advPoints - a.advPoints).slice(0, 5).map((p) => {
+      let v = 0;
+      const steps = [...p.adv].sort((a, b) => (a.at < b.at ? -1 : 1)).map((a) => ({ t: Date.parse(a.at), v: (v += a.points) }));
+      return { name: p.name, total: p.advPoints, steps };
+    }),
+  };
+
   const rosterByName = Object.fromEntries((roster || []).map((p) => [p.name, p]));
   for (const p of all) rosterByName[p.name] ||= { name: p.name, uuid: null };
 
   return {
-    launch: LAUNCH, meta, overview, badges, players, roster: rosterByName,
+    launch: LAUNCH, meta, overview, badges, players, roster: rosterByName, race,
     byHourAll,
     boards: {
       playtime: board((p) => r1(p.minutes / 60)),

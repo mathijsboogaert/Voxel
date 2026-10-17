@@ -117,11 +117,7 @@
 .dot-online { position: absolute; right: -5px; top: -5px; width: 14px; height: 14px; background: var(--teal); border: var(--stroke-2) solid var(--line); }
 .section-cta { margin-top: var(--space-4); }
 
-/* ---- Footer ----------------------------------------------------------------------- */
-.site-footer { padding-block: var(--space-4); }
-.site-footer .wrap { display: grid; gap: var(--space-2); }
-.site-footer nav { display: flex; gap: var(--space-4); flex-wrap: wrap; }
-.site-footer a { font-weight: 600; }
+main > .wrap { padding-bottom: var(--space-6); }
 
 /* ---- Wider screens ---------------------------------------------------------------- */
 @media (min-width: 560px) {
@@ -207,3 +203,12 @@
 .brow { grid-template-columns: 40px minmax(0, 1fr); }
 .adv-head { display: flex; align-items: baseline; gap: var(--space-2); margin-top: var(--space-2); flex-wrap: wrap; }
 .adv-head .num { font-size: 34px; line-height: 38px; }
+
+/* Advancement race chart */
+.race { display: block; width: 100%; height: auto; margin-top: var(--space-2); overflow: visible; }
+.race text { font: 600 11px var(--font-sans); fill: var(--ink-muted); }
+.race__grid { stroke: var(--line-soft); stroke-width: 1; }
+.race-legend { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-2); }
+.race-legend li { display: flex; align-items: center; gap: var(--space-2); }
+.race-legend__name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.race-swatch { width: 28px; height: 8px; flex: none; overflow: visible; }
