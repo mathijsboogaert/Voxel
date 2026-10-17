@@ -133,7 +133,7 @@ async function renderNews(st) {
 const BOARDS = {
   playtime: { label: 'Playtime', caption: 'Hours played since launch', show: (v) => fmtHours(v) },
   deaths: { label: 'Deaths', caption: 'Deaths since launch', show: (v) => fmtInt(v) },
-  advancements: { label: 'Advancements', caption: 'Advancements earned', show: (v) => fmtInt(v) },
+  advancements: { label: 'Advancements', caption: 'Advancement points: task 1, goal 3, challenge 5', show: (v) => `${fmtInt(v)} pts` },
   chat: { label: 'Chat', caption: 'Chat messages sent', show: (v) => fmtInt(v) },
 };
 let boardKey = 'playtime';

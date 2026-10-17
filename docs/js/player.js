@@ -104,13 +104,14 @@ function render(st, places) {
     sections.push(el('div', { class: 'card' },
       el('p', { class: 'label' }, 'Advancements'),
       el('div', { class: 'adv-head' },
-        el('span', { class: 'num' }, fmtInt(p.adv.length)),
-        el('span', { class: 'small' }, p.rarest ? `earned. Rarest: ${p.rarest.name}` : 'earned')),
+        el('span', { class: 'num' }, fmtInt(p.advPoints)),
+        el('span', { class: 'small' }, `points from ${p.adv.length} ${p.adv.length === 1 ? 'advancement' : 'advancements'}`)),
+      p.rarest ? el('p', { class: 'small', style: 'margin-top:4px' }, `Rarest: ${p.rarest.name}`) : null,
       el('p', { class: 'label', style: 'margin-top:16px' }, 'Latest'),
       el('ul', { class: 'arows', style: 'margin-top:4px' }, recent.map((a) =>
         el('li', { class: 'arow' },
           el('div', { class: 'arow__name' }, a.name, el('p', { class: 'small' }, a.earners === 1 ? 'Only they have it' : `${a.earners} players have it`)),
-          el('span', { class: 'small' }, relTime(a.at)))))));
+          el('span', { class: 'small' }, `+${a.points} \u00b7 ${relTime(a.at)}`))))));
   }
 
   page.replaceChildren(hero, tiles, el('div', { class: 'psection pgrid' }, sections));

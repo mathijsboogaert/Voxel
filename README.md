@@ -63,6 +63,13 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 | `docs/shops.json` | the editor | Shops: `x`, `z`, `label`, `owner`, and `added` (when it was placed) |
 | `docs/news.json` | by hand | Extra news items, mainly events with a countdown (below) |
 
+## Advancement points
+
+Advancements are scored the way the server's advancement datapack scores them, by kind: a task is worth 1 point, a goal 3, a challenge 5,
+and "How Did We Get Here?" 10. Each advancement counts once per player. The log says which kind each one is, and the site adds the
+points up for the homepage leaderboard (the Advancements tab) and the Advancements card on each player page. The numbers live in one place,
+`ADV_POINTS` and `POINTS_BY_NAME` at the top of `docs/js/data.js`; add a name to `POINTS_BY_NAME` to give any single advancement its own value.
+
 ## News
 
 The homepage news section needs no upkeep. It builds itself from the data:

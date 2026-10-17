@@ -8,6 +8,13 @@ export const LAUNCH = '2026-10-01';
 const BIG = ['challenge', 'goal']; // the advancements the game itself calls big
 const ADV = ['advancement', 'goal', 'challenge'];
 
+// Advancement scoring, from the server's advancement datapack: a task is worth 1, a goal 3, a challenge 5,
+// and the rarest of all, "How Did We Get Here?", 10. The log names the kind (task, goal, challenge);
+// an exact name in POINTS_BY_NAME overrides it. Change the numbers here and everything follows.
+export const ADV_POINTS = { advancement: 1, goal: 3, challenge: 5 };
+const POINTS_BY_NAME = { 'how did we get here?': 10 };
+export const pointsFor = (type, name) => POINTS_BY_NAME[String(name).trim().toLowerCase()] ?? ADV_POINTS[type] ?? 0;
+
 async function getText(path) {
   const r = await fetch(url(path), { cache: 'no-cache' });
   if (!r.ok) throw new Error(`${r.status} for ${path}`);
@@ -75,12 +82,13 @@ export function compute({ sessions, hourly, events, roster, meta }) {
       (who[e.detail] ||= new Set()).add(e.player);
       if (!(e.detail in first)) first[e.detail] = e.player;
       const k = e.player + '|' + e.detail;
-      if (!seen.has(k)) { seen.add(k); P(e.player).adv.push({ name: e.detail, type: e.type, at: e.time_utc, local: e.time_local }); }
+      if (!seen.has(k)) { seen.add(k); P(e.player).adv.push({ name: e.detail, type: e.type, points: pointsFor(e.type, e.detail), at: e.time_utc, local: e.time_local }); }
     }
   }
   for (const p of Object.values(players)) {
     for (const a of p.adv) { a.earners = who[a.name].size; a.first = first[a.name] === p.name; }
     p.firsts = p.adv.filter((a) => a.first).length;
+    p.advPoints = p.adv.reduce((t, a) => t + a.points, 0);
   }
 
   // Time together: overlap between every two players, and time with nobody else online.
@@ -187,7 +195,7 @@ export function compute({ sessions, hourly, events, roster, meta }) {
     boards: {
       playtime: board((p) => r1(p.minutes / 60)),
       deaths: board((p) => p.deaths),
-      advancements: board((p) => p.adv.length),
+      advancements: board((p) => p.advPoints),
       chat: board((p) => p.chat),
     },
     /** Players ordered for lists: online first, then most recently seen. */
