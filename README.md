@@ -35,7 +35,7 @@ and a pattern built from the logo's grid. It is mobile first (the base CSS is th
 and follows the visitor's light or dark setting.
 
 - `docs/assets/brand.css`: the brand tokens (copied from the guide's `tokens.json`) and the base components: button, card, tag, face.
-- `docs/assets/site.css`: header, footer, hero, news, stats and the players pages.
+- `docs/assets/site.css`: header, hero, news, stats and the players pages.
 - `docs/assets/map.css`: the map's controls and labels in the same terms.
 - `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
 - `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
