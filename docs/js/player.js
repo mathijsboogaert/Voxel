@@ -70,9 +70,8 @@ function render(st, places) {
       el('p', { class: 'small', style: 'margin-top:8px' }, `Usually around ${hourLabel(p.favHour)}, Dutch time.`)));
   }
 
-  // Plays with: bars scaled to the longest stretch together
+  // Plays with: each bar is that partner's share of their time, out of 100%
   if (p.buddies.length) {
-    const top = p.buddies[0].hours || 1;
     const withOthers = Math.round(p.togetherShare * 100);
     sections.push(el('div', { class: 'card' },
       el('p', { class: 'label' }, 'Plays with'),
@@ -83,7 +82,7 @@ function render(st, places) {
         el('li', {}, el('a', { class: 'brow', href: playerHref(b.name) }, faceEl(b.name),
           el('span', { class: 'pcard__body' },
             el('span', { class: 'pcard__top' }, el('span', { class: 'pcard__name' }, b.name), el('span', { class: 'pcard__value' }, fmtHours(b.hours))),
-            el('span', { class: 'pbar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(4, (b.hours / top) * 100)}%` })),
+            el('span', { class: 'pbar', 'aria-hidden': 'true' }, el('i', { style: `width:${b.share}%` })),
             el('span', { class: 'small' }, `${b.share}% of their time`))))))));
   }
 
