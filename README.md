@@ -1,132 +1,143 @@
-# Seed Viewer
+# Voxel
 
-A surface-biome map + spawn point viewer, built on top of
-[xpple/cubiomes](https://github.com/xpple/cubiomes) (vendored in
-`vendor/cubiomes`) — an actively maintained fork of
-[Cubitect/cubiomes](https://github.com/Cubitect/cubiomes) that tracks current
-Minecraft releases, including 26.3 "Wilderness Bound".
+The website for the Voxel Minecraft server (Paper 26.3, seed `2344567094`): a homepage with news, a map
+preview and live stats, the full world map, and a page for every player. It is a static site served by
+GitHub Pages from `docs/`, with no backend. The map is drawn in the browser from the world seed using
+[xpple/cubiomes](https://github.com/xpple/cubiomes) (vendored in `vendor/cubiomes`, compiled to WebAssembly), and
+the stats come from the server's own logs.
 
-There are three pages/viewers:
+## The pages
 
-- **`docs/index.html`** — the public, read-only map: same view as below,
-  minus every scrap of drawing UI and logic. This is what other people
-  should see — GitHub Pages serves a repo's `index.html` at its root by
-  default, so uploading everything as-is means this is the front door.
-- **`docs/map.html`** — your live, infinitely pannable/zoomable *editing*
-  copy, with the border-drawing tools. Keep using this one yourself.
-- **`generate.sh`** — the original approach: renders one fixed-size PNG for
-  a seed. Simpler, but bounded to whatever region/radius you generate.
-  Kept around since it needs no build step beyond the native CLI tool.
+| Page | File | What it is |
+| --- | --- | --- |
+| Home | `docs/index.html` | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview, and who is around |
+| Map | `docs/map/index.html` | The full pannable, zoomable world map with borders, shops and search. Read-only |
+| Players | `docs/players/index.html` | Everyone, with face, playtime and when they were last on |
+| Player | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements |
+| Editor | `docs/editor.html` | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site |
 
-## Live map (`docs/map.html` for editing, `docs/index.html` for everyone else)
+`generate.sh` (further down) is the original one-off PNG renderer, kept for reference.
+
+## Run it locally
 
 ```bash
 ./serve.sh
 ```
 
-Then open http://localhost:8000/map.html (it needs to be served over
-`http://`, not opened as a `file://` — the browser can't `fetch()` the
-`.wasm` file otherwise). The seed is fixed to `2344567094` (edit the `SEED`
-constant near the top of the `<script>` in `map.html` to change it). Drag to
-pan; hover to see the biome name in the footer.
+Open http://localhost:8000/ for the site and http://localhost:8000/editor.html for the editor. It has to be served
+over `http://`: the pages `fetch()` the data files and the `.wasm`, which a `file://` page cannot do.
 
-`docs/index.html` is a straight copy of the same page with the entire
-"Border label/color editor" and "Border drawing layer" sections of the
-`<script>` deleted, and the draw-tools/border-editor `<div>`s and their CSS
-removed — there's no `drawToggle`, no `saveBorders`, nothing to open dev
-tools and call even if someone tried. It reads `docs/borders.json` the same
-way `map.html` does, so whatever you've exported there is what it shows.
-If you add a feature to `map.html`, remember it won't appear on the public
-page unless you port it over deliberately — that separation is the point,
-not an oversight to "fix" by unifying the two files.
+## Look and feel
 
-Since there's no backend, someone who finds `map.html` on a hosted deploy
-could still open it and draw locally in their own browser — but they have
-no way to write back to the repo's `docs/borders.json`, so it can't affect
-what anyone else sees. If that residual exposure still bothers you, don't
-upload `map.html` (and the draw-tools bits of `borders.json` tooling) to
-the public repo at all; keep it as a separate local-only file.
+The design follows the Voxel brand guide: an autumn palette on warm paper, Fraunces for headlines and Figtree for
+everything else, square corners with one leaf corner on buttons and feature cards, bold outlines instead of shadows,
+and a pattern built from the logo's grid. It is mobile first (the base CSS is the phone layout; wider screens add to it)
+and follows the visitor's light or dark setting.
 
-The page is a fixed header (logo + "VOXEL / World map" wordmark, "Return
-to spawn" button) / map / footer (seed + Minecraft version + spawn on the
-left, live hover biome+coords on the right) layout. The logo is
-`docs/assets/logo.png`, pre-processed (white background keyed to
-transparent, cropped) from the source art — accent colors in `map.html`'s
-`:root` (`--brand-teal`, `--brand-orange`, etc.) were sampled directly from
-it, so re-theming means re-sampling if the logo changes.
+- `docs/assets/brand.css`: the brand tokens (copied from the guide's `tokens.json`) and the base components: button, card, tag, face.
+- `docs/assets/site.css`: header, footer, hero, news, stats and the players pages.
+- `docs/assets/map.css`: the map's controls and labels in the same terms.
+- `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
+- `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
+- Player heads are shown square (to keep the pixel grid) with `image-rendering: pixelated`. The guide lists round corners for avatars, but square heads suit Minecraft's grid; change `.face` in `brand.css` if you prefer round.
 
-**Zoom is free and continuous** — scroll, pinch (touch/mobile), double-
-click, and keyboard all zoom smoothly (`zoomSnap: 0`), with
-`zoomAnimation: true` for an eased transition rather than an instant
-snap. The header's "Return to spawn" button is a quick-jump shortcut back
-to the spawn point at the default zoom (z=10); it doesn't restrict zoom in
-any way — every level, including fractional ones, is freely reachable.
-That wasn't always true: z=11 (`blocksPerPixel=2`) once hit a cubiomes
-coordinate bug that silently misaligned tiles from their real position,
-and the renderer at the time went through cubiomes' `Range`/`genBiomes`
-for every zoom level, so every in-between/fractional level was an unknown
-risk worth avoiding outright (zoom used to be locked to three preset
-buttons — Overview/Normal/Detail — for this reason). Both of those are
-gone now: the renderer was rewritten (see "Real terrain height" below)
-to sample real terrain height directly and no longer calls
-`Range`/`genBiomes` at all, so there's no scale-dependent path left for
-that class of bug to live in, and tile rendering moved off the main
-thread into a worker pool, which is what made it safe to re-enable the
-animation (see `docs/map.html` for the fuller history in comments).
-Verified z=11 and fractional zooms (e.g. 10.5) render correctly aligned
-before re-enabling free zoom.
+## How the code is laid out
 
-**Drawing borders**: the "Draw border" tool (top-right) lets you click to
-place points for a custom border line, snapped to the same 4-block grid the
-biome tiles are rendered at. Double-click, Enter, or the "Finish line"
-button ends the current line; Escape or "Undo point" discards/steps back;
-"Clear all" needs two clicks within 3 seconds to confirm. Finishing a line
-opens a small editor to name it and pick a color from the palette — the
-name is shown as a permanent label at the line's midpoint by default, and
-clicking either the line or its label reopens the editor (with a "Delete"
-option). Unchecking **"Show label on map"** in that editor keeps the name
-(still matched by search) but stops it from rendering, and also drops the
-fill down to fully transparent, leaving just the outline — for a border
-where the label and tinted fill would otherwise sit on top of content you
-want visible. E.g. "Shopping District" has this off so its outline marks
-the area without covering the shop icons placed inside it.
-While drawing, borders autosave to the browser's `localStorage` (keyed by
-seed) as a convenience/backup — but that's local to your browser only and
-won't ship with the site. **`docs/borders.json`** is the real, checked-in
-source of truth: `map.html` fetches it on load and shows whatever's in
-there to every visitor, no login needed. To publish your drawn borders,
-click **"Export borders.json"** in the toolbar (downloads a file), then
-replace `docs/borders.json` with it and commit. There's currently no
-backend — editing means redrawing locally and re-exporting/committing;
-see "Notes / limitations" below for what a real shared-editing backend
-would need.
+Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet is the only library (from a CDN).
 
-**Placing shops**: the "Place shop" tool drops a small pixel-art icon
-(`docs/assets/shop-icon.png`) at a single click (no multi-point line like
-borders), snapped to the same grid, and immediately opens an editor to
-name it. Unlike a border's permanent label, a shop's name is hidden until
-someone taps the icon — the editor on `map.html` (tap = edit), a plain
-popup with just the name on `docs/index.html` (tap = view, no editing).
-Clicking "Place shop" and "Draw border" are mutually exclusive — turning
-one on turns the other off. Shops autosave to `localStorage` the same way
-borders do, and **`docs/shops.json`** is their checked-in source of truth;
-export it with **"Export shops.json"** and commit it the same way as
-`borders.json`. The icon is rendered with `image-rendering: pixelated`
-(plus the `crisp-edges` fallback) so its edges stay hard at any zoom
-instead of being smoothed/blurred like a photo. Shop icons only render
-once you've zoomed in past `SHOP_VISIBLE_MAX_BPP = 3` blocks/px — at the
-default zoom (4 blocks/px) and wider they'd just be fixed-size clutter
-sitting on top of biomes much larger than they are, so they stay hidden
-until zoomed in close enough to mean something.
+| File | Job |
+| --- | --- |
+| `docs/js/ui.js` | Site paths (works from any base URL), DOM helpers, player faces, number and time formatting |
+| `docs/js/data.js` | Loads the CSVs and computes every number the site shows (a port of the original stats dashboard, so the numbers match) |
+| `docs/js/map-core.js` | The world map: Leaflet over the WASM tile renderer, plus borders, shops and the spawn marker. Shared by the home preview and the Map page |
+| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js` | One per page |
 
-**Search**: the header search box (both pages) matches labeled borders
-and shops by substring as you type, and zooms to whichever result you
-pick — `fitBounds()` on the border's shape for a border, or `setView()`
-at a fixed close-up zoom (`DETAIL_ZOOM = 13`) for a shop. The dropdown
-supports arrow-key navigation and Enter to select, and closes on Escape
-or a click outside it. It's rebuilt from the live `borders`/`shops`
-arrays on every keystroke rather than cached, since both can change at
-any time while editing on `map.html`.
+## Data files
+
+| File | Written by | Holds |
+| --- | --- | --- |
+| `docs/data/voxel-sessions.csv`, `voxel-hourly.csv`, `voxel-events.csv` | `tools/build_stats.py` | Play sessions, minutes per hour, and deaths, advancements and chat counts (never message text) |
+| `docs/data/meta.json` | `tools/build_stats.py` | When the data was last built, shown as "Updated X ago" |
+| `docs/data/players.json` and `docs/faces/*.png` | `tools/fetch_faces.py` | The roster (name and UUID) and each player's head |
+| `docs/borders.json` | the editor | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names) |
+| `docs/shops.json` | the editor | Shops: `x`, `z`, `label`, `owner`, and `added` (when it was placed) |
+| `docs/news.json` | by hand | Extra news items, mainly events with a countdown (below) |
+
+## News
+
+The homepage news section needs no upkeep. It builds itself from the data:
+
+- **Achievements.** The latest challenges and goals (the advancements the game itself calls big), from the last 30 days.
+- **New shops.** Any shop in `shops.json` with an `added` date from the last 21 days. The editor stamps `added` when you place a shop.
+- **Your own items,** in `docs/news.json`:
+
+```json
+{
+  "items": [
+    {
+      "type": "event",
+      "title": "Harvest hunt",
+      "body": "Find the hidden pumpkins before sunset.",
+      "at": "2026-11-01T19:00:00+01:00",
+      "pin": true
+    },
+    { "type": "note", "title": "Server back up", "body": "We moved to a faster host.", "date": "2026-10-20" }
+  ]
+}
+```
+
+An `event` shows a live countdown to `at` (write it with a UTC offset, or `Z`). The featured card is the first item with `"pin": true`, otherwise the
+nearest upcoming event, otherwise the newest item. An event disappears a day after it starts. Other `type` values: `note`, `achievement`, `shop`.
+
+## Live stats
+
+`.github/workflows/stats.yml` keeps the stats current without a server of your own. Every hour it downloads the server's
+`logs/` folder over SFTP, runs `tools/build_stats.py` and `tools/fetch_faces.py`, and commits the new `docs/data` and
+`docs/faces`; GitHub Pages then republishes. GitHub starts scheduled jobs a few minutes late and sometimes skips one, so
+"live" means within the hour. The page shows "Updated X min ago" and re-reads the data every five minutes while it is open.
+
+Set it up once:
+
+1. In the Logic Servers panel open your server, then **Settings, SFTP Details**. Note the address, port and username. For least privilege, create a **subuser** on the server who can only read files, and use that account's password.
+2. In the GitHub repo open **Settings, Secrets and variables, Actions** and add these repository secrets: `SFTP_HOST`, `SFTP_USER`, `SFTP_PASSWORD`. Optional: `SFTP_PORT` (default 2022), `SFTP_LOG_DIR` (default `logs`), `SFTP_KEY` (a private key, instead of the password), and `SFTP_HOST_FINGERPRINT` (the first run prints the value to pin).
+3. Open the **Actions** tab, choose **Update stats**, and press **Run workflow**. Until the secrets exist the job does nothing and says so.
+
+Things worth knowing:
+
+- Keep the server's old `logs/*.log.gz` files. The script rebuilds from the whole history every run, so deleted logs would drop out of the stats.
+- Raw logs are never committed (they contain chat). Only the derived CSVs are.
+- It makes roughly 24 small commits a day, because `meta.json` changes every run.
+- Days before `2026-10-01` were testing and are ignored (`LAUNCH` in `docs/js/data.js`). Mathi_Craft's time counts in full, as it did on the original dashboard.
+- You can always run it by hand: `python3 tools/build_stats.py path/to/logs docs/data && python3 tools/fetch_faces.py docs/data docs/faces`, then commit.
+
+## Players, faces and places
+
+A player page shows their base and shop when the map data says who owns them. In the editor, click a border and add its
+**Owners** (the Minecraft names, picked from the roster; a couple can share one), or click a shop and set its **Owner**.
+Export `borders.json` and `shops.json` and commit them as usual. A new player appears on the site automatically at the next stats
+update, with a letter tile until their head has been fetched.
+
+## The map
+
+Drag, scroll, pinch or double-tap to zoom smoothly (`zoomSnap: 0`). The Map page has search, a spawn button, zoom buttons and a readout of the
+biome and position (under the cursor on a desktop, at the centre on a phone). Search finds borders, shops and players. Deep links:
+`map/?find=Shopping%20District` jumps to a border or shop, and `map/?x=-700&z=38&zoom=12` centres on a point (the player pages use this).
+
+Shop icons only appear once you have zoomed in past `SHOP_MAX_BPP = 3` blocks per pixel (`docs/js/map-core.js`); zoomed further out they would
+only be fixed-size clutter on top of much larger biomes. A border with **Show label on map** turned off keeps its name (still searchable) but
+drops both the label and the fill, leaving just the outline, so it can mark an area without covering what is inside it, like the Shopping
+District around its shops. The seed is fixed in `docs/js/ui.js` (`SEED`, and `SPAWN`, which is what cubiomes reports for it).
+
+### The editor
+
+`docs/editor.html` is the one place to change borders and shops. **Draw border** places points snapped to the 4-block biome grid (double-click,
+Enter or **Finish line** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
+visibility and owners; clicking a border later reopens it. **Place shop** drops a shop icon with one click and asks for a name and owner. The two
+modes switch each other off, and each **Clear all** needs a second click within three seconds to confirm.
+
+While you work, the editor autosaves to your browser's `localStorage` as a backup; that never reaches the site. The real files are
+`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json**, replace the file in `docs/` with the download,
+and commit. There is no backend, so a visitor who finds `editor.html` can draw in their own browser but cannot change what anyone else sees.
 
 If you change `wasm/seedmap_wasm.c` (or re-vendor cubiomes), rebuild with:
 
@@ -242,8 +253,8 @@ different seed or radius doesn't touch any other seed's output.
   for a supersampled zoomed-out one — so doing it synchronously on the
   main thread would freeze panning/hover/drawing for as long as visible
   tiles take to compute. Each worker loads its own cubiomes module
-  instance and calls `seed_init()` independently; `map.html`'s
-  `requestTile()` round-robins render requests across the pool and
+  instance and calls `seed_init()` independently; `docs/js/map-core.js`'s
+  `TilePool.request()` round-robins render requests across the pool and
   resolves a promise when a worker posts the pixel buffer back
   (transferred, not copied). Leaflet's `GridLayer` already only requests
   tiles for what's in the viewport — it was never rendering the whole map

@@ -272,6 +272,15 @@
   #shopSave { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
   #shopSave:hover { background: var(--brand-teal-light); }
   #shopDelete { color: #ff6b6b; }
+
+  .field-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 4px; display: block; }
+  .owner-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .owner-chip { background: #2a2e35; border: 1px solid var(--border); color: var(--text); border-radius: 99px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+  .owner-chip:hover { background: #363b44; }
+  #ownerInput, #shopOwnerInput {
+    width: 100%; background: #101216; border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
@@ -337,6 +346,9 @@
         <input type="checkbox" id="borderShowLabelInput" checked>
         <span>Show label on map</span>
       </label>
+      <span class="field-label">Owners (shown on their player page)</span>
+      <div id="ownerChips" class="owner-chips"></div>
+      <input id="ownerInput" list="rosterList" type="text" placeholder="Add a player" autocomplete="off">
       <div id="colorSwatches"></div>
       <div id="borderEditorActions">
         <button id="borderDelete">Delete</button>
@@ -348,6 +360,9 @@
     <div id="shopEditor">
       <h2>Shop</h2>
       <input id="shopLabelInput" type="text" placeholder="Shop name" maxlength="40">
+      <span class="field-label">Owner</span>
+      <input id="shopOwnerInput" list="rosterList" type="text" placeholder="Player name" autocomplete="off">
+      <datalist id="rosterList"></datalist>
       <div id="shopEditorActions">
         <button id="shopDelete">Delete</button>
         <button id="shopCancel">Cancel</button>
@@ -645,14 +660,19 @@ function updateLabelTooltip(border) {
   border.labelTooltip.on('click', () => openBorderEditor(border));
 }
 
-function addBorderLayer(points, label, color, hideLabel) {
+const serializeBorder = (b) => ({
+  points: b.points, label: b.label, color: b.color, hideLabel: b.hideLabel,
+  ...(b.owners && b.owners.length ? { owners: b.owners } : {}),
+});
+
+function addBorderLayer(points, label, color, hideLabel, owners) {
   const layer = L.polygon(pointsToLatLngs(points), {
     // A border with its label hidden shows only the outline -- the fill
     // is what the label was mainly there to explain, so leaving it in
     // would still visually claim the area and crowd out shop icons.
     color, weight: 3, fillColor: color, fillOpacity: hideLabel ? 0 : 0.25, className: 'border-line',
   }).addTo(map);
-  const border = { points, label, color, hideLabel: !!hideLabel, layer, labelTooltip: null };
+  const border = { points, label, color, hideLabel: !!hideLabel, owners: owners || [], layer, labelTooltip: null };
   layer.on('click', (e) => { L.DomEvent.stopPropagation(e); openBorderEditor(border); });
   updateLabelTooltip(border);
   borders.push(border);
@@ -660,7 +680,7 @@ function addBorderLayer(points, label, color, hideLabel) {
 }
 
 function saveBorders() {
-  const data = borders.map((b) => ({ points: b.points, label: b.label, color: b.color, hideLabel: b.hideLabel }));
+  const data = borders.map(serializeBorder);
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
 }
 
@@ -679,12 +699,12 @@ async function loadBorders() {
     try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { data = []; }
   }
 
-  for (const b of data) addBorderLayer(b.points, b.label || '', b.color || PALETTE[0], b.hideLabel);
+  for (const b of data) addBorderLayer(b.points, b.label || '', b.color || PALETTE[0], b.hideLabel, b.owners);
   nextColorIndex = data.length % PALETTE.length;
 }
 
 function exportBorders() {
-  const data = borders.map((b) => ({ points: b.points, label: b.label, color: b.color, hideLabel: b.hideLabel }));
+  const data = borders.map(serializeBorder);
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -726,17 +746,24 @@ function updateShopVisibility() {
 }
 map.on('zoom', updateShopVisibility);
 
-function addShopLayer(x, z, label) {
+const serializeShop = (s) => ({
+  x: s.x, z: s.z, label: s.label,
+  ...(s.owner ? { owner: s.owner } : {}),
+  ...(s.added ? { added: s.added } : {}),
+});
+
+function addShopLayer(x, z, label, extra = {}) {
   const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon });
   if (shopsVisibleAtCurrentZoom()) marker.addTo(map);
-  const shop = { x, z, label, marker };
+  // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
+  const shop = { x, z, label, owner: extra.owner || '', added: extra.added || '', marker };
   marker.on('click', (e) => { L.DomEvent.stopPropagation(e); openShopEditor(shop); });
   shops.push(shop);
   return shop;
 }
 
 function saveShops() {
-  const data = shops.map((s) => ({ x: s.x, z: s.z, label: s.label }));
+  const data = shops.map(serializeShop);
   try { localStorage.setItem(SHOP_STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
 }
 
@@ -751,11 +778,11 @@ async function loadShops() {
     try { data = JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY) || '[]'); } catch (e) { data = []; }
   }
 
-  for (const s of data) addShopLayer(s.x, s.z, s.label || '');
+  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added });
 }
 
 function exportShops() {
-  const data = shops.map((s) => ({ x: s.x, z: s.z, label: s.label }));
+  const data = shops.map(serializeShop);
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -806,6 +833,35 @@ function clearAllBorders() {
 const borderEditorEl = document.getElementById('borderEditor');
 const borderLabelInput = document.getElementById('borderLabelInput');
 const borderShowLabelInput = document.getElementById('borderShowLabelInput');
+const ownerChipsEl = document.getElementById('ownerChips');
+const ownerInput = document.getElementById('ownerInput');
+const rosterListEl = document.getElementById('rosterList');
+let rosterNames = [];
+let editingOwners = [];
+
+// The player roster (written by tools/fetch_faces.py) feeds the owner pickers.
+fetch('data/players.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : [])).then((list) => {
+  rosterNames = list.map((p) => p.name);
+  rosterListEl.innerHTML = rosterNames.map((n) => `<option value="${n}">`).join('');
+}).catch(() => {});
+const matchPlayer = (typed) => rosterNames.find((n) => n.toLowerCase() === typed.trim().toLowerCase()) || '';
+
+function renderOwnerChips() {
+  ownerChipsEl.innerHTML = '';
+  for (const name of editingOwners) {
+    const chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'owner-chip'; chip.textContent = name + '  \u00d7'; chip.title = 'Remove';
+    chip.addEventListener('click', () => { editingOwners = editingOwners.filter((n) => n !== name); renderOwnerChips(); });
+    ownerChipsEl.append(chip);
+  }
+}
+function addOwnerFromInput() {
+  const name = matchPlayer(ownerInput.value);
+  if (name && !editingOwners.includes(name)) { editingOwners.push(name); renderOwnerChips(); }
+  if (name || !ownerInput.value.trim()) ownerInput.value = '';
+}
+ownerInput.addEventListener('change', addOwnerFromInput);
+ownerInput.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); addOwnerFromInput(); } });
 const colorSwatchesEl = document.getElementById('colorSwatches');
 const borderSaveBtn = document.getElementById('borderSave');
 const borderDeleteBtn = document.getElementById('borderDelete');
@@ -831,6 +887,9 @@ function openBorderEditor(border) {
   editingColor = border.color;
   borderLabelInput.value = border.label || '';
   borderShowLabelInput.checked = !border.hideLabel;
+  editingOwners = [...(border.owners || [])];
+  ownerInput.value = '';
+  renderOwnerChips();
   colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((s) => {
     s.classList.toggle('selected', s.dataset.color === border.color);
   });
@@ -848,6 +907,8 @@ borderSaveBtn.addEventListener('click', () => {
   if (!editingBorder) return;
   editingBorder.label = borderLabelInput.value.trim();
   editingBorder.hideLabel = !borderShowLabelInput.checked;
+  addOwnerFromInput();
+  editingBorder.owners = [...editingOwners];
   editingBorder.color = editingColor;
   editingBorder.layer.setStyle({ color: editingColor, fillColor: editingColor, fillOpacity: editingBorder.hideLabel ? 0 : 0.25 });
   updateLabelTooltip(editingBorder);
@@ -872,6 +933,7 @@ borderLabelInput.addEventListener('keydown', (e) => {
 // --- Shop label editor --------------------------------------------------
 const shopEditorEl = document.getElementById('shopEditor');
 const shopLabelInput = document.getElementById('shopLabelInput');
+const shopOwnerInput = document.getElementById('shopOwnerInput');
 const shopSaveBtn = document.getElementById('shopSave');
 const shopDeleteBtn = document.getElementById('shopDelete');
 const shopCancelBtn = document.getElementById('shopCancel');
@@ -882,6 +944,7 @@ function openShopEditor(shop) {
   closeBorderEditor();
   editingShop = shop;
   shopLabelInput.value = shop.label || '';
+  shopOwnerInput.value = shop.owner || '';
   shopEditorEl.classList.add('open');
   shopLabelInput.focus();
   shopLabelInput.select();
@@ -895,6 +958,7 @@ function closeShopEditor() {
 shopSaveBtn.addEventListener('click', () => {
   if (!editingShop) return;
   editingShop.label = shopLabelInput.value.trim();
+  editingShop.owner = matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim();
   saveShops();
   closeShopEditor();
 });
@@ -956,7 +1020,7 @@ map.on('click', (e) => {
   if (shopMode) {
     const w = latLngToWorld(e.latlng);
     const snapped = snapWorld(w.x, w.z);
-    const shop = addShopLayer(snapped.x, snapped.z, '');
+    const shop = addShopLayer(snapped.x, snapped.z, '', { added: new Date().toISOString() });
     saveShops();
     openShopEditor(shop);
   }

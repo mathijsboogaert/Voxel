@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Player · Voxel</title>
+<meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/brand.css">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../" aria-label="Voxel, home">
+      <img class="brand__mark mark--light" src="../assets/logo-mark.png" alt="" width="36" height="36">
+      <img class="brand__mark mark--dark" src="../assets/logo-mark-reversed.png" alt="" width="36" height="36">
+      <span class="brand__name">Voxel</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="../map/">Map</a>
+      <a href="../players/" aria-current="page">Players</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="page">
+    <p class="small" style="padding-block:var(--space-5)">Loading the player</p>
+  </div>
+</main>
+
+<footer class="site-footer band--teal" style="margin-top:var(--space-6)">
+  <div class="wrap">
+    <nav aria-label="Footer"><a href="../map/">Map</a><a href="../players/">Players</a><a href="../">Home</a></nav>
+    <p class="small">Voxel, Minecraft 26.3 Wilderness Bound. Seed 2344567094.</p>
+  </div>
+</footer>
+
+<script type="module" src="../js/player.js"></script>
+</body>
+</html>
