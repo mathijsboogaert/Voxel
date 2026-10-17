@@ -1,0 +1,85 @@
+name: Update stats
+
+# Pulls the server logs over SFTP, rebuilds docs/data, fetches heads for new players and commits
+# the result. Runs hourly (GitHub may start it a few minutes late) and on demand from the Actions tab.
+# Without the SFTP secrets set (see README, "Live stats") it does nothing.
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: stats
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SFTP_HOST: ${{ secrets.SFTP_HOST }}
+      SFTP_PORT: ${{ secrets.SFTP_PORT }}
+      SFTP_USER: ${{ secrets.SFTP_USER }}
+      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      SFTP_KEY: ${{ secrets.SFTP_KEY }}
+      SFTP_LOG_DIR: ${{ secrets.SFTP_LOG_DIR }}
+      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT }}
+    steps:
+      - name: Check configuration
+        id: cfg
+        run: |
+          if [ -n "$SFTP_HOST" ] && [ -n "$SFTP_USER" ] && { [ -n "$SFTP_PASSWORD" ] || [ -n "$SFTP_KEY" ]; }; then
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::SFTP secrets are not set, so there is nothing to update. See README, 'Live stats'."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.cfg.outputs.ready == 'yes'
+
+      - uses: actions/setup-python@v5
+        if: steps.cfg.outputs.ready == 'yes'
+        with:
+          python-version: '3.12'
+
+      - name: Download the server logs
+        if: steps.cfg.outputs.ready == 'yes'
+        run: |
+          pip install --quiet paramiko
+          python3 tools/sync_logs.py "$RUNNER_TEMP/logs"
+
+      - name: Rebuild the stats and player heads
+        if: steps.cfg.outputs.ready == 'yes'
+        run: |
+          python3 tools/build_stats.py "$RUNNER_TEMP/logs" docs/data
+          python3 tools/fetch_faces.py docs/data docs/faces
+
+      - name: Commit
+        id: commit
+        if: steps.cfg.outputs.ready == 'yes'
+        run: |
+          git config user.name "voxel-stats"
+          git config user.email "voxel-stats@users.noreply.github.com"
+          git add docs/data docs/faces
+          if git diff --cached --quiet; then
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Update stats ($(date -u +'%Y-%m-%d %H:%M') UTC)"
+            git pull --rebase --autostash
+            git push
+            echo "pushed=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pushes made with the built-in token don't always start a Pages build by themselves.
+      - name: Ask Pages to rebuild
+        if: steps.commit.outputs.pushed == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
