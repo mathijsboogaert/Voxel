@@ -34,10 +34,10 @@ const BLOCKS = {
   }),
 };
 
-const make = (tag, attrs = {}, style) => {
+const make = (tag, attrs = {}, cls) => {
   const n = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
-  if (style) n.setAttribute('style', style);
+  if (cls) n.setAttribute('class', cls);
   return n;
 };
 
@@ -49,7 +49,7 @@ export function pattern(spec, { rows = 1 } = {}) {
   const cols = Math.ceil(spec.length / rows);
   const W = cols * CELL, H = rows * CELL;
   const svg = make('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true', focusable: 'false' });
-  svg.style.overflow = 'hidden';
+  svg.setAttribute('class', 'pattern');
 
   const fills = make('g'), arcs = make('g');
   spec.forEach((item, i) => {
@@ -57,16 +57,16 @@ export function pattern(spec, { rows = 1 } = {}) {
     const block = kind === 'disc-amber' ? BLOCKS.disc('amber') : BLOCKS[kind]();
     const place = `translate(${(i % cols) * CELL} ${Math.floor(i / cols) * CELL}) rotate(${rot} ${CELL / 2} ${CELL / 2})`;
     const f = make('g', { transform: place });
-    for (const [tag, attrs, color] of block.fills) f.append(make(tag, attrs, `fill:var(--${color});stroke:none`));
+    for (const [tag, attrs, color] of block.fills) f.append(make(tag, attrs, `pat-fill pat-fill--${color}`));
     fills.append(f);
     const a = make('g', { transform: place });
-    for (const d of block.lines) a.append(make('path', { d }, `fill:none;stroke:var(--line);stroke-width:${STROKE}`));
+    for (const d of block.lines) a.append(make('path', { d }, 'pat-line'));
     arcs.append(a);
   });
 
   // The grid: one frame (kept inside the picture) and one line on every boundary between cells.
-  const grid = make('g', {}, `fill:none;stroke:var(--line);stroke-width:${STROKE}`);
-  grid.append(make('rect', { x: STROKE / 2, y: STROKE / 2, width: W - STROKE, height: H - STROKE }, 'stroke-linejoin:miter'));
+  const grid = make('g', {}, 'pat-line');
+  grid.append(make('rect', { x: STROKE / 2, y: STROKE / 2, width: W - STROKE, height: H - STROKE }));
   for (let c = 1; c < cols; c++) grid.append(make('path', { d: `M${c * CELL} 0 V${H}` }));
   for (let r = 1; r < rows; r++) grid.append(make('path', { d: `M0 ${r * CELL} H${W}` }));
 

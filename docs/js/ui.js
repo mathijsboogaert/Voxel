@@ -94,3 +94,10 @@ export function parseCSV(text) {
   const head = rows.shift() || [];
   return rows.filter((r) => r.length > 1 || r[0]).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ''])));
 }
+
+/** Bar widths and heights come from data, so they are classes (w-0 .. w-100, h-0 .. h-100 in site.css), not inline styles. */
+const pctOf = (n) => Math.max(0, Math.min(100, Math.round(n)));
+export const widthClass = (pct) => 'w-' + pctOf(pct);
+export const heightClass = (pct) => 'h-' + pctOf(pct);
+/** A border's colour as a class, for the small colour dots in search (the editor palette is in site.css). */
+export const colorClass = (hex) => 'c-' + String(hex || '').replace('#', '').toLowerCase();

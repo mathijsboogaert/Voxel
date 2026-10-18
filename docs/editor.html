@@ -15,65 +15,7 @@
 <link rel="stylesheet" href="assets/brand.css">
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/map.css">
-<style>
-  /* Editor chrome, in the brand's terms: paper panels, 2px ink outlines, square corners, no shadows. */
-  .epanel {
-    position: absolute; z-index: 1001; top: var(--space-3); left: var(--space-3);
-    width: 232px; max-height: calc(100% - 2 * var(--space-3)); overflow-y: auto;
-    display: flex; flex-direction: column; gap: var(--space-2);
-    padding: var(--space-3); background: var(--paper); color: var(--ink);
-    border: var(--stroke-2) solid var(--line);
-  }
-  #borderEditor, #shopEditor { display: none; left: calc(232px + 2 * var(--space-3)); }
-  #borderEditor.open, #shopEditor.open { display: flex; }
-  .epanel h2 { font: 600 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
-  .ebtn {
-    min-height: 40px; padding: 6px 12px; text-align: left;
-    font: 600 14px/20px var(--font-sans); color: var(--ink); background: var(--paper);
-    border: var(--stroke-2) solid var(--line); border-radius: 0; cursor: pointer;
-  }
-  .ebtn:hover { background: var(--paper-sunken); }
-  .ebtn:disabled { color: var(--ink-muted); border-color: var(--line-soft); background: var(--paper-sunken); cursor: not-allowed; }
-  .ebtn.active { background: var(--action); border-color: var(--action); color: var(--on-action); }
-  .ebtn--primary { background: var(--action); border-color: var(--action); color: var(--on-action); }
-  .ebtn--danger { color: var(--rust-text); }
-  .etools .hint, .epanel .hint { font: 400 13px/18px var(--font-sans); color: var(--ink-muted); }
-  .tool-divider { border-top: var(--stroke-1) solid var(--line-soft); margin: 2px 0; }
-  .efield {
-    width: 100%; height: 40px; padding: 0 12px;
-    background: var(--paper); color: var(--ink);
-    border: var(--stroke-2) solid var(--line); border-radius: 0;
-    font: 400 16px/24px var(--font-sans);
-  }
-  .efield::placeholder { color: var(--ink-muted); }
-  .efield:focus, .ebtn:focus-visible, .swatch-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .toggle-row { display: flex; align-items: center; gap: var(--space-2); font: 400 14px/20px var(--font-sans); cursor: pointer; }
-  .toggle-row input { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
-  .field-label { font: 600 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
-  .owner-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-  .owner-chips:empty { display: none; }
-  .owner-chip { padding: 2px 8px; font: 600 13px/20px var(--font-sans); color: var(--ink); background: var(--paper-sunken); border: var(--stroke-2) solid var(--line); border-radius: 0; cursor: pointer; }
-  .owner-chip:hover { background: var(--paper); }
-  #colorSwatches { display: flex; flex-wrap: wrap; gap: 6px; }
-  .swatch-btn { width: 24px; height: 24px; cursor: pointer; border: var(--stroke-2) solid var(--line-soft); }
-  .swatch-btn.selected { border-color: var(--line); box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--line); }
-  .eactions { display: flex; gap: 6px; }
-  .eactions .ebtn { flex: 1; padding-inline: 8px; text-align: center; }
-
-  .leaflet-container.drawing-mode { cursor: crosshair; }
-  .leaflet-interactive.border-line { cursor: pointer; }
-  /* The shape being drawn: rust, dashed; the next segment is fainter. */
-  .draft-line { stroke: var(--rust); stroke-dasharray: 8 6; fill: none; }
-  .draft-line--preview { opacity: 0.55; }
-  .shop-outline { cursor: pointer; }
-  .draft-dot { stroke: var(--line); fill: var(--paper); fill-opacity: 1; }
-
-  @media (max-width: 700px) {
-    .epanel { width: auto; right: var(--space-3); max-height: 45%; }
-    .mapui--tr { top: auto; bottom: 120px; }
-    #borderEditor, #shopEditor { left: var(--space-3); top: auto; bottom: var(--space-3); max-height: 70%; }
-  }
-</style>
+<link rel="stylesheet" href="assets/editor.css">
 </head>
 <body class="map-page">
 
@@ -497,8 +439,8 @@ function addShopLayer(x, z, label, extra = {}) {
   // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
   if (points) {
     const ll = pointsToLatLngs(points);
-    const casing = L.polygon(ll, { color: '#16120f', weight: 7, fill: false, interactive: false, className: 'shop-casing' });
-    const shape = L.polygon(ll, { color: '#ff9505', weight: 3, fill: true, fillColor: '#000', fillOpacity: shop.spoiler ? 1 : 0, className: 'shop-outline border-line' });
+    const casing = L.polygon(ll, { fill: false, interactive: false, className: 'shop-casing' });
+    const shape = L.polygon(ll, { fill: true, className: shop.spoiler ? 'shop-outline shop-outline--spoiler border-line' : 'shop-outline border-line' });
     shop.shape = shape;
     shape.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openShopEditor(shop); });
     marker = L.layerGroup([casing, shape]);
@@ -645,7 +587,7 @@ let editingBorder = null;
 let editingColor = null;
 
 colorSwatchesEl.innerHTML = PALETTE.map((c) =>
-  `<div class="swatch-btn" data-color="${c}" style="background:${c}"></div>`
+  `<div class="swatch-btn c-${c.slice(1).toLowerCase()}" data-color="${c}"></div>`
 ).join('');
 colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((el) => {
   el.addEventListener('click', () => {
@@ -722,7 +664,7 @@ function openShopEditor(shop) {
   shopLabelInput.value = shop.label || '';
   shopOwnerInput.value = shop.owner || '';
   shopSpoilerInput.checked = !!shop.spoiler;
-  shopSpoilerRow.style.display = shop.points ? '' : 'none'; // only outlines can be filled
+  shopSpoilerRow.hidden = !shop.points; // only outlines can be filled
   shopEditorEl.classList.add('open');
   shopLabelInput.focus();
   shopLabelInput.select();
@@ -738,7 +680,13 @@ shopSaveBtn.addEventListener('click', () => {
   editingShop.label = shopLabelInput.value.trim();
   editingShop.owner = matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim();
   editingShop.spoiler = !!editingShop.points && shopSpoilerInput.checked;
-  if (editingShop.shape) editingShop.shape.setStyle({ fillOpacity: editingShop.spoiler ? 1 : 0 });
+  if (editingShop.shape) {
+    // Keep the class on the layer's options too, so it is right if the layer is added to the map later.
+    const cls = editingShop.spoiler ? 'shop-outline shop-outline--spoiler border-line' : 'shop-outline border-line';
+    editingShop.shape.options.className = cls;
+    const node = editingShop.shape.getElement();
+    if (node) node.classList.toggle('shop-outline--spoiler', editingShop.spoiler);
+  }
   saveShops();
   closeShopEditor();
 });
@@ -882,7 +830,7 @@ function renderSearchResults(query) {
   searchList.innerHTML = currentResults.length
     ? currentResults.map((r, i) => {
         const icon = r.type === 'border'
-          ? `<i style="background:${r.color}"></i>`
+          ? `<i class="c-${String(r.color).replace('#', '').toLowerCase()}"></i>`
           : `<img src="assets/shop-icon.png" alt="">`;
         return `<li class="sresult" role="option" aria-selected="${i === 0}" data-index="${i}"><span class="sresult__icon">${icon}</span><span>${escapeHtml(r.label)}<small>${r.type === 'border' ? 'Border' : 'Shop'}</small></span></li>`;
       }).join('')

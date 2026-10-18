@@ -8,15 +8,10 @@ const DAY = 864e5;
 const sv = (tag, attrs = {}) => { const n = document.createElementNS(SVG_NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); return n; };
 const dayLabel = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/Amsterdam' });
 
-const STYLES = [
-  { color: 'var(--teal-text)', dash: '', width: 2.5 },
-  { color: 'var(--rust)', dash: '', width: 2.5 },
-  { color: 'var(--ink)', dash: '', width: 2.5 },
-  { color: 'var(--teal)', dash: '8 4', width: 2.5 },
-  { color: 'var(--ink-muted)', dash: '2 4', width: 2.5 },
-];
+// Each line is a class in site.css (race-line--0 .. --4, --focus): colour, weight and dash pattern live there.
+const STYLES = ['0', '1', '2', '3', '4'];
 // On a player page their own line is the bold rust one; the leaders use the other four styles.
-const FOCUS = { color: 'var(--rust)', dash: '', width: 4.5 };
+const FOCUS = 'focus';
 const OTHERS = [STYLES[0], STYLES[2], STYLES[3], STYLES[4]];
 
 /** The lines to draw: the top five, or this player plus the top four others. */
@@ -60,14 +55,14 @@ function raceChart(st, series) {
     let d = `M${x(start)} ${y(0)}`;
     for (const p of s.steps) d += ` H${x(p.t)} V${y(p.v)}`;
     d += ` H${x(end)}`;
-    svg.append(sv('path', { d, fill: 'none', style: `stroke:${s.style.color};stroke-width:${s.style.width};stroke-linejoin:miter;stroke-dasharray:${s.style.dash || 'none'}` }));
+    svg.append(sv('path', { d, class: `race-line race-line--${s.style}` }));
   });
   return svg;
 }
 
 const swatch = (style) => {
   const s = sv('svg', { viewBox: '0 0 28 8', class: 'race-swatch', 'aria-hidden': 'true' });
-  s.append(sv('path', { d: 'M0 4H28', style: `stroke:${style.color};stroke-width:${Math.min(style.width, 4) + 0.5};stroke-dasharray:${style.dash || 'none'}` }));
+  s.append(sv('path', { d: 'M0 4H28', class: `race-line race-line--${style}` }));
   return s;
 };
 
@@ -76,7 +71,7 @@ export function raceBlock(st, { focus = null, heading = 'Advancement race' } = {
   const series = raceSeries(st, focus);
   if (!series.length) return [];
   return [
-    el('p', { class: 'label', style: 'margin-top:24px' }, heading),
+    el('p', { class: 'label mt-4' }, heading),
     raceChart(st, series),
     el('ul', { class: 'race-legend' }, series.map((s) =>
       el('li', {}, swatch(s.style), faceEl(s.name, 'sm'), el('span', { class: 'race-legend__name' }, s.name), el('span', { class: 'small' }, `${fmtInt(s.total)} pts`)))),

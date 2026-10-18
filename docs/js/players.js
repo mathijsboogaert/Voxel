@@ -1,6 +1,6 @@
 // Players list: everyone with a face, playtime and when they were last on, most playtime first.
 import { loadStats } from './data.js';
-import { el, faceEl, playerHref, fmtHours, relTime } from './ui.js';
+import { el, faceEl, playerHref, fmtHours, relTime, widthClass } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 let query = '';
@@ -20,7 +20,7 @@ function render(st) {
         el('span', { class: 'pcard__top' },
           el('span', { class: 'pcard__name' }, `${p.rank}. ${p.name}`),
           el('span', { class: 'pcard__value' }, fmtHours(p.minutes / 60))),
-        el('span', { class: 'pbar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(3, (p.minutes / max) * 100)}%` })),
+        el('span', { class: 'pbar', 'aria-hidden': 'true' }, el('i', { class: widthClass(Math.max(3, (p.minutes / max) * 100)) })),
         el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`))))));
 }
 

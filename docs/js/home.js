@@ -1,6 +1,6 @@
 // Homepage: hero status, news, map preview, stats overview, player faces.
 import { loadStats } from './data.js';
-import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, fmtDay, hourLabel } from './ui.js';
+import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, fmtDay, hourLabel, widthClass, heightClass } from './ui.js';
 import { pattern } from './pattern.js';
 import { raceBlock } from './race.js';
 
@@ -139,7 +139,7 @@ function renderBoard(st, holder) {
       el('li', {}, el('a', { class: 'row', href: playerHref(r.name) },
         el('span', { class: 'row__rank' }, i + 1), faceEl(r.name),
         el('span', { class: 'row__name' }, r.name), el('span', { class: 'row__value' }, b.show(r.value)),
-        el('span', { class: 'row__bar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(3, (r.value / max) * 100)}%` })))))),
+        el('span', { class: 'row__bar', 'aria-hidden': 'true' }, el('i', { class: widthClass(Math.max(3, (r.value / max) * 100)) })))))),
     ...(boardKey === 'advancements' ? raceBlock(st) : []),
     el('p', { class: 'card__foot' }, el('a', { href: url('players/') }, `See all ${st.overview.playerCount} players`)),
   );
@@ -162,11 +162,11 @@ function renderStats(st) {
   const rhythm = el('div', { class: 'card' },
     el('p', { class: 'label' }, 'When people play'),
     el('div', { class: 'rhythm', role: 'img', 'aria-label': `Playtime by hour of the day. Busiest around ${hourLabel(top)}.` },
-      st.byHourAll.map((m, h) => el('i', { class: h === top ? 'top' : '', style: `height:${Math.max(3, (m / max) * 100)}%`, title: hourLabel(h) }))),
+      st.byHourAll.map((m, h) => el('i', { class: (h === top ? 'top ' : '') + heightClass(Math.max(3, (m / max) * 100)), title: hourLabel(h) }))),
     el('div', { class: 'rhythm-axis small', 'aria-hidden': 'true' }, ['00', '06', '12', '18', '24'].map((t) => el('span', {}, t))),
-    el('p', { class: 'small', style: 'margin-top:8px' }, `Dutch time. Most online at once: ${o.peakPlayers}${o.peakAt ? ', ' + fmtDay(o.peakAt) : ''}.`));
+    el('p', { class: 'small mt-2' }, `Dutch time. Most online at once: ${o.peakPlayers}${o.peakAt ? ', ' + fmtDay(o.peakAt) : ''}.`));
 
-  $('#stats-body').replaceChildren(tiles, el('div', { class: 'stats-grid', style: 'margin-top:16px' }, boardCard, rhythm));
+  $('#stats-body').replaceChildren(tiles, el('div', { class: 'stats-grid mt-3' }, boardCard, rhythm));
 }
 
 /* ---- Players -------------------------------------------------------------------- */

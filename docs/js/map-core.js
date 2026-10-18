@@ -145,9 +145,9 @@ export async function createWorldMap(element, opts = {}) {
   const shops = shopData.map((s) => {
     if (Array.isArray(s.points) && s.points.length >= 3) {
       const ll = s.points.map((p) => worldToLatLng(p.x, p.z));
-      const casing = L.polygon(ll, { color: '#16120f', weight: 7, fill: false, interactive: false, className: 'shop-casing' });
-      // A spoiler wall (s.spoiler) is filled solid black so what is behind it can't be seen.
-      const shape = L.polygon(ll, { color: '#ff9505', weight: 3, fill: true, fillColor: '#000', fillOpacity: s.spoiler ? 1 : 0, interactive, className: 'shop-outline' });
+      const casing = L.polygon(ll, { fill: false, interactive: false, className: 'shop-casing' });
+      // A spoiler wall (s.spoiler) is filled solid black so what is behind it can't be seen. Colours and weights are in map.css.
+      const shape = L.polygon(ll, { fill: true, interactive, className: s.spoiler ? 'shop-outline shop-outline--spoiler' : 'shop-outline' });
       if (interactive && s.label) shape.bindPopup(el('span', {}, s.label), { closeButton: false, className: 'shop-popup' });
       const bounds = shape.getBounds();
       return { ...s, marker: L.layerGroup([casing, shape]), bounds, open: () => shape.openPopup(bounds.getCenter()) };

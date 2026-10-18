@@ -84,3 +84,9 @@ body.map-page { height: 100vh; height: 100dvh; display: flex; flex-direction: co
 }
 
 .labels-off .border-label { display: none; }
+
+/* Shops drawn over their building: an orange outline with a dark edge, so the build stays visible underneath. */
+.shop-casing { stroke: #16120f; stroke-width: 7; fill: none; }
+.shop-outline { stroke: var(--orange); stroke-width: 3; fill: #000; fill-opacity: 0; }
+.shop-outline--spoiler { fill-opacity: 1; }
+:where(.sresult__icon i) { background: var(--orange); }

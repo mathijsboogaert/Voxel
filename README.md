@@ -37,6 +37,11 @@ and follows the visitor's light or dark setting.
 - `docs/assets/brand.css`: the brand tokens (copied from the guide's `tokens.json`) and the base components: button, card, tag, face.
 - `docs/assets/site.css`: header, hero, news, stats and the players pages.
 - `docs/assets/map.css`: the map's controls and labels in the same terms.
+- `docs/assets/editor.css`: the editor's panels and buttons.
+- **All styling lives in these four files; pages and scripts carry no inline `style`.** Fonts, sizes, colours, spacing and line weights are CSS, and
+  the scripts only pick class names. Data-driven sizes are classes too: bar widths and heights are `w-0` to `w-100` and `h-0` to `h-100`
+  (`widthClass()` / `heightClass()` in `docs/js/ui.js`), spacing is `mt-1` to `mt-4`, and chart lines and pattern fills are named classes
+  (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in the CSS and it changes everywhere.
 - `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
 - `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
 - Player heads are shown square (to keep the pixel grid) with `image-rendering: pixelated`. The guide lists round corners for avatars, but square heads suit Minecraft's grid; change `.face` in `brand.css` if you prefer round.

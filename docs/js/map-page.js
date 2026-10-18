@@ -1,7 +1,7 @@
 // The full map page: pan and zoom, spawn and zoom buttons, a position readout, and search
 // across borders, shops and players. Deep links: ?find=Name, or ?x=..&z=..&zoom=..
 import { createWorldMap, worldToLatLng, latLngToWorld, blocksPerPixel, DETAIL_ZOOM, DEFAULT_ZOOM } from './map-core.js';
-import { el, url, faceEl, playerHref, SEED, SPAWN } from './ui.js';
+import { el, url, faceEl, playerHref, colorClass, SEED, SPAWN } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -82,7 +82,7 @@ function render(query) {
   if (!q) { list.replaceChildren(); return; }
   if (!results.length) { list.replaceChildren(el('li', { class: 'msearch__empty' }, 'No matches')); return; }
   list.replaceChildren(...results.map((r, i) => {
-    const icon = r.type === 'border' ? el('i', { style: `background:${r.color}` })
+    const icon = r.type === 'border' ? el('i', { class: colorClass(r.color) })
       : r.type === 'shop' ? el('img', { src: url('assets/shop-icon.png'), alt: '' })
       : faceEl(r.label, 'sm');
     const sub = r.type === 'border' ? 'Border' : r.type === 'shop' ? 'Shop' : 'Player';
