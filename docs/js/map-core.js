@@ -28,7 +28,7 @@ async function fetchJSON(path, fallback = []) {
 // The explored world: pre-rendered tiles listed in tiles/manifest.json. Only tiles that exist are
 // requested; where a detailed tile is missing (outside the base neighbourhoods) the nearest coarser
 // tile is cropped and scaled up instead, so the whole explored area shows at every zoom.
-async function exploredLayer() {
+export async function exploredLayer() {
   const manifest = await fetchJSON('tiles/manifest.json', null);
   if (!manifest) return null;
   const have = {};

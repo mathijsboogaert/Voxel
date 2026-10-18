@@ -2,380 +2,170 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOXEL world map</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Editor · Voxel</title>
+<meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="assets/brand.css">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/map.css">
 <style>
-  :root {
-    color-scheme: dark;
-    --bg: #14161a;
-    --panel: #1d2025;
-    --border: #2c3038;
-    --text: #e6e8eb;
-    --muted: #9aa0a8;
-    /* Sampled from the VOXEL logo */
-    --brand-teal: #2a9d8f;
-    --brand-teal-light: #3dbaa9;
-    --brand-orange: #ff9505;
-    --brand-gold: #ffb627;
-    --brand-rust: #cc5803;
+  /* Editor chrome, in the brand's terms: paper panels, 2px ink outlines, square corners, no shadows. */
+  .epanel {
+    position: absolute; z-index: 1001; top: var(--space-3); left: var(--space-3);
+    width: 232px; max-height: calc(100% - 2 * var(--space-3)); overflow-y: auto;
+    display: flex; flex-direction: column; gap: var(--space-2);
+    padding: var(--space-3); background: var(--paper); color: var(--ink);
+    border: var(--stroke-2) solid var(--line);
   }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    background: #05060a; color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    overflow: hidden;
+  #borderEditor, #shopEditor { display: none; left: calc(232px + 2 * var(--space-3)); }
+  #borderEditor.open, #shopEditor.open { display: flex; }
+  .epanel h2 { font: 600 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+  .ebtn {
+    min-height: 40px; padding: 6px 12px; text-align: left;
+    font: 600 14px/20px var(--font-sans); color: var(--ink); background: var(--paper);
+    border: var(--stroke-2) solid var(--line); border-radius: 0; cursor: pointer;
   }
-  #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
-
-  /* ---- Header ------------------------------------------------------- */
-  #appHeader {
-    flex: 0 0 auto;
-    height: 68px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    z-index: 1100;
+  .ebtn:hover { background: var(--paper-sunken); }
+  .ebtn:disabled { color: var(--ink-muted); border-color: var(--line-soft); background: var(--paper-sunken); cursor: not-allowed; }
+  .ebtn.active { background: var(--action); border-color: var(--action); color: var(--on-action); }
+  .ebtn--primary { background: var(--action); border-color: var(--action); color: var(--on-action); }
+  .ebtn--danger { color: var(--rust-text); }
+  .etools .hint, .epanel .hint { font: 400 13px/18px var(--font-sans); color: var(--ink-muted); }
+  .tool-divider { border-top: var(--stroke-1) solid var(--line-soft); margin: 2px 0; }
+  .efield {
+    width: 100%; height: 40px; padding: 0 12px;
+    background: var(--paper); color: var(--ink);
+    border: var(--stroke-2) solid var(--line); border-radius: 0;
+    font: 400 16px/24px var(--font-sans);
   }
-  #brand { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; min-width: 0; }
-  #brandLogo { height: 40px; width: 40px; flex: none; }
-  #brandText { display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap; overflow: hidden; }
-  #brandName {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    letter-spacing: 0.02em;
-    color: var(--text);
-  }
-  #brandSubtitle {
-    font-family: "Space Grotesk", sans-serif;
-    font-weight: 500;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--brand-teal-light);
-  }
-
-  #headerActions { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
-
-  /* Collapsed to a round icon button by default; clicking it expands
-     #searchWrap to fill the header (see #appHeader.search-open below),
-     which hides the logo and "Return to spawn" button until the search
-     is closed again. */
-  #searchWrap { position: relative; display: flex; align-items: center; justify-content: flex-end; flex: 1 1 auto; max-width: 520px; }
-  #searchIconBtn {
-    width: 36px; height: 36px; flex: none; padding: 0;
-    background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
-  }
-  #searchIconBtn:hover { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
-  #searchIconBtn svg { width: 16px; height: 16px; }
-  #searchWrap.expanded #searchIconBtn { display: none; }
-
-  #searchInputRow { display: none; position: relative; align-items: center; flex: 1 1 auto; }
-  #searchWrap.expanded #searchInputRow { display: flex; }
-  #searchInput {
-    width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    border-radius: 999px; padding: 8px 34px 8px 14px; font-size: 13px;
-  }
-  #searchInput::placeholder { color: var(--muted); }
-  #searchInput:focus { outline: none; border-color: var(--brand-teal); }
-  #searchCloseBtn {
-    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-    width: 24px; height: 24px; flex: none; padding: 0;
-    background: transparent; border: none; color: var(--muted);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
-  }
-  #searchCloseBtn:hover { background: #2a2e35; color: #fff; }
-  #searchCloseBtn svg { width: 12px; height: 12px; }
-
-  #appHeader.search-open #brand,
-  #appHeader.search-open #returnToSpawnBtn { display: none; }
-
-  #searchResults {
-    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    max-height: 280px; overflow-y: auto; display: none; z-index: 1300;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  }
-  #searchResults.open { display: block; }
-  .search-result { padding: 8px 12px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-  .search-result .result-icon { width: 14px; height: 14px; flex: none; border-radius: 3px; }
-  .search-result:hover, .search-result.active { background: #2a2e35; }
-  .search-empty { padding: 10px 12px; font-size: 12.5px; color: var(--muted); }
-
-  #returnToSpawnBtn {
-    display: flex; align-items: center; gap: 8px; flex: none;
-    background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    border-radius: 999px; padding: 8px 16px 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer;
-  }
-  #returnToSpawnBtn:hover { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
-  #returnToSpawnBtn svg { width: 15px; height: 15px; flex: none; }
-
-  /* ---- Map area ------------------------------------------------------ */
-  #mapArea { position: relative; flex: 1 1 auto; min-height: 0; }
-  #map { position: absolute; inset: 0; background: #05060a; }
-  .leaflet-container { background: #05060a; }
-  .biome-tile { image-rendering: pixelated; }
-
-  /* Pixel art shop icon -- nearest-neighbor scaling keeps its edges crisp
-     instead of letting the browser smooth/blur it like a photo. */
-  .shop-marker-icon {
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-  }
-  .shop-popup .leaflet-popup-content-wrapper {
-    background: rgba(20,22,26,0.92);
-    color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-  }
-  .shop-popup .leaflet-popup-content {
-    margin: 6px 10px;
-    font-size: 12.5px;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-  }
-  .shop-popup .leaflet-popup-tip { background: rgba(20,22,26,0.92); }
-
-  /* ---- Footer --------------------------------------------------------- */
-  #appFooter {
-    flex: 0 0 auto;
-    height: 40px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    font-size: 12.5px;
-    z-index: 1100;
-  }
-  #footerSeed { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #footerSeed b { color: var(--text); font-weight: 500; }
-  #footerHover { color: var(--text); font-weight: 500; white-space: nowrap; flex: none; margin-left: 16px; }
-
-  #zoomIndicator {
-    position: absolute; top: 16px; right: 16px; z-index: 1000;
-    background: rgba(29,32,37,0.92);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    color: var(--muted);
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  #drawTools {
-    position: absolute; top: 68px; right: 16px; z-index: 1000;
-    background: rgba(29,32,37,0.92);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px;
-    display: flex; flex-direction: column; gap: 6px;
-    width: 180px;
-    backdrop-filter: blur(6px);
-  }
-  #drawTools button {
-    background: #2a2e35; border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer;
-    text-align: left;
-  }
-  #drawTools button:hover { background: #363b44; }
-  #drawTools button:disabled { opacity: 0.4; cursor: default; }
-  #drawTools button.active { background: var(--brand-orange); border-color: var(--brand-orange); color: #1a1200; }
-  #drawTools button.active:hover { background: var(--brand-gold); }
-  #drawTools .hint { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
-  #drawTools .tool-divider { border-top: 1px solid var(--border); margin: 2px 0; }
+  .efield::placeholder { color: var(--ink-muted); }
+  .efield:focus, .ebtn:focus-visible, .swatch-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .toggle-row { display: flex; align-items: center; gap: var(--space-2); font: 400 14px/20px var(--font-sans); cursor: pointer; }
+  .toggle-row input { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
+  .field-label { font: 600 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); }
+  .owner-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+  .owner-chips:empty { display: none; }
+  .owner-chip { padding: 2px 8px; font: 600 13px/20px var(--font-sans); color: var(--ink); background: var(--paper-sunken); border: var(--stroke-2) solid var(--line); border-radius: 0; cursor: pointer; }
+  .owner-chip:hover { background: var(--paper); }
+  #colorSwatches { display: flex; flex-wrap: wrap; gap: 6px; }
+  .swatch-btn { width: 24px; height: 24px; cursor: pointer; border: var(--stroke-2) solid var(--line-soft); }
+  .swatch-btn.selected { border-color: var(--line); box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--line); }
+  .eactions { display: flex; gap: 6px; }
+  .eactions .ebtn { flex: 1; padding-inline: 8px; text-align: center; }
 
   .leaflet-container.drawing-mode { cursor: crosshair; }
-
-  .border-label {
-    background: rgba(20,22,26,0.85);
-    border: none;
-    box-shadow: none;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 2px 6px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-  }
-  .border-label::before { display: none; }
-
   .leaflet-interactive.border-line { cursor: pointer; }
+  /* The shape being drawn: rust, dashed; the next segment is fainter. */
+  .draft-line { stroke: var(--rust); stroke-dasharray: 8 6; fill: none; }
+  .draft-line--preview { opacity: 0.55; }
+  .draft-dot { stroke: var(--line); fill: var(--paper); fill-opacity: 1; }
 
-  #borderEditor {
-    position: absolute; top: 68px; right: 206px; z-index: 1001;
-    background: rgba(29,32,37,0.96);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
-    width: 200px;
-    backdrop-filter: blur(6px);
-    display: none;
-  }
-  #borderEditor.open { display: block; }
-  #borderEditor h2 { font-size: 12px; margin: 0 0 8px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  #borderLabelInput {
-    width: 100%; background: #101216; border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-bottom: 10px;
-  }
-  .toggle-row {
-    display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text);
-    margin-bottom: 10px; cursor: pointer;
-  }
-  .toggle-row input { width: 14px; height: 14px; accent-color: var(--brand-teal); cursor: pointer; }
-  #colorSwatches { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .swatch-btn {
-    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
-    border: 2px solid transparent;
-  }
-  .swatch-btn.selected { border-color: #fff; }
-  #borderEditorActions { display: flex; gap: 6px; }
-  #borderEditorActions button {
-    flex: 1; background: #2a2e35; border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer;
-  }
-  #borderEditorActions button:hover { background: #363b44; }
-  #borderSave { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
-  #borderSave:hover { background: var(--brand-teal-light); }
-  #borderDelete { color: #ff6b6b; }
-
-  #shopEditor {
-    position: absolute; top: 68px; right: 206px; z-index: 1001;
-    background: rgba(29,32,37,0.96);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
-    width: 200px;
-    backdrop-filter: blur(6px);
-    display: none;
-  }
-  #shopEditor.open { display: block; }
-  #shopEditor h2 { font-size: 12px; margin: 0 0 8px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  #shopLabelInput {
-    width: 100%; background: #101216; border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-bottom: 10px;
-  }
-  #shopEditorActions { display: flex; gap: 6px; }
-  #shopEditorActions button {
-    flex: 1; background: #2a2e35; border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer;
-  }
-  #shopEditorActions button:hover { background: #363b44; }
-  #shopSave { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
-  #shopSave:hover { background: var(--brand-teal-light); }
-  #shopDelete { color: #ff6b6b; }
-
-  .field-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 4px; display: block; }
-  .owner-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-  .owner-chip { background: #2a2e35; border: 1px solid var(--border); color: var(--text); border-radius: 99px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
-  .owner-chip:hover { background: #363b44; }
-  #ownerInput, #shopOwnerInput {
-    width: 100%; background: #101216; border: 1px solid var(--border); color: var(--text);
-    border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-bottom: 10px;
+  @media (max-width: 700px) {
+    .epanel { width: auto; right: var(--space-3); max-height: 45%; }
+    .mapui--tr { top: auto; bottom: 120px; }
+    #borderEditor, #shopEditor { left: var(--space-3); top: auto; bottom: var(--space-3); max-height: 70%; }
   }
 </style>
 </head>
-<body>
-<div id="app">
-  <header id="appHeader">
-    <div id="brand">
-      <img src="assets/logo.png" alt="VOXEL logo" id="brandLogo">
-      <div id="brandText">
-        <span id="brandName">VOXEL</span>
-        <span id="brandSubtitle">World map</span>
-      </div>
-    </div>
-    <div id="headerActions">
-      <div id="searchWrap">
-        <button id="searchIconBtn" aria-label="Search">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-            <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <div id="searchInputRow">
-          <input id="searchInput" type="text" placeholder="Search borders & shops…" autocomplete="off">
-          <button id="searchCloseBtn" aria-label="Close search">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-        <div id="searchResults"></div>
-      </div>
-      <button id="returnToSpawnBtn">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C8 2 5 5.2 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.8-3-7-7-7z" fill="#ff4d4f"/>
-          <circle cx="12" cy="9" r="2.6" fill="#fff"/>
-        </svg>
-        Return to spawn
-      </button>
-    </div>
-  </header>
+<body class="map-page">
 
-  <div id="mapArea">
-    <div id="map"></div>
-    <div id="zoomIndicator"><span id="zoomBpp">-</span></div>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Voxel, home">
+      <img class="brand__mark mark--light" src="assets/logo-mark.png" alt="" width="36" height="36">
+      <img class="brand__mark mark--dark" src="assets/logo-mark-reversed.png" alt="" width="36" height="36">
+      <span class="brand__name">Voxel</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="./">Home</a>
+      <a href="map/">Map</a>
+      <a href="players/">Players</a>
+      <a href="editor.html" aria-current="page">Editor</a>
+    </nav>
+  </div>
+</header>
 
-    <div id="drawTools">
-      <button id="drawToggle">Draw border</button>
-      <button id="drawFinish" disabled>Finish line</button>
-      <button id="drawUndo" disabled>Undo point</button>
-      <button id="drawClear">Clear all</button>
-      <div class="tool-divider"></div>
-      <button id="shopToggle">Place shop</button>
-      <button id="shopClear">Clear all shops</button>
-      <div class="tool-divider"></div>
-      <button id="drawExport">Export borders.json</button>
-      <button id="shopExport">Export shops.json</button>
-      <div class="hint" id="drawHint">Click to add points, snapped to the world's pixel grid. Shops are placed with a single click. Export each file when done, then drop it into docs/ so it ships with the site.</div>
+<main class="map-main">
+  <h1 class="sr-only">Voxel map editor</h1>
+  <div id="map" role="application" aria-label="Map editor"></div>
+
+  <div class="mapui mapui--tr">
+    <button class="mapbtn" id="btn-search" aria-label="Search the map" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg>
+    </button>
+    <button class="mapbtn" id="btn-spawn" aria-label="Back to spawn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C12 22 4.5 14.5 4.5 9.5a7.5 7.5 0 0 1 15 0C19.5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+    </button>
+  </div>
+
+  <div class="mapui mapui--br">
+    <button class="mapbtn" id="btn-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="mapbtn" id="btn-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+  </div>
+
+  <p class="mapinfo" id="mapinfo"><strong id="footerHover"></strong><span id="zoomBpp"></span></p>
+
+  <div class="msearch" id="msearch" role="search">
+    <div class="msearch__bar">
+      <input id="search-input" type="text" inputmode="search" enterkeyhint="search" placeholder="Search borders and shops" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search borders and shops">
+      <button class="mapbtn" id="search-close" aria-label="Close search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
+    <ul class="msearch__results" id="search-results" role="listbox" aria-label="Results"></ul>
+  </div>
 
-    <div id="borderEditor">
-      <h2>Border</h2>
-      <input id="borderLabelInput" type="text" placeholder="Label" maxlength="40">
-      <label class="toggle-row">
-        <input type="checkbox" id="borderShowLabelInput" checked>
-        <span>Show label on map</span>
-      </label>
-      <span class="field-label">Owners (shown on their player page)</span>
-      <div id="ownerChips" class="owner-chips"></div>
-      <input id="ownerInput" list="rosterList" type="text" placeholder="Add a player" autocomplete="off">
-      <div id="colorSwatches"></div>
-      <div id="borderEditorActions">
-        <button id="borderDelete">Delete</button>
-        <button id="borderCancel">Cancel</button>
-        <button id="borderSave">Save</button>
-      </div>
-    </div>
+  <div id="drawTools" class="epanel etools">
+    <button class="ebtn" id="drawToggle">Draw border</button>
+    <button class="ebtn" id="drawFinish" disabled>Finish shape</button>
+    <button class="ebtn" id="drawUndo" disabled>Undo point</button>
+    <button class="ebtn" id="drawClear">Clear all</button>
+    <div class="tool-divider"></div>
+    <button class="ebtn" id="shopToggle">Place shop</button>
+    <button class="ebtn" id="shopClear">Clear all shops</button>
+    <div class="tool-divider"></div>
+    <button class="ebtn ebtn--primary" id="drawExport">Export borders.json</button>
+    <button class="ebtn ebtn--primary" id="shopExport">Export shops.json</button>
+    <p class="hint" id="drawHint">Borders use straight horizontal and vertical lines on the block grid. Click to add corners (Enter, double-click, or a click on the first corner finishes). Shops are one click. Export each file when done, put it in docs/ and push.</p>
+  </div>
 
-    <div id="shopEditor">
-      <h2>Shop</h2>
-      <input id="shopLabelInput" type="text" placeholder="Shop name" maxlength="40">
-      <span class="field-label">Owner</span>
-      <input id="shopOwnerInput" list="rosterList" type="text" placeholder="Player name" autocomplete="off">
-      <datalist id="rosterList"></datalist>
-      <div id="shopEditorActions">
-        <button id="shopDelete">Delete</button>
-        <button id="shopCancel">Cancel</button>
-        <button id="shopSave">Save</button>
-      </div>
+  <div id="borderEditor" class="epanel">
+    <h2>Border</h2>
+    <input class="efield" id="borderLabelInput" type="text" placeholder="Label" maxlength="40">
+    <label class="toggle-row">
+      <input type="checkbox" id="borderShowLabelInput" checked>
+      <span>Show label on map</span>
+    </label>
+    <span class="field-label">Owners (shown on their player page)</span>
+    <div id="ownerChips" class="owner-chips"></div>
+    <input class="efield" id="ownerInput" list="rosterList" type="text" placeholder="Add a player" autocomplete="off">
+    <span class="field-label">Colour</span>
+    <div id="colorSwatches"></div>
+    <div class="eactions">
+      <button class="ebtn ebtn--danger" id="borderDelete">Delete</button>
+      <button class="ebtn" id="borderCancel">Cancel</button>
+      <button class="ebtn ebtn--primary" id="borderSave">Save</button>
     </div>
   </div>
 
-  <footer id="appFooter">
-    <div id="footerSeed">loading…</div>
-    <div id="footerHover">hover the map</div>
-  </footer>
-</div>
+  <div id="shopEditor" class="epanel">
+    <h2>Shop</h2>
+    <input class="efield" id="shopLabelInput" type="text" placeholder="Shop name" maxlength="40">
+    <span class="field-label">Owner</span>
+    <input class="efield" id="shopOwnerInput" list="rosterList" type="text" placeholder="Player name" autocomplete="off">
+    <datalist id="rosterList"></datalist>
+    <div class="eactions">
+      <button class="ebtn ebtn--danger" id="shopDelete">Delete</button>
+      <button class="ebtn" id="shopCancel">Cancel</button>
+      <button class="ebtn ebtn--primary" id="shopSave">Save</button>
+    </div>
+  </div>
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="wasm/cubiomes.js"></script>
@@ -419,7 +209,6 @@ const SEED = '2344567094';
 let cubiomes = null;
 let seedInitialized = false;
 
-const footerSeedEl = document.getElementById('footerSeed');
 const footerHoverEl = document.getElementById('footerHover');
 
 let tileLayer = null;
@@ -454,125 +243,49 @@ map.setView([0, 0], DEFAULT_ZOOM);
 const zoomBppEl = document.getElementById('zoomBpp');
 function updateZoomIndicator() {
   const z = map.getZoom();
-  zoomBppEl.textContent = `${blocksPerPixel(z).toFixed(2)} blocks/px`;
+  zoomBppEl.textContent = `  ${blocksPerPixel(z).toFixed(2)} blocks/px`;
 }
 map.on('zoom', updateZoomIndicator);
 updateZoomIndicator();
 
 // Set once loadSeed() knows the real spawn point; falls back to world
 // origin if clicked before the seed has finished loading.
-let spawnLatLngForReturn = L.latLng(0, 0);
-document.getElementById('returnToSpawnBtn').addEventListener('click', () => {
+const SPAWN = { x: 32, z: -4 };
+let spawnLatLngForReturn = worldToLatLng(SPAWN.x, SPAWN.z);
+document.getElementById('btn-spawn').addEventListener('click', () => {
   map.setView(spawnLatLngForReturn, DEFAULT_ZOOM);
 });
+document.getElementById('btn-in').addEventListener('click', () => map.zoomIn(1));
+document.getElementById('btn-out').addEventListener('click', () => map.zoomOut(1));
 
-// --- Tile worker pool --------------------------------------------------
-// A single tile can take ~150ms (native resolution) to over 1s
-// (supersampled, zoomed-out) to compute, and render_tile calls straight
-// into the WASM module, which runs synchronously. Doing that on the main
-// thread would freeze panning/zooming/hover for as long as tiles take to
-// render. Each worker below loads its own cubiomes module instance and
-// seeds it independently, so tile requests run off the main thread and
-// spread across up to hardwareConcurrency workers in parallel.
-const WORKER_COUNT = Math.min(6, Math.max(2, navigator.hardwareConcurrency || 4));
-const tileWorkers = [];
-let nextWorkerIndex = 0;
-let pendingTileId = 0;
-const pendingTiles = new Map(); // id -> {resolve}
-
-function initTileWorkers(seed) {
-  for (let i = 0; i < WORKER_COUNT; i++) {
-    const worker = new Worker('wasm/tile-worker.js');
-    worker.onmessage = (e) => {
-      const msg = e.data;
-      if (msg.type === 'ready') return;
-      const entry = pendingTiles.get(msg.id);
-      if (!entry) return;
-      pendingTiles.delete(msg.id);
-      entry.resolve(msg.pixels);
-    };
-    worker.postMessage({ type: 'init', seed });
-    tileWorkers.push(worker);
+// --- The explored world ----------------------------------------------------
+// The same pre-rendered tiles as the public map (tools/world/render_world.py), so borders are drawn
+// around what is really built. The cubiomes WASM module is only used for the biome name on hover.
+async function loadWorld() {
+  const { exploredLayer } = await import('./js/map-core.js');
+  const layer = await exploredLayer();
+  if (layer) {
+    const m = layer.manifest.bounds, pad = 512;
+    layer.addTo(map);
+    map.setMaxBounds(L.latLngBounds(worldToLatLng(m.x0 - pad, m.z1 + pad), worldToLatLng(m.x1 + pad, m.z0 - pad)));
+    map.setMinZoom(layer.manifest.minZoom - 1);
   }
-}
-
-function requestTile(worldX0, worldZ0, w, h, bpp) {
-  return new Promise((resolve) => {
-    const id = pendingTileId++;
-    pendingTiles.set(id, { resolve });
-    const worker = tileWorkers[nextWorkerIndex];
-    nextWorkerIndex = (nextWorkerIndex + 1) % tileWorkers.length;
-    worker.postMessage({ type: 'render', id, worldX0, worldZ0, w, h, bpp });
-  });
-}
-
-const BiomeLayer = L.GridLayer.extend({
-  createTile: function (coords, done) {
-    const tile = document.createElement('canvas');
-    tile.width = TILE_SIZE;
-    tile.height = TILE_SIZE;
-    tile.className = 'biome-tile';
-
-    if (!seedInitialized) {
-      setTimeout(() => done(null, tile), 0);
-      return tile;
-    }
-
-    const bpp = Math.max(1, Math.round(blocksPerPixel(coords.z)));
-    const worldX0 = coords.x * TILE_SIZE * bpp;
-    const worldZ0 = coords.y * TILE_SIZE * bpp;
-
-    requestTile(worldX0, worldZ0, TILE_SIZE, TILE_SIZE, bpp)
-      .then((pixels) => {
-        const imageData = new ImageData(pixels, TILE_SIZE, TILE_SIZE);
-        tile.getContext('2d').putImageData(imageData, 0, 0);
-        done(null, tile);
-      })
-      .catch((e) => {
-        console.error('tile render failed', e);
-        done(null, tile);
-      });
-    return tile;
-  },
-});
-
-function loadSeed(seedStr) {
-  footerSeedEl.textContent = 'generating…';
-
-  cubiomes.ccall('seed_init', null, ['string'], [seedStr]);
-  initTileWorkers(seedStr);
-  seedInitialized = true;
-
-  const mcVersion = cubiomes.ccall('get_mc_version', 'string', [], []);
-  const spawnX = cubiomes.ccall('get_spawn_x', 'number', [], []);
-  const spawnZ = cubiomes.ccall('get_spawn_z', 'number', [], []);
-
-  footerSeedEl.innerHTML =
-    `<b>Seed</b> ${seedStr} &nbsp;·&nbsp; <b>Minecraft</b> ${mcVersion} &nbsp;·&nbsp; <b>Spawn</b> X ${spawnX}, Z ${spawnZ}`;
-
-  const spawnLatLng = worldToLatLng(spawnX, spawnZ);
-  spawnLatLngForReturn = spawnLatLng;
-  L.marker(spawnLatLng, {
+  L.marker(spawnLatLngForReturn, {
     icon: L.divIcon({
       className: '',
-      html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.8))">
-        <path d="M12 2C8 2 5 5.2 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.8-3-7-7-7z" fill="#ff4d4f" stroke="#fff" stroke-width="1.2"/>
-        <circle cx="12" cy="9" r="2.6" fill="#fff"/>
-      </svg>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 22],
+      html: '<svg class="spawn-pin" viewBox="0 0 28 28" aria-hidden="true"><path d="M14 27C14 27 4.5 17.5 4.5 11a9.5 9.5 0 0 1 19 0C23.5 17.5 14 27 14 27Z"/><circle cx="14" cy="11" r="3.2"/></svg>',
+      iconSize: [28, 28], iconAnchor: [14, 26],
     }),
+    interactive: false, keyboard: false,
   }).addTo(map);
-
-  tileLayer = new BiomeLayer({
-    tileSize: TILE_SIZE,
-    noWrap: true,
-    updateWhenZooming: false,
-    maxNativeZoom: NATIVE_ZOOM,
-  }).addTo(map);
-
-  map.setView(spawnLatLng, DEFAULT_ZOOM);
+  map.setView(spawnLatLngForReturn, DEFAULT_ZOOM);
 }
+
+// Border names get in the way of the builds once you are zoomed in (same rule as the public map).
+const LABEL_MAX_BPP = 4;
+const syncLabels = () => map.getContainer().classList.toggle('labels-off', blocksPerPixel(map.getZoom()) < LABEL_MAX_BPP);
+map.on('zoom', syncLabels);
+syncLabels();
 
 let hoverPending = false;
 map.on('mousemove', (e) => {
@@ -584,17 +297,17 @@ map.on('mousemove', (e) => {
     const x = Math.round(w.x), z = Math.round(w.z);
     const name = cubiomes.ccall('get_biome_name_at', 'string', ['number', 'number'], [x, z]);
     const biomeText = name ? name.replaceAll('_', ' ') : 'unknown';
-    footerHoverEl.textContent = `${biomeText} — X ${x}, Z ${z}`;
+    footerHoverEl.textContent = `${biomeText} X ${x}, Z ${z}`;
   });
 });
-map.on('mouseout', () => { footerHoverEl.textContent = 'hover the map'; });
+map.on('mouseout', () => { footerHoverEl.textContent = ''; });
 
 // --- Border drawing layer --------------------------------------------
-// Borders are drawn as vector polylines whose vertices are snapped to
-// GRID_BLOCKS (the same 4-block cell size the biome raster is rendered
-// at), so lines land exactly on the biome pixel grid rather than at
-// arbitrary sub-pixel positions.
-const GRID_BLOCKS = 4;
+// Borders are drawn as vector polygons. Every point is snapped to a whole block (a pixel of the map
+// at full zoom) and every line runs straight horizontally or vertically: each new point keeps the
+// previous point's x or z, whichever the mouse is further from. Finishing closes the shape with one
+// more corner if needed, so the closing line is straight too.
+const GRID_BLOCKS = 1;
 const STORAGE_KEY = `voxel-map-borders:${SEED}`;
 
 const drawToggleBtn = document.getElementById('drawToggle');
@@ -609,6 +322,7 @@ let drawMode = false;
 let activePoints = [];   // [{x,z}, ...] snapped world coords, in progress
 let activeLine = null;   // L.Polyline for the in-progress line
 let activeMarkers = [];  // L.CircleMarker per vertex of the in-progress line
+let previewLine = null;  // dashed line from the last point to where the next one would land
 let borders = [];        // [{points, label, color, layer, labelTooltip}, ...]
 
 function escapeHtml(str) {
@@ -625,24 +339,43 @@ function pointsToLatLngs(points) {
   return points.map((p) => worldToLatLng(p.x, p.z));
 }
 
+// Keep the straight-line rule: from `last`, go horizontally or vertically, whichever way the mouse went more.
+function constrain(p, last) {
+  if (!last) return p;
+  return Math.abs(p.x - last.x) >= Math.abs(p.z - last.z) ? { x: p.x, z: last.z } : { x: last.x, z: p.z };
+}
+const samePoint = (a, b) => a && b && a.x === b.x && a.z === b.z;
+
 function renderActiveLine() {
   const latlngs = pointsToLatLngs(activePoints);
 
   if (activeLine) map.removeLayer(activeLine);
   activeLine = latlngs.length >= 2
-    ? L.polygon(latlngs, {
-        color: '#ffd23f', weight: 2, dashArray: '6 5', fillColor: '#ffd23f', fillOpacity: 0.15,
-      }).addTo(map)
+    ? L.polyline(latlngs, { weight: 3, className: 'draft-line', interactive: false }).addTo(map)
     : null;
 
   activeMarkers.forEach((m) => map.removeLayer(m));
-  activeMarkers = latlngs.map((ll) => L.circleMarker(ll, {
-    radius: 4, color: '#ffd23f', weight: 2, fillColor: '#1d2025', fillOpacity: 1,
-  }).addTo(map));
+  activeMarkers = latlngs.map((ll) => L.circleMarker(ll, { radius: 5, weight: 2, className: 'draft-dot', interactive: false }).addTo(map));
 
-  drawFinishBtn.disabled = activePoints.length < 2;
+  clearPreview();
+  drawFinishBtn.disabled = activePoints.length < 3;
   drawUndoBtn.disabled = activePoints.length === 0;
 }
+
+function clearPreview() {
+  if (previewLine) { map.removeLayer(previewLine); previewLine = null; }
+}
+function showPreview(latlng) {
+  clearPreview();
+  if (!drawMode || !activePoints.length) return;
+  const w = latLngToWorld(latlng);
+  const next = constrain(snapWorld(w.x, w.z), activePoints[activePoints.length - 1]);
+  previewLine = L.polyline(pointsToLatLngs([activePoints[activePoints.length - 1], next]), {
+    weight: 3, className: 'draft-line draft-line--preview', interactive: false,
+  }).addTo(map);
+}
+map.on('mousemove', (e) => showPreview(e.latlng));
+map.on('mouseout', clearPreview);
 
 function updateLabelTooltip(border) {
   if (border.labelTooltip) { map.removeLayer(border.labelTooltip); border.labelTooltip = null; }
@@ -667,10 +400,8 @@ const serializeBorder = (b) => ({
 
 function addBorderLayer(points, label, color, hideLabel, owners) {
   const layer = L.polygon(pointsToLatLngs(points), {
-    // A border with its label hidden shows only the outline -- the fill
-    // is what the label was mainly there to explain, so leaving it in
-    // would still visually claim the area and crowd out shop icons.
-    color, weight: 3, fillColor: color, fillOpacity: hideLabel ? 0 : 0.25, className: 'border-line',
+    // Outline only, like the public map: the fill would hide the builds underneath.
+    color, weight: 3, fill: false, className: 'border-line',
   }).addTo(map);
   const border = { points, label, color, hideLabel: !!hideLabel, owners: owners || [], layer, labelTooltip: null };
   layer.on('click', (e) => { L.DomEvent.stopPropagation(e); openBorderEditor(border); });
@@ -799,8 +530,25 @@ function clearAllShops() {
   closeShopEditor();
 }
 
+// Close the shape with straight lines only, and drop points that sit on a straight run.
+function closeOrthogonal(points) {
+  const pts = [...points];
+  const first = pts[0], last = pts[pts.length - 1];
+  if (first.x !== last.x && first.z !== last.z) pts.push({ x: first.x, z: last.z });
+  let changed = true;
+  while (changed && pts.length > 3) {
+    changed = false;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[(i + pts.length - 1) % pts.length], b = pts[i], c = pts[(i + 1) % pts.length];
+      if ((a.x === b.x && b.x === c.x) || (a.z === b.z && b.z === c.z)) { pts.splice(i, 1); changed = true; break; }
+    }
+  }
+  return pts;
+}
+
 function finishActiveLine() {
-  if (activePoints.length >= 2) {
+  if (activePoints.length >= 3) {
+    activePoints = closeOrthogonal(activePoints);
     const label = `Border ${borders.length + 1}`;
     const color = PALETTE[nextColorIndex % PALETTE.length];
     nextColorIndex++;
@@ -910,7 +658,7 @@ borderSaveBtn.addEventListener('click', () => {
   addOwnerFromInput();
   editingBorder.owners = [...editingOwners];
   editingBorder.color = editingColor;
-  editingBorder.layer.setStyle({ color: editingColor, fillColor: editingColor, fillOpacity: editingBorder.hideLabel ? 0 : 0.25 });
+  editingBorder.layer.setStyle({ color: editingColor });
   updateLabelTooltip(editingBorder);
   saveBorders();
   closeBorderEditor();
@@ -1013,7 +761,15 @@ function setShopMode(on) {
 map.on('click', (e) => {
   if (drawMode) {
     const w = latLngToWorld(e.latlng);
-    activePoints.push(snapWorld(w.x, w.z));
+    const last = activePoints[activePoints.length - 1];
+    const p = constrain(snapWorld(w.x, w.z), last);
+    // Clicking back on the first point closes the shape.
+    if (activePoints.length >= 3 && map.latLngToContainerPoint(worldToLatLng(p.x, p.z)).distanceTo(map.latLngToContainerPoint(worldToLatLng(activePoints[0].x, activePoints[0].z))) < 12) {
+      finishActiveLine();
+      return;
+    }
+    if (samePoint(p, last)) return;
+    activePoints.push(p);
     renderActiveLine();
     return;
   }
@@ -1075,33 +831,22 @@ document.getElementById('shopExport').addEventListener('click', exportShops);
 // from the live `borders`/`shops` arrays on every keystroke rather than
 // cached, since both can change at any time while editing.
 const DETAIL_ZOOM = 13;
-const appHeaderEl = document.getElementById('appHeader');
-const searchWrapEl = document.getElementById('searchWrap');
-const searchIconBtn = document.getElementById('searchIconBtn');
-const searchCloseBtn = document.getElementById('searchCloseBtn');
-const searchInput = document.getElementById('searchInput');
-const searchResultsEl = document.getElementById('searchResults');
+const searchBox = document.getElementById('msearch');
+const searchOpenBtn = document.getElementById('btn-search');
+const searchInput = document.getElementById('search-input');
+const searchList = document.getElementById('search-results');
 let currentResults = [];
 let searchActiveIndex = -1;
 
-// Collapsed to just the icon button by default. Expanding it takes over
-// the header -- the logo and "Return to spawn" button hide (see
-// #appHeader.search-open in the CSS) so the search box has room to grow.
-function openSearch() {
-  searchWrapEl.classList.add('expanded');
-  appHeaderEl.classList.add('search-open');
-  searchInput.focus();
-}
+function openSearch() { searchBox.classList.add('open'); searchOpenBtn.setAttribute('aria-expanded', 'true'); searchInput.focus(); }
 function closeSearch() {
-  searchWrapEl.classList.remove('expanded');
-  appHeaderEl.classList.remove('search-open');
-  searchInput.value = '';
-  closeSearchResults();
-  searchInput.blur();
+  searchBox.classList.remove('open'); searchOpenBtn.setAttribute('aria-expanded', 'false');
+  searchInput.value = ''; searchList.innerHTML = ''; currentResults = []; searchActiveIndex = -1; searchInput.blur();
 }
-searchIconBtn.addEventListener('click', openSearch);
-searchCloseBtn.addEventListener('click', closeSearch);
+searchOpenBtn.addEventListener('click', openSearch);
+document.getElementById('search-close').addEventListener('click', closeSearch);
 
+// Rebuilt on every keystroke, since borders and shops change while editing.
 function buildSearchIndex() {
   const idx = [];
   for (const b of borders) if (b.label) idx.push({ type: 'border', label: b.label, color: b.color, ref: b });
@@ -1111,74 +856,52 @@ function buildSearchIndex() {
 
 function renderSearchResults(query) {
   const q = query.trim().toLowerCase();
-  if (!q) { closeSearchResults(); return; }
-
-  currentResults = buildSearchIndex()
-    .filter((r) => r.label.toLowerCase().includes(q))
-    .slice(0, 8);
+  currentResults = q ? buildSearchIndex().filter((r) => r.label.toLowerCase().includes(q)).slice(0, 8) : [];
   searchActiveIndex = currentResults.length ? 0 : -1;
-
-  searchResultsEl.innerHTML = currentResults.length
+  if (!q) { searchList.innerHTML = ''; return; }
+  searchList.innerHTML = currentResults.length
     ? currentResults.map((r, i) => {
         const icon = r.type === 'border'
-          ? `<span class="result-icon" style="background:${r.color}"></span>`
-          : `<img class="result-icon shop-marker-icon" src="assets/shop-icon.png" alt="">`;
-        return `<div class="search-result${i === 0 ? ' active' : ''}" data-index="${i}">${icon}${escapeHtml(r.label)}</div>`;
+          ? `<i style="background:${r.color}"></i>`
+          : `<img src="assets/shop-icon.png" alt="">`;
+        return `<li class="sresult" role="option" aria-selected="${i === 0}" data-index="${i}"><span class="sresult__icon">${icon}</span><span>${escapeHtml(r.label)}<small>${r.type === 'border' ? 'Border' : 'Shop'}</small></span></li>`;
       }).join('')
-    : `<div class="search-empty">No matches</div>`;
-
-  searchResultsEl.querySelectorAll('.search-result').forEach((el) => {
-    el.addEventListener('click', () => selectSearchResult(Number(el.dataset.index)));
-  });
-  searchResultsEl.classList.add('open');
-}
-
-function closeSearchResults() {
-  searchResultsEl.classList.remove('open');
-  searchResultsEl.innerHTML = '';
-  currentResults = [];
-  searchActiveIndex = -1;
-}
-
-function moveSearchActive(delta) {
-  if (!currentResults.length) return;
-  searchActiveIndex = (searchActiveIndex + delta + currentResults.length) % currentResults.length;
-  searchResultsEl.querySelectorAll('.search-result').forEach((el, i) => {
-    el.classList.toggle('active', i === searchActiveIndex);
-  });
+    : '<li class="msearch__empty">No matches</li>';
+  searchList.querySelectorAll('.sresult').forEach((li) => li.addEventListener('click', () => selectSearchResult(Number(li.dataset.index))));
 }
 
 function selectSearchResult(i) {
   const r = currentResults[i];
   if (!r) return;
-  if (r.type === 'border') {
-    map.fitBounds(r.ref.layer.getBounds(), { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
-  } else {
-    map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM);
-  }
+  if (r.type === 'border') map.fitBounds(r.ref.layer.getBounds(), { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
+  else map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM);
   closeSearch();
 }
 
 searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
-searchInput.addEventListener('focus', () => { if (searchInput.value) renderSearchResults(searchInput.value); });
 searchInput.addEventListener('keydown', (e) => {
   e.stopPropagation();
-  if (e.key === 'ArrowDown') { e.preventDefault(); moveSearchActive(1); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); moveSearchActive(-1); }
-  else if (e.key === 'Enter') { e.preventDefault(); if (searchActiveIndex >= 0) selectSearchResult(searchActiveIndex); }
-  else if (e.key === 'Escape') { closeSearch(); }
+  if (e.key === 'Escape') closeSearch();
+  else if (e.key === 'Enter') { e.preventDefault(); selectSearchResult(searchActiveIndex); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!currentResults.length) return;
+    searchActiveIndex = (searchActiveIndex + (e.key === 'ArrowDown' ? 1 : -1) + currentResults.length) % currentResults.length;
+    [...searchList.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === searchActiveIndex)));
+  }
 });
-document.addEventListener('click', (e) => {
-  if (searchWrapEl.classList.contains('expanded') && !searchWrapEl.contains(e.target)) closeSearch();
+document.addEventListener('pointerdown', (e) => {
+  if (searchBox.classList.contains('open') && !searchBox.contains(e.target) && !searchOpenBtn.contains(e.target)) closeSearch();
 });
 
 loadBorders();
 loadShops();
 
-footerSeedEl.textContent = 'loading wasm…';
+loadWorld();
 createCubiomesModule().then((mod) => {
   cubiomes = mod;
-  loadSeed(SEED);
+  cubiomes.ccall('seed_init', null, ['string'], [SEED]);
+  seedInitialized = true;
 });
 </script>
 </body>

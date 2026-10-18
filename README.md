@@ -162,8 +162,9 @@ District around its shops. The seed is fixed in `docs/js/ui.js` (`SEED`, and `SP
 
 ### The editor
 
-`docs/editor.html` is the one place to change borders and shops. **Draw border** places points snapped to the 4-block biome grid (double-click,
-Enter or **Finish line** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
+`docs/editor.html` is the one place to change borders and shops. The map under it is the real explored world, so you can trace borders around builds. **Draw border** places corners on whole blocks, with straight
+horizontal and vertical lines only (each corner keeps the previous corner's x or z; the shape is closed with one extra corner if needed). Double-click,
+Enter, clicking the first corner or **Finish shape** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
 visibility and owners; clicking a border later reopens it. **Place shop** drops a shop icon with one click and asks for a name and owner. The two
 modes switch each other off, and each **Clear all** needs a second click within three seconds to confirm.
 
