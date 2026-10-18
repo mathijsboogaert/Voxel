@@ -1,12 +1,12 @@
 name: Update stats
 
 # Pulls the server logs over SFTP, rebuilds docs/data, fetches heads for new players and commits
-# the result. Runs hourly (GitHub may start it a few minutes late) and on demand from the Actions tab.
+# the result. Runs every 15 minutes (GitHub skips and delays scheduled runs, so asking often keeps it roughly hourly at worst) and on demand from the Actions tab.
 # Without the SFTP secrets set (see README, "Live stats") it does nothing.
 
 on:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 permissions:

@@ -100,7 +100,7 @@ nearest upcoming event, otherwise the newest item. An event disappears a day aft
 
 ## Live stats
 
-`.github/workflows/stats.yml` keeps the stats current without a server of your own. Every hour it downloads the server's
+`.github/workflows/stats.yml` keeps the stats current without a server of your own. Every 15 minutes or so it downloads the server's
 `logs/` folder over SFTP, runs `tools/build_stats.py` and `tools/fetch_faces.py`, and commits the new `docs/data` and
 `docs/faces`; GitHub Pages then republishes. GitHub starts scheduled jobs a few minutes late and sometimes skips one, so
 "live" means within the hour. The page shows "Updated X min ago" and re-reads the data every five minutes while it is open.

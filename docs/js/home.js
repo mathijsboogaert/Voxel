@@ -15,7 +15,7 @@ $('[data-frieze]').append(pattern(['square', 'disc', 'leaf', 'square', 'cut@90',
 
 function renderUpdated(st) {
   const g = st.meta && st.meta.generated_at;
-  $('#updated').textContent = g ? `Updated ${relTime(g)}. Numbers refresh from the server every hour.` : '';
+  $('#updated').textContent = g ? `Updated ${relTime(g)}. Numbers refresh from the server every 15 minutes or so.` : '';
 }
 
 /* ---- News --------------------------------------------------------------------- */
