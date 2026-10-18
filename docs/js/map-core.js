@@ -140,10 +140,20 @@ export async function createWorldMap(element, opts = {}) {
     iconUrl: url('assets/shop-icon.png'), className: 'shop-marker-icon',
     iconSize: [shopSize, shopSize], iconAnchor: [shopSize / 2, shopSize / 2], popupAnchor: [0, -shopSize / 2 - 2],
   });
+  // A shop is drawn as an outline over its building (s.points, drawn in the editor), so the build stays
+  // visible underneath. Older shops that are only a point still get the icon.
   const shops = shopData.map((s) => {
+    if (Array.isArray(s.points) && s.points.length >= 3) {
+      const ll = s.points.map((p) => worldToLatLng(p.x, p.z));
+      const casing = L.polygon(ll, { color: '#16120f', weight: 7, fill: false, interactive: false, className: 'shop-casing' });
+      const shape = L.polygon(ll, { color: '#ff9505', weight: 3, fill: true, fillOpacity: 0, interactive, className: 'shop-outline' });
+      if (interactive && s.label) shape.bindPopup(el('span', {}, s.label), { closeButton: false, className: 'shop-popup' });
+      const bounds = shape.getBounds();
+      return { ...s, marker: L.layerGroup([casing, shape]), bounds, open: () => shape.openPopup(bounds.getCenter()) };
+    }
     const marker = L.marker(worldToLatLng(s.x, s.z), { icon, interactive, keyboard: interactive });
     if (interactive && s.label) marker.bindPopup(el('span', {}, s.label), { closeButton: false, className: 'shop-popup' });
-    return { ...s, marker };
+    return { ...s, marker, bounds: null, open: () => marker.openPopup() };
   });
   const syncShops = () => {
     const show = blocksPerPixel(map.getZoom()) <= SHOP_MAX_BPP;

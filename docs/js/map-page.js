@@ -96,7 +96,11 @@ function choose(i) {
   if (!r) return;
   if (r.type === 'player') { location.href = playerHref(r.label); return; }
   if (r.type === 'border') map.fitBounds(r.ref.layer.getBounds(), { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
-  else { map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM); map.once('moveend', () => r.ref.marker.openPopup()); }
+  else {
+    if (r.ref.bounds) map.fitBounds(r.ref.bounds, { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
+    else map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM);
+    map.once('moveend', () => r.ref.open());
+  }
   closeSearch();
 }
 

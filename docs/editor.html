@@ -65,6 +65,7 @@
   /* The shape being drawn: rust, dashed; the next segment is fainter. */
   .draft-line { stroke: var(--rust); stroke-dasharray: 8 6; fill: none; }
   .draft-line--preview { opacity: 0.55; }
+  .shop-outline { cursor: pointer; }
   .draft-dot { stroke: var(--line); fill: var(--paper); fill-opacity: 1; }
 
   @media (max-width: 700px) {
@@ -126,12 +127,12 @@
     <button class="ebtn" id="drawUndo" disabled>Undo point</button>
     <button class="ebtn" id="drawClear">Clear all</button>
     <div class="tool-divider"></div>
-    <button class="ebtn" id="shopToggle">Place shop</button>
+    <button class="ebtn" id="shopToggle">Draw shop outline</button>
     <button class="ebtn" id="shopClear">Clear all shops</button>
     <div class="tool-divider"></div>
     <button class="ebtn ebtn--primary" id="drawExport">Export borders.json</button>
     <button class="ebtn ebtn--primary" id="shopExport">Export shops.json</button>
-    <p class="hint" id="drawHint">Borders use straight horizontal and vertical lines on the block grid. Click to add corners (Enter, double-click, or a click on the first corner finishes). Shops are one click. Export each file when done, put it in docs/ and push.</p>
+    <p class="hint" id="drawHint">Borders use straight horizontal and vertical lines on the block grid. Click to add corners (Enter, double-click, or a click on the first corner finishes). Draw a shop outline the same way, over the building. Export each file when done, put it in docs/ and push.</p>
   </div>
 
   <div id="borderEditor" class="epanel">
@@ -404,7 +405,7 @@ function addBorderLayer(points, label, color, hideLabel, owners) {
     color, weight: 3, fill: false, className: 'border-line',
   }).addTo(map);
   const border = { points, label, color, hideLabel: !!hideLabel, owners: owners || [], layer, labelTooltip: null };
-  layer.on('click', (e) => { L.DomEvent.stopPropagation(e); openBorderEditor(border); });
+  layer.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openBorderEditor(border); });
   updateLabelTooltip(border);
   borders.push(border);
   return border;
@@ -446,8 +447,8 @@ function exportBorders() {
 }
 
 // --- Shop points --------------------------------------------------------
-// Unlike borders, shops are single points placed with one click and
-// rendered as a small pixel-art icon. Their name is hidden until clicked
+// Shops are outlines drawn over the building (same straight-line tool as borders), so the build stays
+// visible. Older shops that are just a point keep their small icon until redrawn. Their name is hidden until clicked
 // (editor here, popup on the read-only public page) rather than shown as
 // a permanent label like border names.
 const SHOP_STORAGE_KEY = `voxel-map-shops:${SEED}`;
@@ -458,7 +459,7 @@ const shopIcon = L.icon({
   iconAnchor: [14, 14],
   popupAnchor: [0, -16],
 });
-let shops = []; // [{x, z, label, marker}, ...]
+let shops = []; // [{x, z, points?, label, owner, added, marker}, ...]; x, z is the middle of the outline
 
 // Shop icons are a fixed screen size, so zoomed far enough out they'd
 // just be clutter sitting on top of biomes much larger than they are --
@@ -479,16 +480,28 @@ map.on('zoom', updateShopVisibility);
 
 const serializeShop = (s) => ({
   x: s.x, z: s.z, label: s.label,
+  ...(s.points && s.points.length ? { points: s.points } : {}),
   ...(s.owner ? { owner: s.owner } : {}),
   ...(s.added ? { added: s.added } : {}),
 });
 
 function addShopLayer(x, z, label, extra = {}) {
-  const marker = L.marker(worldToLatLng(x, z), { icon: shopIcon });
-  if (shopsVisibleAtCurrentZoom()) marker.addTo(map);
+  let marker;
+  const points = extra.points && extra.points.length >= 3 ? extra.points : null;
+  const shop = { x, z, points, label, owner: extra.owner || '', added: extra.added || '' };
   // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
-  const shop = { x, z, label, owner: extra.owner || '', added: extra.added || '', marker };
-  marker.on('click', (e) => { L.DomEvent.stopPropagation(e); openShopEditor(shop); });
+  if (points) {
+    const ll = pointsToLatLngs(points);
+    const casing = L.polygon(ll, { color: '#16120f', weight: 7, fill: false, interactive: false, className: 'shop-casing' });
+    const shape = L.polygon(ll, { color: '#ff9505', weight: 3, fill: false, className: 'shop-outline border-line' });
+    shape.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openShopEditor(shop); });
+    marker = L.layerGroup([casing, shape]);
+  } else {
+    marker = L.marker(worldToLatLng(x, z), { icon: shopIcon });
+    marker.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openShopEditor(shop); });
+  }
+  shop.marker = marker;
+  if (shopsVisibleAtCurrentZoom()) marker.addTo(map);
   shops.push(shop);
   return shop;
 }
@@ -509,7 +522,7 @@ async function loadShops() {
     try { data = JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY) || '[]'); } catch (e) { data = []; }
   }
 
-  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added });
+  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points });
 }
 
 function exportShops() {
@@ -547,7 +560,14 @@ function closeOrthogonal(points) {
 }
 
 function finishActiveLine() {
-  if (activePoints.length >= 3) {
+  if (activePoints.length >= 3 && drawKind === 'shop') {
+    const pts = closeOrthogonal(activePoints);
+    const xs = pts.map((p) => p.x), zs = pts.map((p) => p.z);
+    const shop = addShopLayer(Math.round((Math.min(...xs) + Math.max(...xs)) / 2), Math.round((Math.min(...zs) + Math.max(...zs)) / 2), '',
+      { points: pts, added: new Date().toISOString() });
+    saveShops();
+    openShopEditor(shop);
+  } else if (activePoints.length >= 3) {
     activePoints = closeOrthogonal(activePoints);
     const label = `Border ${borders.length + 1}`;
     const color = PALETTE[nextColorIndex % PALETTE.length];
@@ -734,28 +754,23 @@ shopLabelInput.addEventListener('keydown', (e) => {
 });
 
 const shopToggleBtn = document.getElementById('shopToggle');
-let shopMode = false;
+let drawKind = 'border'; // what the shape being drawn becomes: 'border' or 'shop'
 
-function setDrawMode(on) {
+function setDrawMode(on, kind = 'border') {
+  if (on && drawMode && kind !== drawKind) finishActiveLine(); // switching tools: keep what was drawn
   drawMode = on;
-  drawToggleBtn.classList.toggle('active', on);
-  drawToggleBtn.textContent = on ? 'Drawing…' : 'Draw border';
+  if (on) drawKind = kind;
+  drawToggleBtn.classList.toggle('active', on && drawKind === 'border');
+  drawToggleBtn.textContent = on && drawKind === 'border' ? 'Drawing…' : 'Draw border';
+  shopToggleBtn.classList.toggle('active', on && drawKind === 'shop');
+  shopToggleBtn.textContent = on && drawKind === 'shop' ? 'Drawing shop…' : 'Draw shop outline';
   map.getContainer().classList.toggle('drawing-mode', on);
   if (on) {
     map.doubleClickZoom.disable();
-    setShopMode(false);
   } else {
     map.doubleClickZoom.enable();
     finishActiveLine();
   }
-}
-
-function setShopMode(on) {
-  shopMode = on;
-  shopToggleBtn.classList.toggle('active', on);
-  shopToggleBtn.textContent = on ? 'Click map to place…' : 'Place shop';
-  map.getContainer().classList.toggle('drawing-mode', on || drawMode);
-  if (on) setDrawMode(false);
 }
 
 map.on('click', (e) => {
@@ -773,13 +788,6 @@ map.on('click', (e) => {
     renderActiveLine();
     return;
   }
-  if (shopMode) {
-    const w = latLngToWorld(e.latlng);
-    const snapped = snapWorld(w.x, w.z);
-    const shop = addShopLayer(snapped.x, snapped.z, '', { added: new Date().toISOString() });
-    saveShops();
-    openShopEditor(shop);
-  }
 });
 map.on('dblclick', (e) => {
   if (!drawMode) return;
@@ -793,10 +801,10 @@ document.addEventListener('keydown', (e) => {
   else if (e.key === 'Enter') finishActiveLine();
 });
 
-drawToggleBtn.addEventListener('click', () => setDrawMode(!drawMode));
+drawToggleBtn.addEventListener('click', () => setDrawMode(!(drawMode && drawKind === 'border'), 'border'));
 drawFinishBtn.addEventListener('click', finishActiveLine);
 drawUndoBtn.addEventListener('click', undoPoint);
-shopToggleBtn.addEventListener('click', () => setShopMode(!shopMode));
+shopToggleBtn.addEventListener('click', () => setDrawMode(!(drawMode && drawKind === 'shop'), 'shop'));
 
 // Both "Clear all" buttons need a second click within a few seconds to
 // confirm, so a stray click doesn't wipe out drawn work.

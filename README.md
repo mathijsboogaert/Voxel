@@ -166,8 +166,10 @@ District around its shops. The seed is fixed in `docs/js/ui.js` (`SEED`, and `SP
 `docs/editor.html` is the one place to change borders and shops. The map under it is the real explored world, so you can trace borders around builds. **Draw border** places corners on whole blocks, with straight
 horizontal and vertical lines only (each corner keeps the previous corner's x or z; the shape is closed with one extra corner if needed). Double-click,
 Enter, clicking the first corner or **Finish shape** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
-visibility and owners; clicking a border later reopens it. **Place shop** drops a shop icon with one click and asks for a name and owner. The two
-modes switch each other off, and each **Clear all** needs a second click within three seconds to confirm.
+visibility and owners; clicking a border later reopens it. **Draw shop outline** works the same way, over the shop's building: the outline (orange with a dark edge) leaves the build visible
+underneath, and finishing it asks for a name and owner. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
+them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off, and each **Clear all** needs a
+second click within three seconds to confirm.
 
 While you work, the editor autosaves to your browser's `localStorage` as a backup; that never reaches the site. The real files are
 `docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json**, replace the file in `docs/` with the download,
