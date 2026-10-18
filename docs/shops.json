@@ -1,20 +1,161 @@
 [
   {
-    "x": -4,
-    "z": 184,
-    "label": "Angela's Deepslate",
-    "owner": "EmrysPendragon"
+    "x": -25,
+    "z": 209,
+    "label": "Log Inn",
+    "points": [
+      {
+        "x": -35,
+        "z": 196
+      },
+      {
+        "x": -15,
+        "z": 196
+      },
+      {
+        "x": -15,
+        "z": 221
+      },
+      {
+        "x": -35,
+        "z": 221
+      }
+    ],
+    "owner": "Mathi_Craft",
+    "added": "2026-10-18T14:38:57.830Z"
   },
   {
-    "x": -24,
-    "z": 200,
-    "label": "Log Inn - Wood Shop",
-    "owner": "Mathi_Craft"
+    "x": -3,
+    "z": 187,
+    "label": "Angela's Deepslate and Stuff",
+    "points": [
+      {
+        "x": -8,
+        "z": 182
+      },
+      {
+        "x": -8,
+        "z": 192
+      },
+      {
+        "x": 1,
+        "z": 192
+      },
+      {
+        "x": 1,
+        "z": 182
+      }
+    ],
+    "owner": "EmrysPendragon",
+    "added": "2026-10-18T14:39:16.729Z"
   },
   {
-    "x": 4,
+    "x": -52,
+    "z": 194,
+    "label": "Ghast Station",
+    "points": [
+      {
+        "x": -68,
+        "z": 189
+      },
+      {
+        "x": -68,
+        "z": 199
+      },
+      {
+        "x": -37,
+        "z": 199
+      },
+      {
+        "x": -37,
+        "z": 189
+      }
+    ],
+    "owner": "EmrysPendragon",
+    "added": "2026-10-18T14:40:30.797Z"
+  },
+  {
+    "x": 5,
     "z": 208,
     "label": "Head Shop",
-    "owner": "EchoinSilence"
+    "points": [
+      {
+        "x": 8,
+        "z": 205
+      },
+      {
+        "x": 8,
+        "z": 210
+      },
+      {
+        "x": 4,
+        "z": 210
+      },
+      {
+        "x": 4,
+        "z": 207
+      },
+      {
+        "x": 1,
+        "z": 207
+      },
+      {
+        "x": 1,
+        "z": 205
+      }
+    ],
+    "owner": "EchoinSilence",
+    "added": "2026-10-18T14:41:00.914Z"
+  },
+  {
+    "x": -152,
+    "z": 232,
+    "label": "Amazon Warehouse",
+    "points": [
+      {
+        "x": -131,
+        "z": 296
+      },
+      {
+        "x": -173,
+        "z": 296
+      },
+      {
+        "x": -173,
+        "z": 168
+      },
+      {
+        "x": -131,
+        "z": 168
+      }
+    ],
+    "owner": "EchoinSilence",
+    "added": "2026-10-18T14:42:33.748Z",
+    "spoiler": true
+  },
+  {
+    "x": -12,
+    "z": 304,
+    "label": "Courthouse",
+    "points": [
+      {
+        "x": -21,
+        "z": 291
+      },
+      {
+        "x": -4,
+        "z": 291
+      },
+      {
+        "x": -4,
+        "z": 317
+      },
+      {
+        "x": -21,
+        "z": 317
+      }
+    ],
+    "owner": "Roefus",
+    "added": "2026-10-18T14:43:16.649Z"
   }
 ]

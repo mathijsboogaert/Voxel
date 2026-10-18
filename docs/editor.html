@@ -160,6 +160,10 @@
     <span class="field-label">Owner</span>
     <input class="efield" id="shopOwnerInput" list="rosterList" type="text" placeholder="Player name" autocomplete="off">
     <datalist id="rosterList"></datalist>
+    <label class="toggle-row" id="shopSpoilerRow">
+      <input type="checkbox" id="shopSpoilerInput">
+      <span>Spoiler wall (fill the shape black)</span>
+    </label>
     <div class="eactions">
       <button class="ebtn ebtn--danger" id="shopDelete">Delete</button>
       <button class="ebtn" id="shopCancel">Cancel</button>
@@ -481,6 +485,7 @@ map.on('zoom', updateShopVisibility);
 const serializeShop = (s) => ({
   x: s.x, z: s.z, label: s.label,
   ...(s.points && s.points.length ? { points: s.points } : {}),
+  ...(s.spoiler ? { spoiler: true } : {}),
   ...(s.owner ? { owner: s.owner } : {}),
   ...(s.added ? { added: s.added } : {}),
 });
@@ -488,12 +493,13 @@ const serializeShop = (s) => ({
 function addShopLayer(x, z, label, extra = {}) {
   let marker;
   const points = extra.points && extra.points.length >= 3 ? extra.points : null;
-  const shop = { x, z, points, label, owner: extra.owner || '', added: extra.added || '' };
+  const shop = { x, z, points, label, owner: extra.owner || '', added: extra.added || '', spoiler: !!extra.spoiler && !!points };
   // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
   if (points) {
     const ll = pointsToLatLngs(points);
     const casing = L.polygon(ll, { color: '#16120f', weight: 7, fill: false, interactive: false, className: 'shop-casing' });
-    const shape = L.polygon(ll, { color: '#ff9505', weight: 3, fill: false, className: 'shop-outline border-line' });
+    const shape = L.polygon(ll, { color: '#ff9505', weight: 3, fill: true, fillColor: '#000', fillOpacity: shop.spoiler ? 1 : 0, className: 'shop-outline border-line' });
+    shop.shape = shape;
     shape.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openShopEditor(shop); });
     marker = L.layerGroup([casing, shape]);
   } else {
@@ -522,7 +528,7 @@ async function loadShops() {
     try { data = JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY) || '[]'); } catch (e) { data = []; }
   }
 
-  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points });
+  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points, spoiler: s.spoiler });
 }
 
 function exportShops() {
@@ -702,6 +708,8 @@ borderLabelInput.addEventListener('keydown', (e) => {
 const shopEditorEl = document.getElementById('shopEditor');
 const shopLabelInput = document.getElementById('shopLabelInput');
 const shopOwnerInput = document.getElementById('shopOwnerInput');
+const shopSpoilerInput = document.getElementById('shopSpoilerInput');
+const shopSpoilerRow = document.getElementById('shopSpoilerRow');
 const shopSaveBtn = document.getElementById('shopSave');
 const shopDeleteBtn = document.getElementById('shopDelete');
 const shopCancelBtn = document.getElementById('shopCancel');
@@ -713,6 +721,8 @@ function openShopEditor(shop) {
   editingShop = shop;
   shopLabelInput.value = shop.label || '';
   shopOwnerInput.value = shop.owner || '';
+  shopSpoilerInput.checked = !!shop.spoiler;
+  shopSpoilerRow.style.display = shop.points ? '' : 'none'; // only outlines can be filled
   shopEditorEl.classList.add('open');
   shopLabelInput.focus();
   shopLabelInput.select();
@@ -727,6 +737,8 @@ shopSaveBtn.addEventListener('click', () => {
   if (!editingShop) return;
   editingShop.label = shopLabelInput.value.trim();
   editingShop.owner = matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim();
+  editingShop.spoiler = !!editingShop.points && shopSpoilerInput.checked;
+  if (editingShop.shape) editingShop.shape.setStyle({ fillOpacity: editingShop.spoiler ? 1 : 0 });
   saveShops();
   closeShopEditor();
 });
