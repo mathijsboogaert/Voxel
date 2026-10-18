@@ -49,7 +49,8 @@ function render(st, places) {
       el('div', { class: 'phero__who' },
         el('h1', {}, p.name),
         el('div', { class: 'status' },
-          el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`)))),
+          el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`),
+          st.meta && st.meta.generated_at ? el('span', { class: 'small' }, ` · stats updated ${relTime(st.meta.generated_at)}`) : null))),
     p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'badge' },
       el('span', { class: 'badge__icon' }, el('img', { src: url(`assets/badges/${b.toLowerCase().replace(/[^a-z]+/g, '-')}.svg`), alt: '' })), b))) : null);
 
