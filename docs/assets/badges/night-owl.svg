@@ -5,7 +5,7 @@
       .cls-1, .cls-2 {
         stroke: #000;
         stroke-miterlimit: 10;
-        stroke-width: .25px;
+        stroke-width: .4px;
       }
 
       .cls-1, .cls-3 {
@@ -36,7 +36,5 @@
       </g>
     </g>
   </g>
-  <g id="Outline">
-    <path d="M7.75.25v7.5H.25V.25h7.5M8,0H0v8H8V0h0Z"/>
-  </g>
+  
 </svg>

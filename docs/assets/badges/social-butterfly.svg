@@ -9,7 +9,7 @@
       .cls-1, .cls-2, .cls-3 {
         stroke: #000;
         stroke-miterlimit: 10;
-        stroke-width: .25px;
+        stroke-width: .4px;
       }
 
       .cls-2 {
@@ -42,5 +42,4 @@
       <path class="cls-1" d="M0,4h0c2.21,0,4,1.79,4,4h0C1.79,8,0,6.21,0,4H0Z" transform="translate(8 4) rotate(90)"/>
     </g>
   </g>
-  <path d="M7.75.25v7.5H.25V.25h7.5M8,0H0V8H8V0h0Z"/>
 </svg>

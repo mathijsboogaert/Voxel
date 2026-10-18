@@ -9,7 +9,7 @@
       .cls-1, .cls-2 {
         stroke: #000;
         stroke-miterlimit: 10;
-        stroke-width: .25px;
+        stroke-width: .4px;
       }
 
       .cls-2 {
@@ -39,5 +39,4 @@
       <rect class="cls-2" y="0" width="4" height="8"/>
     </g>
   </g>
-  <path d="M7.75.25v7.5H.25V.25h7.5M8,0H0v8H8V0h0Z"/>
 </svg>
