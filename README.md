@@ -59,6 +59,7 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 | `docs/data/voxel-sessions.csv`, `voxel-hourly.csv`, `voxel-events.csv` | `tools/build_stats.py` | Play sessions, minutes per hour, and deaths, advancements and chat counts (never message text) |
 | `docs/data/meta.json` | `tools/build_stats.py` | When the data was last built, shown as "Updated X ago" |
 | `docs/data/players.json` and `docs/faces/*.png` | `tools/fetch_faces.py` | The roster (name and UUID) and each player's head |
+| `docs/data/adjust.json` | by hand | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time |
 | `docs/borders.json` | the editor | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names) |
 | `docs/shops.json` | the editor | Shops: `x`, `z`, `label`, `owner`, and `added` (when it was placed) |
 | `docs/news.json` | by hand | Extra news items, mainly events with a countdown (below) |

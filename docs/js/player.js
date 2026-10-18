@@ -60,6 +60,19 @@ function render(st, places) {
 
   const sections = [];
 
+  // Where the logged time went: active, AFK (light teal) and admin work (yellow). Only shown when there is some.
+  if (p.afkMin > 0 || p.adminMin > 0) {
+    const parts = [
+      ['active', 'Active', p.minutes], ['afk', 'AFK', p.afkMin], ['admin', 'Admin', p.adminMin],
+    ].filter(([, , m]) => m > 0);
+    sections.push(el('div', { class: 'card' },
+      el('h3', {}, 'Time online'),
+      el('div', { class: 'tbar', role: 'img', 'aria-label': parts.map(([, name, m]) => `${name} ${fmtHours(m / 60)}`).join(', ') },
+        parts.map(([k, , m]) => el('i', { class: `tbar__seg tbar__seg--${k}`, style: `width:${(m / p.loggedMin) * 100}%` }))),
+      el('ul', { class: 'tlegend' }, parts.map(([k, name, m]) =>
+        el('li', {}, el('i', { class: `tbar__seg tbar__seg--${k}` }), el('span', {}, name), el('strong', {}, fmtHours(m / 60)))))));
+  }
+
   // When they play
   const max = Math.max(...p.byHour) || 1;
   if (p.favHour != null) {

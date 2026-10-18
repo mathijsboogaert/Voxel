@@ -32,11 +32,11 @@ let cached = null;
 export function loadStats(force = false) {
   if (force) cached = null;
   cached ||= (async () => {
-    const [s, h, e, roster, meta] = await Promise.all([
+    const [s, h, e, roster, meta, adjust] = await Promise.all([
       getText('data/voxel-sessions.csv'), getText('data/voxel-hourly.csv'), getText('data/voxel-events.csv'),
-      getJSON('data/players.json', []), getJSON('data/meta.json', null),
+      getJSON('data/players.json', []), getJSON('data/meta.json', null), getJSON('data/adjust.json', {}),
     ]);
-    return compute({ sessions: parseCSV(s), hourly: parseCSV(h), events: parseCSV(e), roster, meta });
+    return compute({ sessions: parseCSV(s), hourly: parseCSV(h), events: parseCSV(e), roster, meta, adjust });
   })();
   return cached;
 }
@@ -45,7 +45,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
 const dayMs = (d) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
 const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
 
-export function compute({ sessions, hourly, events, roster, meta }) {
+export function compute({ sessions, hourly, events, roster, meta, adjust = {} }) {
   const S = sessions.filter((s) => s.start_local >= LAUNCH);
   const H = hourly.filter((r) => r.date >= LAUNCH);
   const E = events.filter((e) => e.time_local >= LAUNCH).sort((a, b) => (a.time_utc < b.time_utc ? -1 : 1));
@@ -123,8 +123,15 @@ export function compute({ sessions, hourly, events, roster, meta }) {
     let run = days.length ? 1 : 0, top = run;
     for (let i = 1; i < days.length; i++) { run = days[i] - days[i - 1] === 864e5 ? run + 1 : 1; top = Math.max(top, run); }
     p.streak = top; p.days = days.length;
+    // Hand-entered corrections (docs/data/adjust.json): AFK and admin time come off the played time.
+    // The logged total is kept for the breakdown on the player's own page.
+    const adj = adjust[p.name] || {};
+    p.loggedMin = p.minutes;
+    p.afkMin = Math.min(Number(adj.afkMinutes) || 0, p.loggedMin);
+    p.adminMin = Math.min(Number(adj.adminMinutes) || 0, p.loggedMin - p.afkMin);
+    p.minutes = p.loggedMin - p.afkMin - p.adminMin;
     p.hours = p.minutes / 60;
-    p.weekendShare = p.minutes ? p.weekendMin / p.minutes : 0;
+    p.weekendShare = p.loggedMin ? p.weekendMin / p.loggedMin : 0;
     p.chatPerHour = p.hours ? p.chat / p.hours : 0;
     const best = p.byHour.reduce((bi, v, i, a) => (v > a[bi] ? i : bi), 0);
     p.favHour = p.byHour[best] > 0 ? best : null;

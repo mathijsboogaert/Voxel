@@ -221,3 +221,15 @@ main > .wrap { padding-bottom: var(--space-6); }
 .race-legend li { display: flex; align-items: center; gap: var(--space-2); }
 .race-legend__name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .race-swatch { width: 28px; height: 8px; flex: none; overflow: visible; }
+
+/* Time online: active / AFK / admin split on a player's page */
+.tbar { display: flex; height: 20px; margin: var(--space-3) 0 var(--space-2); border: var(--stroke-2) solid var(--line); background: var(--paper); }
+.tbar .tbar__seg { height: 100%; }
+.tbar__seg { display: block; }
+.tbar__seg--active { background: var(--teal); }
+.tbar__seg--afk { background: color-mix(in srgb, var(--teal) 50%, var(--paper)); }
+.tbar__seg--admin { background: var(--amber); }
+.tlegend { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tlegend li { display: flex; align-items: center; gap: var(--space-2); font: 400 15px/20px var(--font-sans); }
+.tlegend li i { flex: none; width: 16px; height: 16px; border: var(--stroke-2) solid var(--line); }
+.tlegend li strong { margin-left: auto; font-weight: 600; }
