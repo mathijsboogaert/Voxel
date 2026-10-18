@@ -50,7 +50,8 @@ function render(st, places) {
         el('h1', {}, p.name),
         el('div', { class: 'status' },
           el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`)))),
-    p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'tag tag--orange' }, b))) : null);
+    p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'badge' },
+      el('img', { src: url(`assets/badges/${b.toLowerCase().replace(/[^a-z]+/g, '-')}.svg`), alt: '', width: 28, height: 28 }), b))) : null);
 
   const cause = p.topCause ? `mostly ${p.topCause.toLowerCase()}` : null;
   const tiles = el('div', { class: 'tiles tiles--2' },

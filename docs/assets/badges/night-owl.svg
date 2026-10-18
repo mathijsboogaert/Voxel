@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 8 8">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        stroke: #000;
+        stroke-miterlimit: 10;
+        stroke-width: .25px;
+      }
+
+      .cls-1, .cls-3 {
+        fill: #2a9c8e;
+      }
+
+      .cls-2 {
+        fill: #fdb527;
+      }
+
+      .cls-4 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="cls-3" width="8" height="8"/>
+    </clipPath>
+  </defs>
+  <g id="Layer_1" data-name="Layer 1">
+    <g>
+      <rect class="cls-3" width="8" height="8"/>
+      <g class="cls-4">
+        <rect class="cls-1" x="4" y="4" width="4" height="4"/>
+        <path class="cls-2" d="M4,4h0c2.21,0,4,1.79,4,4h-4v-4h0Z"/>
+        <path class="cls-2" d="M4,0h0C6.21,0,8,1.79,8,4h-4V0h0Z" transform="translate(8 -4) rotate(90)"/>
+        <path class="cls-2" d="M0,0H0C2.21,0,4,1.79,4,4H0V0H0Z" transform="translate(0 4) rotate(-90)"/>
+        <path class="cls-2" d="M0,4H0c2.21,0,4,1.79,4,4H0v-4H0Z" transform="translate(4 12) rotate(180)"/>
+      </g>
+    </g>
+  </g>
+  <g id="Outline">
+    <path d="M7.75.25v7.5H.25V.25h7.5M8,0H0v8H8V0h0Z"/>
+  </g>
+</svg>
