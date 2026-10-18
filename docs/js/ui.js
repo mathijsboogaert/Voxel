@@ -101,3 +101,26 @@ export const widthClass = (pct) => 'w-' + pctOf(pct);
 export const heightClass = (pct) => 'h-' + pctOf(pct);
 /** A border's colour as a class, for the small colour dots in search (the editor palette is in site.css). */
 export const colorClass = (hex) => 'c-' + String(hex || '').replace('#', '').toLowerCase();
+
+const NL = { timeZone: 'Europe/Amsterdam' };
+const dayParts = new Intl.DateTimeFormat('en-CA', { ...NL, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
+const weekdayName = new Intl.DateTimeFormat('en-GB', { ...NL, weekday: 'long' });
+const localDay = (t) => { const p = Object.fromEntries(dayParts.formatToParts(t).map((x) => [x.type, x.value])); return { day: Date.UTC(+p.year, +p.month - 1, +p.day) / 864e5, hour: +p.hour }; };
+const partOfDay = (h) => (h < 5 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening');
+
+/**
+ * "Last seen ..." in loose, human words, by Dutch time: "just now", "this morning", "yesterday evening",
+ * "on Tuesday afternoon", "last week". Works from the clock, so it keeps moving while the page is open.
+ */
+export function lastSeen(when, now = Date.now()) {
+  const t = typeof when === 'number' ? when : Date.parse(when);
+  if (!Number.isFinite(t)) return 'a while ago';
+  if (now - t < 20 * 60 * 1000) return 'just now';
+  const a = localDay(t), b = localDay(now), days = b.day - a.day, part = partOfDay(a.hour);
+  if (days <= 0) return part === 'night' ? 'in the night' : `this ${part}`;
+  if (days === 1) return part === 'night' ? 'last night' : `yesterday ${part}`;
+  if (days < 7) return `on ${weekdayName.format(t)} ${part}`;
+  if (days < 14) return 'last week';
+  if (days < 28) return `${Math.floor(days / 7)} weeks ago`;
+  return 'over a month ago';
+}

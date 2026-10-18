@@ -2,7 +2,7 @@
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
 import { loadStats } from './data.js';
 import { raceBlock } from './race.js';
-import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, hourLabel, widthClass, heightClass } from './ui.js';
+import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, hourLabel, widthClass, heightClass, lastSeen } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 const name = new URLSearchParams(location.search).get('name') || '';
@@ -49,7 +49,7 @@ function render(st, places) {
       el('div', { class: 'phero__who' },
         el('h1', {}, p.name),
         el('div', { class: 'status' },
-          el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`),
+          el('span', { class: 'small' }, `Last seen ${lastSeen(p.lastEnd)}`),
           st.meta && st.meta.generated_at ? el('span', { class: 'small' }, ` · stats updated ${relTime(st.meta.generated_at)}`) : null))),
     p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'badge' },
       el('span', { class: 'badge__icon' }, el('img', { src: url(`assets/badges/${b.toLowerCase().replace(/[^a-z]+/g, '-')}.svg`), alt: '' })), b))) : null);
