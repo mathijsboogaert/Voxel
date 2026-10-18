@@ -51,7 +51,7 @@ function render(st, places) {
         el('div', { class: 'status' },
           el('span', { class: 'small' }, `Last seen ${relTime(p.lastEnd)}`)))),
     p.badges.length ? el('div', { class: 'badges' }, p.badges.map((b) => el('span', { class: 'badge' },
-      el('img', { src: url(`assets/badges/${b.toLowerCase().replace(/[^a-z]+/g, '-')}.svg`), alt: '', width: 40, height: 40 }), b))) : null);
+      el('span', { class: 'badge__icon' }, el('img', { src: url(`assets/badges/${b.toLowerCase().replace(/[^a-z]+/g, '-')}.svg`), alt: '' })), b))) : null);
 
   const cause = p.topCause ? `mostly ${p.topCause.toLowerCase()}` : null;
   const tiles = el('div', { class: 'tiles tiles--2' },
