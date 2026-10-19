@@ -72,7 +72,25 @@ export function compute({ sessions, hourly, events, roster, meta, adjust = {}, a
     }
     return list[list.length - 1][1];
   };
-  const sessionAfkMin = (s) => Math.max(0, (afkAt(s.player, Date.parse(s.end_utc)) - afkAt(s.player, Date.parse(s.start_utc))) / 60);
+  const sessionAfkMin = (s) => Math.max(0, (afkAt(s.player, Date.parse(s.end_utc)) - afkAt(s.player, Date.parse(s.start_utc))) / 60) + (preAfk.get(s) ? preAfk.get(s)[2] : 0);
+
+  // The first reading of a player's AFK counter already holds everything counted since the datapack went live, and
+  // nothing says when. Place it in their latest sessions after AFK_LIVE_FROM (newest first, a session can hold at most
+  // its own length), so the earlier AFK shows up where the player really was online.
+  const AFK_LIVE_FROM = Date.parse('2026-10-18T09:30:00Z');
+  const preAfk = new Map(); // session -> [from, to, minutes] already counted before the first reading
+  for (const [name, list] of Object.entries(afkSeries)) {
+    let left = list[0][1] / 60;
+    const mine = S.filter((s) => s.player === name).sort((x, y) => (x.end_utc < y.end_utc ? 1 : -1));
+    for (const s of mine) {
+      if (left <= 0) break;
+      const from = Math.max(Date.parse(s.start_utc), AFK_LIVE_FROM), to = Math.min(Date.parse(s.end_utc), list[0][0]);
+      if (to <= from) continue;
+      const take = Math.min(left, (to - from) / 60000);
+      preAfk.set(s, [from, to, take]);
+      left -= take;
+    }
+  }
 
   for (const s of S) {
     const p = P(s.player), m = Number(s.minutes);
@@ -90,6 +108,32 @@ export function compute({ sessions, hourly, events, roster, meta, adjust = {}, a
     if (hr >= 1 && hr < 5) p.nightMin += m;
     if (hr >= 5 && hr < 9) p.earlyMin += m;
   }
+
+  // Take AFK time out of the time-of-day numbers too. A reading says how much AFK time passed between two
+  // readings, not when exactly, so it is spread evenly over that stretch, hour by hour (Dutch time).
+  const NLH = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
+  const HOUR = 36e5;
+  const spreadAfk = (p, t0, t1, minutes) => {
+    if (minutes <= 0 || t1 <= t0) return;
+    for (let a = t0; a < t1; a = Math.floor(a / HOUR) * HOUR + HOUR) {
+      const b = Math.min(t1, Math.floor(a / HOUR) * HOUR + HOUR);
+      const part = (minutes * (b - a)) / (t1 - t0);
+      const f = Object.fromEntries(NLH.formatToParts((a + b) / 2).map((x) => [x.type, x.value]));
+      const hr = +f.hour, date = `${f.year}-${f.month}-${f.day}`, wd = new Date(Date.UTC(+f.year, +f.month - 1, +f.day)).getUTCDay();
+      if (date < LAUNCH) continue;
+      p.byHour[hr] = Math.max(0, p.byHour[hr] - part);
+      p.dayMin[date] = Math.max(0, (p.dayMin[date] || 0) - part);
+      if (wd === 0 || wd === 6) p.weekendMin = Math.max(0, p.weekendMin - part);
+      if (hr >= 1 && hr < 5) p.nightMin = Math.max(0, p.nightMin - part);
+      if (hr >= 5 && hr < 9) p.earlyMin = Math.max(0, p.earlyMin - part);
+    }
+  };
+  for (const [name, list] of Object.entries(afkSeries)) {
+    const p = players[name];
+    if (!p) continue;
+    for (let i = 1; i < list.length; i++) spreadAfk(p, list[i - 1][0], list[i][0], (list[i][1] - list[i - 1][1]) / 60);
+  }
+  for (const [s, [from, to, minutes]] of preAfk) if (players[s.player]) spreadAfk(players[s.player], from, to, minutes);
 
   // Advancements: each (player, advancement) counted once; who has it, and who was first.
   const who = {}, first = {}, seen = new Set();
