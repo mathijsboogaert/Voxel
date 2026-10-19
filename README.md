@@ -125,6 +125,18 @@ Things worth knowing:
 - Days before `2026-10-01` were testing and are ignored (`LAUNCH` in `docs/js/data.js`). Mathi_Craft's time counts in full, as it did on the original dashboard.
 - You can always run it by hand: `python3 tools/build_stats.py path/to/logs docs/data && python3 tools/fetch_faces.py docs/data docs/faces`, then commit.
 
+## AFK time
+
+The playtime datapack keeps two lifetime counters per player (active and AFK seconds). Every run, `tools/sync_logs.py` downloads the world's
+`scoreboard.dat` (`SFTP_SCOREBOARD` if it is not at `world/data/minecraft/scoreboard.dat`) and `tools/read_scoreboard.py` writes
+`docs/data/afk.json` (latest numbers) and `docs/data/afk-history.csv` (a row whenever someone's numbers change). The site subtracts AFK time from
+played time, shows it as the light-teal part of "Time online" on the player page, and leaves it out of a session's length for the Marathon label.
+`docs/data/adjust.json` holds hand-entered AFK/admin minutes for the time before the datapack.
+
+`tools/push_playtimeboard.py` writes the same AFK minutes into PlaytimeBoard's `adjust-minutes` list on the server (SFTP, `SFTP_PLAYTIMEBOARD` if the
+config is elsewhere; only that block is touched, and the old file is kept as `config.yml.voxel-bak`). The plugin reads its config only on
+`/playtimeboard reload`, so add a panel schedule (Schedules, new, every hour at minute 55, task "Send command": `playtimeboard reload`).
+
 ## Players, faces and places
 
 A player page shows their base and shop when the map data says who owns them. In the editor, click a border and add its

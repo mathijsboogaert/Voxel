@@ -61,6 +61,13 @@ jobs:
           python3 tools/read_scoreboard.py "$RUNNER_TEMP/logs" docs/data
           python3 tools/fetch_faces.py docs/data docs/faces
 
+      # Keeps PlaytimeBoard's manual AFK list (adjust-minutes) in step with the datapack's counters.
+      # The plugin picks it up when `playtimeboard reload` runs (a panel schedule does that).
+      - name: Update PlaytimeBoard's AFK list
+        if: steps.cfg.outputs.ready == 'yes'
+        continue-on-error: true
+        run: python3 tools/push_playtimeboard.py docs/data
+
       - name: Commit
         id: commit
         if: steps.cfg.outputs.ready == 'yes'
