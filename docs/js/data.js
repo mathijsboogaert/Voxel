@@ -32,11 +32,12 @@ let cached = null;
 export function loadStats(force = false) {
   if (force) cached = null;
   cached ||= (async () => {
-    const [s, h, e, roster, meta, adjust] = await Promise.all([
+    const [s, h, e, roster, meta, adjust, afkText] = await Promise.all([
       getText('data/voxel-sessions.csv'), getText('data/voxel-hourly.csv'), getText('data/voxel-events.csv'),
       getJSON('data/players.json', []), getJSON('data/meta.json', null), getJSON('data/adjust.json', {}),
+      getText('data/afk-history.csv').catch(() => ''),
     ]);
-    return compute({ sessions: parseCSV(s), hourly: parseCSV(h), events: parseCSV(e), roster, meta, adjust });
+    return compute({ sessions: parseCSV(s), hourly: parseCSV(h), events: parseCSV(e), roster, meta, adjust, afkHistory: afkText ? parseCSV(afkText) : [] });
   })();
   return cached;
 }
@@ -45,7 +46,7 @@ const r1 = (x) => Math.round(x * 10) / 10;
 const dayMs = (d) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
 const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
 
-export function compute({ sessions, hourly, events, roster, meta, adjust = {} }) {
+export function compute({ sessions, hourly, events, roster, meta, adjust = {}, afkHistory = [] }) {
   const S = sessions.filter((s) => s.start_local >= LAUNCH);
   const H = hourly.filter((r) => r.date >= LAUNCH);
   const E = events.filter((e) => e.time_local >= LAUNCH).sort((a, b) => (a.time_utc < b.time_utc ? -1 : 1));
@@ -57,10 +58,28 @@ export function compute({ sessions, hourly, events, roster, meta, adjust = {} })
     deaths: 0, deathCauses: {}, chat: 0, adv: [],
   });
 
+  // The playtime datapack's AFK counter over time, per player: a list of [time, AFK seconds] from the history file.
+  const afkSeries = {};
+  for (const r of afkHistory) (afkSeries[r.player] ||= []).push([Date.parse(r.time_utc), Number(r.afk_s)]);
+  for (const list of Object.values(afkSeries)) list.sort((a, b) => a[0] - b[0]);
+  // AFK seconds counted up to time t, straight between two readings; before the first reading nothing is known, so no AFK.
+  const afkAt = (name, t) => {
+    const list = afkSeries[name];
+    if (!list) return 0;
+    if (t <= list[0][0]) return list[0][1];
+    for (let i = 1; i < list.length; i++) {
+      if (t <= list[i][0]) { const [t0, v0] = list[i - 1], [t1, v1] = list[i]; return v0 + ((v1 - v0) * (t - t0)) / (t1 - t0); }
+    }
+    return list[list.length - 1][1];
+  };
+  const sessionAfkMin = (s) => Math.max(0, (afkAt(s.player, Date.parse(s.end_utc)) - afkAt(s.player, Date.parse(s.start_utc))) / 60);
+
   for (const s of S) {
     const p = P(s.player), m = Number(s.minutes);
     p.minutes += m; p.sessions += 1;
-    if (m > p.longestMin) { p.longestMin = m; p.longestOn = s.start_local.slice(0, 10); }
+    // The longest session counts only the time the player was active in it.
+    const active = Math.max(0, m - sessionAfkMin(s));
+    if (active > p.longestMin) { p.longestMin = active; p.longestOn = s.start_local.slice(0, 10); }
     if (s.end_utc > p.lastEnd) p.lastEnd = s.end_utc;
   }
   for (const r of H) {
@@ -127,7 +146,8 @@ export function compute({ sessions, hourly, events, roster, meta, adjust = {} })
     // The logged total is kept for the breakdown on the player's own page.
     const adj = adjust[p.name] || {};
     p.loggedMin = p.minutes;
-    p.afkMin = Math.min(Number(adj.afkMinutes) || 0, p.loggedMin);
+    const counted = afkSeries[p.name] ? afkSeries[p.name][afkSeries[p.name].length - 1][1] / 60 : 0; // from the datapack since it went live
+    p.afkMin = Math.min((Number(adj.afkMinutes) || 0) + counted, p.loggedMin);
     p.adminMin = Math.min(Number(adj.adminMinutes) || 0, p.loggedMin - p.afkMin);
     p.minutes = p.loggedMin - p.afkMin - p.adminMin;
     p.hours = p.minutes / 60;

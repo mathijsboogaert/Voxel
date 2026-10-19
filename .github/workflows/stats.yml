@@ -58,6 +58,7 @@ jobs:
         if: steps.cfg.outputs.ready == 'yes'
         run: |
           python3 tools/build_stats.py "$RUNNER_TEMP/logs" docs/data
+          python3 tools/read_scoreboard.py "$RUNNER_TEMP/logs" docs/data
           python3 tools/fetch_faces.py docs/data docs/faces
 
       - name: Commit
