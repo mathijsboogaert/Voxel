@@ -1,0 +1,48 @@
+name: Probe scoreboard
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      SFTP_HOST: ${{ secrets.SFTP_HOST }}
+      SFTP_PORT: ${{ secrets.SFTP_PORT }}
+      SFTP_USER: ${{ secrets.SFTP_USER }}
+      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: |
+          pip install --quiet paramiko
+          python3 - <<'PY'
+          import sys, gzip, io, stat
+          sys.path[:0] = ['tools', 'tools/world']
+          import sync_logs, nbt
+          t, sftp = sync_logs.connect()
+          print('root:', sorted(a.filename for a in sftp.listdir_attr('.')))
+          found = []
+          def walk(p, depth):
+              if depth > 3: return
+              try: items = sftp.listdir_attr(p)
+              except Exception: return
+              for a in items:
+                  q = (p + '/' + a.filename) if p != '.' else a.filename
+                  if a.filename == 'scoreboard.dat': found.append(q)
+                  elif stat.S_ISDIR(a.st_mode) and a.filename not in ('logs', 'plugins', 'libraries', 'versions', 'cache', 'crash-reports', 'region', 'entities', 'poi', 'playerdata', 'advancements', 'stats', 'DIM-1', 'DIM1', 'datapacks', 'generated'):
+                      walk(q, depth + 1)
+          walk('.', 0)
+          print('scoreboard.dat at:', found)
+          for f in found[:2]:
+              raw = sftp.open(f).read()
+              d = nbt.parse(gzip.decompress(raw))
+              print(f, 'top keys:', list(d.keys()))
+              data = d.get('data', d)
+              print('data keys:', list(data.keys()) if isinstance(data, dict) else type(data))
+              scores = data.get('PlayerScores') or data.get('scores') or []
+              print('score entries:', len(scores))
+              print('first entry shape:', scores[0] if scores else None)
+              for s in scores:
+                  obj = str(s.get('Objective', s.get('objective', '')))
+                  if obj.startswith('pt.'):
+                      print(obj, s.get('Name', s.get('name')), s.get('Score', s.get('score')))
+          PY
