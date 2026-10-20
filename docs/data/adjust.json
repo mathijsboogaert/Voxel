@@ -2,7 +2,7 @@
   "_note": "Time taken off a player's playtime, in minutes. afkMinutes shows as light teal and adminMinutes (creative/spectator work) as yellow on the player's page. Only the player page shows them; everywhere else the played time is active time. Edit by hand; the stats job never touches this file.",
   "Mathi_Craft": {
     "afkMinutes": 180,
-    "adminMinutes": 19.5
+    "adminMinutes": 52.5
   },
   "Pantless_Hobo": {
     "afkMinutes": 480
