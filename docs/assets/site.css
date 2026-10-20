@@ -119,7 +119,7 @@
 .grid-faces { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: var(--space-3) var(--space-2); list-style: none; margin: 0; padding: 0; }
 .pcell { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; color: var(--ink); text-decoration: none; min-width: 0; }
 .pcell__name { font-size: 13px; line-height: 16px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pface { position: relative; display: block; }
+.pface { position: relative; display: block; flex: none; }
 .section-cta { margin-top: var(--space-4); }
 
 main > .wrap { padding-bottom: var(--space-6); }
