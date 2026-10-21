@@ -1,1075 +1,289 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
-<title>Editor · Voxel</title>
-<meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="assets/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="assets/brand.css">
-<link rel="stylesheet" href="assets/site.css">
-<link rel="stylesheet" href="assets/map.css">
-<link rel="stylesheet" href="assets/editor.css">
-</head>
-<body class="map-page">
-
-<header class="site-header">
-  <div class="wrap">
-    <a class="brand" href="./" aria-label="Voxel, home">
-      <img class="brand__mark mark--light" src="assets/logo-mark.png" alt="" width="36" height="36">
-      <img class="brand__mark mark--dark" src="assets/logo-mark-reversed.png" alt="" width="36" height="36">
-      <span class="brand__name">Voxel</span>
-    </a>
-    <nav class="nav" aria-label="Main">
-      <a href="./">Home</a>
-      <a href="map/">Map</a>
-      <a href="players/">Players</a>
-      <a href="shops/">Shops</a>
-      <a href="editor.html" aria-current="page">Editor</a>
-    </nav>
-  </div>
-</header>
-
-<main class="map-main">
-  <h1 class="sr-only">Voxel map editor</h1>
-  <div id="map" role="application" aria-label="Map editor"></div>
-
-  <div class="mapui mapui--tr">
-    <button class="mapbtn" id="btn-search" aria-label="Search the map" aria-expanded="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg>
-    </button>
-    <button class="mapbtn" id="btn-spawn" aria-label="Back to spawn">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C12 22 4.5 14.5 4.5 9.5a7.5 7.5 0 0 1 15 0C19.5 14.5 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-    </button>
-  </div>
-
-  <div class="mapui mapui--br">
-    <button class="mapbtn" id="btn-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button class="mapbtn" id="btn-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
-  </div>
-
-  <p class="mapinfo" id="mapinfo"><strong id="footerHover"></strong><span id="zoomBpp"></span></p>
-
-  <div class="msearch" id="msearch" role="search">
-    <div class="msearch__bar">
-      <input id="search-input" type="text" inputmode="search" enterkeyhint="search" placeholder="Search borders and shops" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search borders and shops">
-      <button class="mapbtn" id="search-close" aria-label="Close search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    </div>
-    <ul class="msearch__results" id="search-results" role="listbox" aria-label="Results"></ul>
-  </div>
-
-  <div id="drawTools" class="epanel etools" role="toolbar" aria-label="Editor tools" aria-orientation="vertical">
-    <button class="ibtn" id="drawToggle" aria-label="Draw border" data-tip="Draw border" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h10v6h6v10H4Z"/><path class="ibtn__dot" d="M3 3h2v2H3zM13 3h2v2h-2zM19 9h2v2h-2zM19 19h2v2h-2zM3 19h2v2H3z"/></svg>
-    </button>
-    <button class="ibtn" id="shopToggle" aria-label="Draw shop outline" data-tip="Draw shop outline" aria-pressed="false">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v11h16V9"/><path d="M3 4h18l1 5H2Z"/><path d="M10 20v-6h4v6"/></svg>
-    </button>
-    <div class="tool-divider"></div>
-    <button class="ibtn" id="drawFinish" aria-label="Finish shape" data-tip="Finish shape (Enter)" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
-    </button>
-    <button class="ibtn" id="drawUndo" aria-label="Undo point" data-tip="Undo point (Esc clears)" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5L4 10l5 5"/><path d="M4 10h10a6 6 0 0 1 0 12h-3"/></svg>
-    </button>
-    <button class="ibtn ibtn--danger" id="drawClear" aria-label="Clear all borders" data-tip="Clear all borders">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15"/><path d="M10 10v7M14 10v7"/></svg>
-    </button>
-    <div class="tool-divider"></div>
-    <button class="ibtn ibtn--primary" id="drawExport" aria-label="Export borders.json" data-tip="Export borders.json">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4"/></svg><b class="ibtn__tag">B</b>
-    </button>
-    <button class="ibtn ibtn--primary" id="shopExport" aria-label="Export shops.json" data-tip="Export shops.json">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4"/></svg><b class="ibtn__tag">S</b>
-    </button>
-    <div class="tool-divider"></div>
-    <button class="ibtn" id="helpToggle" aria-label="How it works" data-tip="How it works" aria-expanded="false" aria-controls="drawHint">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.2-1.5 2.4v.5"/><path class="ibtn__dot" d="M11 18h2v2h-2z"/></svg>
-    </button>
-  </div>
-  <div class="epanel ehelp" id="drawHint" hidden>
-    <h2>How it works</h2>
-    <p class="hint">Borders and shop outlines use straight horizontal and vertical lines on the block grid. Click to add corners. Enter, a double-click or a click on the first corner finishes; Esc clears.</p>
-    <p class="hint">Click a shop to give it an icon and products. Export each file when done, put it in docs/ and push.</p>
-  </div>
-
-  <div id="borderEditor" class="epanel">
-    <h2>Border</h2>
-    <input class="efield" id="borderLabelInput" type="text" placeholder="Label" maxlength="40">
-    <label class="toggle-row">
-      <input type="checkbox" id="borderShowLabelInput" checked>
-      <span>Show label on map</span>
-    </label>
-    <span class="field-label">Owners (shown on their player page)</span>
-    <div id="ownerChips" class="owner-chips"></div>
-    <input class="efield" id="ownerInput" list="rosterList" type="text" placeholder="Add a player" autocomplete="off">
-    <span class="field-label">Colour</span>
-    <div id="colorSwatches"></div>
-    <div class="eactions">
-      <button class="ebtn ebtn--danger" id="borderDelete">Delete</button>
-      <button class="ebtn" id="borderCancel">Cancel</button>
-      <button class="ebtn ebtn--primary" id="borderSave">Save</button>
-    </div>
-  </div>
-
-  <div id="shopEditor" class="epanel">
-    <h2>Shop</h2>
-    <input class="efield" id="shopLabelInput" type="text" placeholder="Shop name" maxlength="40">
-    <span class="field-label">Owner</span>
-    <input class="efield" id="shopOwnerInput" list="rosterList" type="text" placeholder="Player name" autocomplete="off">
-    <datalist id="rosterList"></datalist>
-
-    <span class="field-label">Icon</span>
-    <div class="icon-row">
-      <label class="icon-drop" id="shopIconDrop" title="Drop a 16x16 PNG here">
-        <img class="icon-drop__img" id="shopIconPreview" alt="" width="16" height="16" hidden>
-        <span class="icon-drop__empty" id="shopIconEmpty">16×16</span>
-        <input type="file" id="shopIconInput" accept="image/png,image/gif,image/webp" class="sr-only">
-      </label>
-      <div class="icon-row__actions">
-        <button type="button" class="ebtn ebtn--sm" id="shopIconPick">Upload PNG</button>
-        <button type="button" class="ebtn ebtn--sm ebtn--danger" id="shopIconRemove" hidden>Remove</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <title>Editor · Voxel</title>
+    <meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="assets/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="assets/brand.css" />
+    <link rel="stylesheet" href="assets/site.css" />
+    <link rel="stylesheet" href="assets/map.css" />
+    <link rel="stylesheet" href="assets/editor.css" />
+  </head>
+  <body class="map-page">
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="./" aria-label="Voxel, home">
+          <img class="brand__mark mark--light" src="assets/logo-mark.png" alt="" width="36" height="36" />
+          <img
+            class="brand__mark mark--dark"
+            src="assets/logo-mark-reversed.png"
+            alt=""
+            width="36"
+            height="36"
+          />
+          <span class="brand__name">Voxel</span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="./">Home</a>
+          <a href="map/">Map</a>
+          <a href="players/">Players</a>
+          <a href="shops/">Shops</a>
+          <a href="editor.html" aria-current="page">Editor</a>
+        </nav>
       </div>
-    </div>
-    <p class="hint" id="shopIconHint">Pixel art, 16×16. Shown on the Shops page and in search, not on the map.</p>
-
-    <label class="toggle-row">
-      <input type="checkbox" id="shopServiceInput">
-      <span>Service shop (offers services, not items)</span>
-    </label>
-    <span class="field-label" id="shopLinesLabel">Products</span>
-    <ul class="plines" id="shopProducts"></ul>
-    <button type="button" class="ebtn ebtn--sm" id="shopAddProduct">+ Add product</button>
-    <datalist id="itemList"></datalist>
-
-    <label class="toggle-row" id="shopSpoilerRow">
-      <input type="checkbox" id="shopSpoilerInput">
-      <span>Spoiler wall (fill the shape black)</span>
-    </label>
-    <div class="eactions">
-      <button class="ebtn ebtn--danger" id="shopDelete">Delete</button>
-      <button class="ebtn" id="shopCancel">Cancel</button>
-      <button class="ebtn ebtn--primary" id="shopSave">Save</button>
-    </div>
-  </div>
-</main>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="wasm/cubiomes.js"></script>
-<script>
-// --- World <-> map coordinate convention -----------------------------
-// 1 CRS.Simple unit = 4096 blocks. At zoom level NATIVE_ZOOM, that gives
-// exactly 1 screen pixel per block (the deepest native detail); each
-// zoom level out doubles blocksPerPixel. lat maps to -Z so north stays
-// up (Leaflet renders larger lat higher on screen; Minecraft's Z grows
-// south).
-const UNIT_BLOCKS = 4096;
-const NATIVE_ZOOM = 12;
-const TILE_SIZE = 256;
-
-// Zoom used to be locked to exactly these three levels: z=11
-// (blocksPerPixel=2) hit a cubiomes coordinate quirk that misaligned
-// tiles from their real-world position, and the renderer at the time
-// went through cubiomes' Range/genBiomes for every zoom level, so every
-// in-between/fractional level was a potential unknown. Both of those
-// are gone now -- the renderer was rewritten to sample real terrain
-// height directly (see wasm/seedmap_wasm.c) and no longer calls
-// Range/genBiomes at all, so there's no scale-dependent path left for
-// that bug to live in. Verified z=11 and fractional zooms (e.g. 10.5)
-// render correctly aligned before re-enabling free zoom.
-const MIN_ZOOM = 0;
-const MAX_ZOOM = 16; // beyond NATIVE_ZOOM (12), Leaflet just upscales the last real tile
-const DEFAULT_ZOOM = 10;
-
-function blocksPerPixel(zoom) {
-  return Math.pow(2, NATIVE_ZOOM - zoom);
-}
-function worldToLatLng(x, z) {
-  return L.latLng(-z / UNIT_BLOCKS, x / UNIT_BLOCKS);
-}
-function latLngToWorld(latlng) {
-  return { x: latlng.lng * UNIT_BLOCKS, z: -latlng.lat * UNIT_BLOCKS };
-}
-
-const SEED = '2344567094';
-
-let cubiomes = null;
-let seedInitialized = false;
-
-const footerHoverEl = document.getElementById('footerHover');
-
-let tileLayer = null;
-
-const map = L.map('map', {
-  crs: L.CRS.Simple,
-  minZoom: MIN_ZOOM,
-  maxZoom: MAX_ZOOM,
-  // Continuous zoom, not integer steps -- lets scroll/pinch feel smooth
-  // instead of snapping between whole levels.
-  zoomSnap: 0,
-  zoomDelta: 1,
-  wheelPxPerZoomLevel: 100,
-  zoomControl: false,
-  attributionControl: false,
-  scrollWheelZoom: true,
-  doubleClickZoom: true,
-  touchZoom: true, // pinch-to-zoom on touch/mobile
-  boxZoom: true,
-  keyboard: true,
-  // Tile rendering used to run synchronously on the main thread, which
-  // could block long enough during a zoom gesture to desync Leaflet's
-  // animated zoom transform from the actual viewport. It now runs in a
-  // pool of Web Workers (below) instead, so the main thread -- and
-  // Leaflet's own zoom animation -- is never blocked by it; re-enabling
-  // the animation here is what makes zoom feel smooth rather than
-  // snapping instantly between levels.
-  zoomAnimation: true,
-});
-map.setView([0, 0], DEFAULT_ZOOM);
-
-const zoomBppEl = document.getElementById('zoomBpp');
-function updateZoomIndicator() {
-  const z = map.getZoom();
-  zoomBppEl.textContent = `  ${blocksPerPixel(z).toFixed(2)} blocks/px`;
-}
-map.on('zoom', updateZoomIndicator);
-updateZoomIndicator();
-
-// Set once loadSeed() knows the real spawn point; falls back to world
-// origin if clicked before the seed has finished loading.
-const SPAWN = { x: 32, z: -4 };
-let spawnLatLngForReturn = worldToLatLng(SPAWN.x, SPAWN.z);
-document.getElementById('btn-spawn').addEventListener('click', () => {
-  map.setView(spawnLatLngForReturn, DEFAULT_ZOOM);
-});
-document.getElementById('btn-in').addEventListener('click', () => map.zoomIn(1));
-document.getElementById('btn-out').addEventListener('click', () => map.zoomOut(1));
-
-// --- The explored world ----------------------------------------------------
-// The same pre-rendered tiles as the public map (tools/world/render_world.py), so borders are drawn
-// around what is really built. The cubiomes WASM module is only used for the biome name on hover.
-async function loadWorld() {
-  const { exploredLayer } = await import('./js/map-core.js');
-  const layer = await exploredLayer();
-  if (layer) {
-    const m = layer.manifest.bounds, pad = 512;
-    layer.addTo(map);
-    map.setMaxBounds(L.latLngBounds(worldToLatLng(m.x0 - pad, m.z1 + pad), worldToLatLng(m.x1 + pad, m.z0 - pad)));
-    map.setMinZoom(layer.manifest.minZoom - 1);
-  }
-  L.marker(spawnLatLngForReturn, {
-    icon: L.divIcon({
-      className: '',
-      html: '<svg class="spawn-pin" viewBox="0 0 28 28" aria-hidden="true"><path d="M14 27C14 27 4.5 17.5 4.5 11a9.5 9.5 0 0 1 19 0C23.5 17.5 14 27 14 27Z"/><circle cx="14" cy="11" r="3.2"/></svg>',
-      iconSize: [28, 28], iconAnchor: [14, 26],
-    }),
-    interactive: false, keyboard: false,
-  }).addTo(map);
-  map.setView(spawnLatLngForReturn, DEFAULT_ZOOM);
-}
-
-// Border names get in the way of the builds once you are zoomed in (same rule as the public map).
-const LABEL_MAX_BPP = 4;
-const syncLabels = () => map.getContainer().classList.toggle('labels-off', blocksPerPixel(map.getZoom()) < LABEL_MAX_BPP);
-map.on('zoom', syncLabels);
-syncLabels();
-
-let hoverPending = false;
-map.on('mousemove', (e) => {
-  if (!seedInitialized || hoverPending) return;
-  hoverPending = true;
-  requestAnimationFrame(() => {
-    hoverPending = false;
-    const w = latLngToWorld(e.latlng);
-    const x = Math.round(w.x), z = Math.round(w.z);
-    const name = cubiomes.ccall('get_biome_name_at', 'string', ['number', 'number'], [x, z]);
-    const biomeText = name ? name.replaceAll('_', ' ') : 'unknown';
-    footerHoverEl.textContent = `${biomeText} X ${x}, Z ${z}`;
-  });
-});
-map.on('mouseout', () => { footerHoverEl.textContent = ''; });
-
-// --- Border drawing layer --------------------------------------------
-// Borders are drawn as vector polygons. Every point is snapped to a whole block (a pixel of the map
-// at full zoom) and every line runs straight horizontally or vertically: each new point keeps the
-// previous point's x or z, whichever the mouse is further from. Finishing closes the shape with one
-// more corner if needed, so the closing line is straight too.
-const GRID_BLOCKS = 1;
-const STORAGE_KEY = `voxel-map-borders:${SEED}`;
-
-const drawToggleBtn = document.getElementById('drawToggle');
-const drawFinishBtn = document.getElementById('drawFinish');
-const drawUndoBtn = document.getElementById('drawUndo');
-const drawClearBtn = document.getElementById('drawClear');
-
-const PALETTE = ['#ff4d4f', '#ffa94d', '#ffd43b', '#69db7c', '#38d9a9', '#4dabf7', '#748ffc', '#e599f7', '#ffffff'];
-let nextColorIndex = 0;
-
-let drawMode = false;
-let activePoints = [];   // [{x,z}, ...] snapped world coords, in progress
-let activeLine = null;   // L.Polyline for the in-progress line
-let activeMarkers = [];  // L.CircleMarker per vertex of the in-progress line
-let previewLine = null;  // dashed line from the last point to where the next one would land
-let borders = [];        // [{points, label, color, layer, labelTooltip}, ...]
-
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
-function snapWorld(x, z) {
-  return {
-    x: Math.round(x / GRID_BLOCKS) * GRID_BLOCKS,
-    z: Math.round(z / GRID_BLOCKS) * GRID_BLOCKS,
-  };
-}
-function pointsToLatLngs(points) {
-  return points.map((p) => worldToLatLng(p.x, p.z));
-}
-
-// Keep the straight-line rule: from `last`, go horizontally or vertically, whichever way the mouse went more.
-function constrain(p, last) {
-  if (!last) return p;
-  return Math.abs(p.x - last.x) >= Math.abs(p.z - last.z) ? { x: p.x, z: last.z } : { x: last.x, z: p.z };
-}
-const samePoint = (a, b) => a && b && a.x === b.x && a.z === b.z;
-
-function renderActiveLine() {
-  const latlngs = pointsToLatLngs(activePoints);
-
-  if (activeLine) map.removeLayer(activeLine);
-  activeLine = latlngs.length >= 2
-    ? L.polyline(latlngs, { weight: 3, className: 'draft-line', interactive: false }).addTo(map)
-    : null;
-
-  activeMarkers.forEach((m) => map.removeLayer(m));
-  activeMarkers = latlngs.map((ll) => L.circleMarker(ll, { radius: 5, weight: 2, className: 'draft-dot', interactive: false }).addTo(map));
-
-  clearPreview();
-  drawFinishBtn.disabled = activePoints.length < 3;
-  drawUndoBtn.disabled = activePoints.length === 0;
-}
-
-function clearPreview() {
-  if (previewLine) { map.removeLayer(previewLine); previewLine = null; }
-}
-function showPreview(latlng) {
-  clearPreview();
-  if (!drawMode || !activePoints.length) return;
-  const w = latLngToWorld(latlng);
-  const next = constrain(snapWorld(w.x, w.z), activePoints[activePoints.length - 1]);
-  previewLine = L.polyline(pointsToLatLngs([activePoints[activePoints.length - 1], next]), {
-    weight: 3, className: 'draft-line draft-line--preview', interactive: false,
-  }).addTo(map);
-}
-map.on('mousemove', (e) => showPreview(e.latlng));
-map.on('mouseout', clearPreview);
-
-function updateLabelTooltip(border) {
-  if (border.labelTooltip) { map.removeLayer(border.labelTooltip); border.labelTooltip = null; }
-  if (!border.label || border.hideLabel) return;
-  // getCenter() on a closed polygon is its area-weighted centroid, not
-  // just an average of vertices, so the label sits in the visual middle
-  // of the highlighted area rather than drifting toward wherever points
-  // happen to be denser.
-  border.labelTooltip = L.tooltip({
-    permanent: true, direction: 'center', className: 'border-label', interactive: true,
-  })
-    .setLatLng(border.layer.getCenter())
-    .setContent(border.label)
-    .addTo(map);
-  border.labelTooltip.on('click', () => openBorderEditor(border));
-}
-
-const serializeBorder = (b) => ({
-  points: b.points, label: b.label, color: b.color, hideLabel: b.hideLabel,
-  ...(b.owners && b.owners.length ? { owners: b.owners } : {}),
-});
-
-function addBorderLayer(points, label, color, hideLabel, owners) {
-  const layer = L.polygon(pointsToLatLngs(points), {
-    // Outline only, like the public map: the fill would hide the builds underneath.
-    color, weight: 3, fill: false, className: 'border-line',
-  }).addTo(map);
-  const border = { points, label, color, hideLabel: !!hideLabel, owners: owners || [], layer, labelTooltip: null };
-  layer.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openBorderEditor(border); });
-  updateLabelTooltip(border);
-  borders.push(border);
-  return border;
-}
-
-function saveBorders() {
-  const data = borders.map(serializeBorder);
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
-}
-
-async function loadBorders() {
-  // borders.json is the checked-in, shipped snapshot (what everyone who
-  // opens this page sees, including once it's hosted). localStorage is
-  // just a local editing convenience/fallback if that file is missing or
-  // empty -- e.g. mid-session before you've exported yet.
-  let data = null;
-  try {
-    const res = await fetch('borders.json', { cache: 'no-store' });
-    if (res.ok) data = await res.json();
-  } catch (e) { /* not servable (e.g. file://) or missing -- fall back below */ }
-
-  if (!Array.isArray(data) || data.length === 0) {
-    try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { data = []; }
-  }
-
-  for (const b of data) addBorderLayer(b.points, b.label || '', b.color || PALETTE[0], b.hideLabel, b.owners);
-  nextColorIndex = data.length % PALETTE.length;
-}
-
-function exportBorders() {
-  const data = borders.map(serializeBorder);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'borders.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// --- Shop points --------------------------------------------------------
-// Shops are outlines drawn over the building (same straight-line tool as borders), so the build stays
-// visible. Older shops that are just a point keep their small icon until redrawn. Their name is hidden until clicked
-// (editor here, popup on the read-only public page) rather than shown as
-// a permanent label like border names.
-const SHOP_STORAGE_KEY = `voxel-map-shops:${SEED}`;
-const shopIcon = L.icon({
-  iconUrl: 'assets/shop-icon.png',
-  className: 'shop-marker-icon',
-  iconSize: [28, 28],
-  iconAnchor: [14, 14],
-  popupAnchor: [0, -16],
-});
-let shops = []; // [{x, z, points?, label, owner, added, marker}, ...]; x, z is the middle of the outline
-
-// Shop icons are a fixed screen size, so zoomed far enough out they'd
-// just be clutter sitting on top of biomes much larger than they are --
-// hide them past this many blocks/px and only show them once you've
-// zoomed in close enough for them to mean something.
-const SHOP_VISIBLE_MAX_BPP = 3;
-function shopsVisibleAtCurrentZoom() {
-  return blocksPerPixel(map.getZoom()) <= SHOP_VISIBLE_MAX_BPP;
-}
-function updateShopVisibility() {
-  const visible = shopsVisibleAtCurrentZoom();
-  for (const s of shops) {
-    if (visible) { if (!map.hasLayer(s.marker)) s.marker.addTo(map); }
-    else if (map.hasLayer(s.marker)) map.removeLayer(s.marker);
-  }
-}
-map.on('zoom', updateShopVisibility);
-
-const serializeShop = (s) => ({
-  x: s.x, z: s.z, label: s.label,
-  ...(s.points && s.points.length ? { points: s.points } : {}),
-  ...(s.spoiler ? { spoiler: true } : {}),
-  ...(s.owner ? { owner: s.owner } : {}),
-  ...(s.added ? { added: s.added } : {}),
-  ...(s.icon ? { icon: s.icon } : {}),
-  ...(s.kind === 'service' ? { kind: 'service' } : {}),
-  ...(s.products && s.products.length ? { products: s.products } : {}),
-});
-
-function addShopLayer(x, z, label, extra = {}) {
-  let marker;
-  const points = extra.points && extra.points.length >= 3 ? extra.points : null;
-  const shop = {
-    x, z, points, label, owner: extra.owner || '', added: extra.added || '', spoiler: !!extra.spoiler && !!points,
-    icon: extra.icon || '', products: Array.isArray(extra.products) ? extra.products : [], kind: extra.kind === 'service' ? 'service' : '',
-  };
-  // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
-  if (points) {
-    const ll = pointsToLatLngs(points);
-    const casing = L.polygon(ll, { fill: false, interactive: false, className: 'shop-casing' });
-    const shape = L.polygon(ll, { fill: true, className: shop.spoiler ? 'shop-outline shop-outline--spoiler border-line' : 'shop-outline border-line' });
-    shop.shape = shape;
-    shape.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openShopEditor(shop); });
-    marker = L.layerGroup([casing, shape]);
-  } else {
-    marker = L.marker(worldToLatLng(x, z), { icon: shopIcon });
-    marker.on('click', (e) => { if (drawMode) return; L.DomEvent.stopPropagation(e); openShopEditor(shop); });
-  }
-  shop.marker = marker;
-  if (shopsVisibleAtCurrentZoom()) marker.addTo(map);
-  shops.push(shop);
-  return shop;
-}
-
-function saveShops() {
-  const data = shops.map(serializeShop);
-  try { localStorage.setItem(SHOP_STORAGE_KEY, JSON.stringify(data)); } catch (e) { /* ignore */ }
-}
-
-async function loadShops() {
-  let data = null;
-  try {
-    const res = await fetch('shops.json', { cache: 'no-store' });
-    if (res.ok) data = await res.json();
-  } catch (e) { /* not servable or missing -- fall back below */ }
-
-  if (!Array.isArray(data) || data.length === 0) {
-    try { data = JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY) || '[]'); } catch (e) { data = []; }
-  }
-
-  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points, spoiler: s.spoiler, icon: s.icon, products: s.products, kind: s.kind });
-}
-
-function exportShops() {
-  const data = shops.map(serializeShop);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'shops.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// Close the shape with straight lines only, and drop points that sit on a straight run.
-function closeOrthogonal(points) {
-  const pts = [...points];
-  const first = pts[0], last = pts[pts.length - 1];
-  if (first.x !== last.x && first.z !== last.z) pts.push({ x: first.x, z: last.z });
-  let changed = true;
-  while (changed && pts.length > 3) {
-    changed = false;
-    for (let i = 0; i < pts.length; i++) {
-      const a = pts[(i + pts.length - 1) % pts.length], b = pts[i], c = pts[(i + 1) % pts.length];
-      if ((a.x === b.x && b.x === c.x) || (a.z === b.z && b.z === c.z)) { pts.splice(i, 1); changed = true; break; }
-    }
-  }
-  return pts;
-}
-
-function finishActiveLine() {
-  if (activePoints.length >= 3 && drawKind === 'shop') {
-    const pts = closeOrthogonal(activePoints);
-    const xs = pts.map((p) => p.x), zs = pts.map((p) => p.z);
-    const shop = addShopLayer(Math.round((Math.min(...xs) + Math.max(...xs)) / 2), Math.round((Math.min(...zs) + Math.max(...zs)) / 2), '',
-      { points: pts, added: new Date().toISOString() });
-    saveShops();
-    openShopEditor(shop);
-  } else if (activePoints.length >= 3) {
-    activePoints = closeOrthogonal(activePoints);
-    const label = `Border ${borders.length + 1}`;
-    const color = PALETTE[nextColorIndex % PALETTE.length];
-    nextColorIndex++;
-    const border = addBorderLayer(activePoints, label, color);
-    saveBorders();
-    openBorderEditor(border);
-  }
-  activePoints = [];
-  renderActiveLine();
-}
-
-function undoPoint() {
-  activePoints.pop();
-  renderActiveLine();
-}
-
-function clearAllBorders() {
-  activePoints = [];
-  renderActiveLine();
-  for (const b of borders) {
-    map.removeLayer(b.layer);
-    if (b.labelTooltip) map.removeLayer(b.labelTooltip);
-  }
-  borders = [];
-  saveBorders();
-  closeBorderEditor();
-}
-
-// --- Border label/color editor ----------------------------------------
-const borderEditorEl = document.getElementById('borderEditor');
-const borderLabelInput = document.getElementById('borderLabelInput');
-const borderShowLabelInput = document.getElementById('borderShowLabelInput');
-const ownerChipsEl = document.getElementById('ownerChips');
-const ownerInput = document.getElementById('ownerInput');
-const rosterListEl = document.getElementById('rosterList');
-let rosterNames = [];
-let editingOwners = [];
-
-// The player roster (written by tools/fetch_faces.py) feeds the owner pickers.
-fetch('data/players.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : [])).then((list) => {
-  rosterNames = list.map((p) => p.name);
-  rosterListEl.innerHTML = rosterNames.map((n) => `<option value="${n}">`).join('');
-}).catch(() => {});
-const matchPlayer = (typed) => rosterNames.find((n) => n.toLowerCase() === typed.trim().toLowerCase()) || '';
-
-function renderOwnerChips() {
-  ownerChipsEl.innerHTML = '';
-  for (const name of editingOwners) {
-    const chip = document.createElement('button');
-    chip.type = 'button'; chip.className = 'owner-chip'; chip.textContent = name + '  \u00d7'; chip.title = 'Remove';
-    chip.addEventListener('click', () => { editingOwners = editingOwners.filter((n) => n !== name); renderOwnerChips(); });
-    ownerChipsEl.append(chip);
-  }
-}
-function addOwnerFromInput() {
-  const name = matchPlayer(ownerInput.value);
-  if (name && !editingOwners.includes(name)) { editingOwners.push(name); renderOwnerChips(); }
-  if (name || !ownerInput.value.trim()) ownerInput.value = '';
-}
-ownerInput.addEventListener('change', addOwnerFromInput);
-ownerInput.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); addOwnerFromInput(); } });
-const colorSwatchesEl = document.getElementById('colorSwatches');
-const borderSaveBtn = document.getElementById('borderSave');
-const borderDeleteBtn = document.getElementById('borderDelete');
-const borderCancelBtn = document.getElementById('borderCancel');
-
-let editingBorder = null;
-let editingColor = null;
-
-colorSwatchesEl.innerHTML = PALETTE.map((c) =>
-  `<div class="swatch-btn c-${c.slice(1).toLowerCase()}" data-color="${c}"></div>`
-).join('');
-colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((el) => {
-  el.addEventListener('click', () => {
-    editingColor = el.dataset.color;
-    colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((s) => s.classList.remove('selected'));
-    el.classList.add('selected');
-  });
-});
-
-function openBorderEditor(border) {
-  closeShopEditor();
-  editingBorder = border;
-  editingColor = border.color;
-  borderLabelInput.value = border.label || '';
-  borderShowLabelInput.checked = !border.hideLabel;
-  editingOwners = [...(border.owners || [])];
-  ownerInput.value = '';
-  renderOwnerChips();
-  colorSwatchesEl.querySelectorAll('.swatch-btn').forEach((s) => {
-    s.classList.toggle('selected', s.dataset.color === border.color);
-  });
-  borderEditorEl.classList.add('open');
-  borderLabelInput.focus();
-  borderLabelInput.select();
-}
-
-function closeBorderEditor() {
-  editingBorder = null;
-  borderEditorEl.classList.remove('open');
-}
-
-borderSaveBtn.addEventListener('click', () => {
-  if (!editingBorder) return;
-  editingBorder.label = borderLabelInput.value.trim();
-  editingBorder.hideLabel = !borderShowLabelInput.checked;
-  addOwnerFromInput();
-  editingBorder.owners = [...editingOwners];
-  editingBorder.color = editingColor;
-  editingBorder.layer.setStyle({ color: editingColor });
-  updateLabelTooltip(editingBorder);
-  saveBorders();
-  closeBorderEditor();
-});
-borderDeleteBtn.addEventListener('click', () => {
-  if (!editingBorder) return;
-  map.removeLayer(editingBorder.layer);
-  if (editingBorder.labelTooltip) map.removeLayer(editingBorder.labelTooltip);
-  borders = borders.filter((b) => b !== editingBorder);
-  saveBorders();
-  closeBorderEditor();
-});
-borderCancelBtn.addEventListener('click', closeBorderEditor);
-borderLabelInput.addEventListener('keydown', (e) => {
-  e.stopPropagation();
-  if (e.key === 'Enter') borderSaveBtn.click();
-  else if (e.key === 'Escape') closeBorderEditor();
-});
-
-// --- Shop label editor --------------------------------------------------
-const shopEditorEl = document.getElementById('shopEditor');
-const shopLabelInput = document.getElementById('shopLabelInput');
-const shopOwnerInput = document.getElementById('shopOwnerInput');
-const shopSpoilerInput = document.getElementById('shopSpoilerInput');
-const shopSpoilerRow = document.getElementById('shopSpoilerRow');
-const shopSaveBtn = document.getElementById('shopSave');
-const shopDeleteBtn = document.getElementById('shopDelete');
-const shopCancelBtn = document.getElementById('shopCancel');
-
-let editingShop = null;
-
-// --- Shop icon: a 16x16 PNG, stored in shops.json as a data: URL so the export stays one file.
-// A bigger square image that is a whole multiple of 16 (32, 48, 64...) is scaled down pixel for pixel.
-const iconInput = document.getElementById('shopIconInput');
-const iconPreview = document.getElementById('shopIconPreview');
-const iconEmpty = document.getElementById('shopIconEmpty');
-const iconRemove = document.getElementById('shopIconRemove');
-const iconHint = document.getElementById('shopIconHint');
-const iconDrop = document.getElementById('shopIconDrop');
-const ICON_HINT = iconHint.textContent;
-let editingIcon = '';
-
-function showIcon() {
-  iconPreview.hidden = !editingIcon;
-  iconEmpty.hidden = !!editingIcon;
-  iconRemove.hidden = !editingIcon;
-  if (editingIcon) iconPreview.src = editingIcon;
-}
-function iconError(msg) { iconHint.textContent = msg; iconHint.classList.add('hint--error'); }
-function readIcon(file) {
-  if (!file) return;
-  const img = new Image();
-  const src = URL.createObjectURL(file);
-  img.onload = () => {
-    URL.revokeObjectURL(src);
-    const w = img.naturalWidth, h = img.naturalHeight;
-    if (w !== h || w % 16) { iconError(`That image is ${w}×${h}. Use 16×16 (or 32×32, 64×64 and so on).`); return; }
-    const c = document.createElement('canvas');
-    c.width = c.height = 16;
-    const ctx = c.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img, 0, 0, 16, 16);
-    editingIcon = c.toDataURL('image/png');
-    iconHint.textContent = w === 16 ? ICON_HINT : `Scaled down from ${w}×${w}, pixel for pixel.`;
-    iconHint.classList.remove('hint--error');
-    showIcon();
-  };
-  img.onerror = () => { URL.revokeObjectURL(src); iconError("That file couldn't be read as an image."); };
-  img.src = src;
-}
-document.getElementById('shopIconPick').addEventListener('click', () => iconInput.click());
-iconInput.addEventListener('change', () => { readIcon(iconInput.files[0]); iconInput.value = ''; });
-iconRemove.addEventListener('click', () => { editingIcon = ''; iconHint.textContent = ICON_HINT; iconHint.classList.remove('hint--error'); showIcon(); });
-iconDrop.addEventListener('dragover', (e) => { e.preventDefault(); iconDrop.classList.add('over'); });
-iconDrop.addEventListener('dragleave', () => iconDrop.classList.remove('over'));
-iconDrop.addEventListener('drop', (e) => { e.preventDefault(); iconDrop.classList.remove('over'); readIcon(e.dataTransfer.files[0]); });
-
-// --- Products: Minecraft items (docs/data/items.json, the game's own 26.3 list), how many, and the price.
-const productsEl = document.getElementById('shopProducts');
-const itemListEl = document.getElementById('itemList');
-let itemDb = null;
-import('./js/shops-core.js').then((m) => m.loadItems()).then((db) => {
-  const open = editingShop ? readProducts() : null;   // the panel was opened before the list arrived
-  itemDb = db;
-  if (!db) return;
-  const frag = document.createDocumentFragment();
-  for (const it of db.items) { const o = document.createElement('option'); o.value = it.name; frag.append(o); }
-  itemListEl.append(frag);
-  if (open) renderProducts(open);
-});
-const itemByName = (txt) => itemDb && itemDb.byName.get(txt.trim().toLowerCase());
-const nameOf = (id) => (itemDb && itemDb.byId.get(id) ? itemDb.byId.get(id).name : (id || '').replaceAll('_', ' '));
-
-// A service shop's lines are free text ("Ghast storage, per week") with a price; an item shop's are Minecraft items.
-const serviceInput = document.getElementById('shopServiceInput');
-const linesLabel = document.getElementById('shopLinesLabel');
-const addLineBtn = document.getElementById('shopAddProduct');
-const serviceMode = () => serviceInput.checked;
-function syncServiceMode() {
-  linesLabel.textContent = serviceMode() ? 'Services' : 'Products';
-  addLineBtn.textContent = serviceMode() ? '+ Add service' : '+ Add product';
-}
-serviceInput.addEventListener('change', () => {
-  // Switching keeps what was typed: item names become service text and back (unknown names are dropped).
-  const kept = readProducts(!serviceMode());
-  syncServiceMode();
-  renderProducts(serviceMode()
-    ? kept.map((p) => ({ service: p.service || nameOf(p.item), price: p.price, priceItem: p.priceItem }))
-    : kept.map((p) => { const it = itemByName(p.service || nameOf(p.item)); return it ? { ...p, service: undefined, item: it.id } : null; }).filter(Boolean));
-});
-
-function productRow(p) {
-  const li = document.createElement('li');
-  li.className = serviceMode() ? 'pline pline--service' : 'pline';
-  li.innerHTML = `
-    <input class="efield efield--sm pline__item" list="itemList" type="text" placeholder="Item" autocomplete="off" aria-label="Item">
-    <div class="pline__row">
-      <input class="efield efield--sm pline__n" type="number" min="1" max="9999" placeholder="1" aria-label="How many">
-      <span class="pline__for">for</span>
-      <input class="efield efield--sm pline__n" type="number" min="0" max="9999" placeholder="?" aria-label="Price" title="0 means free">
-      <input class="efield efield--sm pline__cur" list="itemList" type="text" placeholder="Diamond" autocomplete="off" aria-label="Paid in">
-      <button type="button" class="pline__x" aria-label="Remove product" title="Remove">\u00d7</button>
-    </div>`;
-  const [item, amount, price, cur] = li.querySelectorAll('input');
-  if (serviceMode()) {
-    item.removeAttribute('list');
-    item.placeholder = 'Service, like Ghast storage per week';
-    item.setAttribute('aria-label', 'Service');
-    item.maxLength = 60;
-  }
-  item.value = serviceMode() ? (p.service || '') : p.item ? nameOf(p.item) : '';
-  item.dataset.id = p.item || '';
-  amount.value = p.amount || '';
-  price.value = p.free ? 0 : p.price || '';
-  cur.value = p.priceItem && p.priceItem !== 'diamond' ? nameOf(p.priceItem) : '';
-  const check = (inp) => inp.classList.toggle('efield--bad', !!inp.value.trim() && !!itemDb && !itemByName(inp.value));
-  for (const inp of serviceMode() ? [cur] : [item, cur]) inp.addEventListener('input', () => check(inp));
-  for (const inp of li.querySelectorAll('input')) inp.addEventListener('keydown', (e) => e.stopPropagation());
-  li.querySelector('.pline__x').addEventListener('click', () => li.remove());
-  return li;
-}
-function renderProducts(list) { productsEl.replaceChildren(...list.map(productRow)); }
-/** The rows as product objects. Rows with an item that isn't a Minecraft item keep what they had (or are dropped if new). */
-function readProducts(asService = serviceMode()) {
-  const out = [];
-  for (const li of productsEl.children) {
-    const [item, amount, price, cur] = li.querySelectorAll('input');
-    const pr = parseInt(price.value, 10);
-    const priceOf = () => { const c = cur.value.trim() ? itemByName(cur.value) : null; return pr > 0 ? { price: pr, priceItem: c ? c.id : 'diamond' } : pr === 0 ? { free: true } : {}; }; // a price of 0 means free
-    if (asService) {
-      const text = item.value.trim();
-      if (text) out.push({ service: text, ...priceOf() });
-      continue;
-    }
-    const it = itemByName(item.value);
-    const id = it ? it.id : (!itemDb ? item.dataset.id : '');
-    if (!id) continue;
-    out.push({ item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1), ...priceOf() });
-  }
-  return out;
-}
-document.getElementById('shopAddProduct').addEventListener('click', () => {
-  const li = productRow({});
-  productsEl.append(li);
-  li.querySelector('input').focus();
-});
-
-function openShopEditor(shop) {
-  closeBorderEditor();
-  editingShop = shop;
-  shopLabelInput.value = shop.label || '';
-  shopOwnerInput.value = shop.owner || '';
-  editingIcon = shop.icon || '';
-  iconHint.textContent = ICON_HINT; iconHint.classList.remove('hint--error');
-  showIcon();
-  serviceInput.checked = shop.kind === 'service';
-  syncServiceMode();
-  renderProducts(shop.products || []);
-  shopSpoilerInput.checked = !!shop.spoiler;
-  shopSpoilerRow.hidden = !shop.points; // only outlines can be filled
-  shopEditorEl.classList.add('open');
-  shopLabelInput.focus();
-  shopLabelInput.select();
-}
-
-function closeShopEditor() {
-  editingShop = null;
-  shopEditorEl.classList.remove('open');
-}
-
-shopSaveBtn.addEventListener('click', () => {
-  if (!editingShop) return;
-  // An item that isn't a Minecraft item would be dropped on save; point at it instead.
-  const bad = [...productsEl.querySelectorAll('.pline input[list]')].find((i) => i.value.trim() && itemDb && !itemByName(i.value));
-  if (bad) { bad.classList.add('efield--bad'); bad.focus(); bad.select(); return; }
-  editingShop.label = shopLabelInput.value.trim();
-  editingShop.owner = matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim();
-  editingShop.spoiler = !!editingShop.points && shopSpoilerInput.checked;
-  editingShop.icon = editingIcon;
-  editingShop.kind = serviceMode() ? 'service' : '';
-  editingShop.products = readProducts();
-  if (editingShop.shape) {
-    // Keep the class on the layer's options too, so it is right if the layer is added to the map later.
-    const cls = editingShop.spoiler ? 'shop-outline shop-outline--spoiler border-line' : 'shop-outline border-line';
-    editingShop.shape.options.className = cls;
-    const node = editingShop.shape.getElement();
-    if (node) node.classList.toggle('shop-outline--spoiler', editingShop.spoiler);
-  }
-  saveShops();
-  closeShopEditor();
-});
-shopDeleteBtn.addEventListener('click', () => {
-  if (!editingShop) return;
-  map.removeLayer(editingShop.marker);
-  shops = shops.filter((s) => s !== editingShop);
-  saveShops();
-  closeShopEditor();
-});
-shopCancelBtn.addEventListener('click', () => {
-  // A freshly-placed shop with no name yet shouldn't be left behind as an
-  // unlabeled marker just because the editor was dismissed.
-  if (editingShop && !editingShop.label) {
-    map.removeLayer(editingShop.marker);
-    shops = shops.filter((s) => s !== editingShop);
-    saveShops();
-  }
-  closeShopEditor();
-});
-shopLabelInput.addEventListener('keydown', (e) => {
-  e.stopPropagation();
-  if (e.key === 'Enter') shopSaveBtn.click();
-  else if (e.key === 'Escape') shopCancelBtn.click();
-});
-
-const shopToggleBtn = document.getElementById('shopToggle');
-let drawKind = 'border'; // what the shape being drawn becomes: 'border' or 'shop'
-
-function setDrawMode(on, kind = 'border') {
-  if (on && drawMode && kind !== drawKind) finishActiveLine(); // switching tools: keep what was drawn
-  drawMode = on;
-  if (on) drawKind = kind;
-  const b = on && drawKind === 'border', sh = on && drawKind === 'shop';
-  drawToggleBtn.classList.toggle('active', b);
-  drawToggleBtn.setAttribute('aria-pressed', String(b));
-  drawToggleBtn.dataset.tip = b ? 'Drawing border, click to stop' : 'Draw border';
-  shopToggleBtn.classList.toggle('active', sh);
-  shopToggleBtn.setAttribute('aria-pressed', String(sh));
-  shopToggleBtn.dataset.tip = sh ? 'Drawing shop, click to stop' : 'Draw shop outline';
-  map.getContainer().classList.toggle('drawing-mode', on);
-  if (on) {
-    map.doubleClickZoom.disable();
-  } else {
-    map.doubleClickZoom.enable();
-    finishActiveLine();
-  }
-}
-
-map.on('click', (e) => {
-  if (drawMode) {
-    const w = latLngToWorld(e.latlng);
-    const last = activePoints[activePoints.length - 1];
-    const p = constrain(snapWorld(w.x, w.z), last);
-    // Clicking back on the first point closes the shape.
-    if (activePoints.length >= 3 && map.latLngToContainerPoint(worldToLatLng(p.x, p.z)).distanceTo(map.latLngToContainerPoint(worldToLatLng(activePoints[0].x, activePoints[0].z))) < 12) {
-      finishActiveLine();
-      return;
-    }
-    if (samePoint(p, last)) return;
-    activePoints.push(p);
-    renderActiveLine();
-    return;
-  }
-});
-map.on('dblclick', (e) => {
-  if (!drawMode) return;
-  L.DomEvent.stop(e);
-  activePoints.pop(); // the second click of the double-click added a redundant point
-  finishActiveLine();
-});
-document.addEventListener('keydown', (e) => {
-  if (!drawMode) return;
-  if (e.key === 'Escape') { activePoints = []; renderActiveLine(); }
-  else if (e.key === 'Enter') finishActiveLine();
-});
-
-drawToggleBtn.addEventListener('click', () => setDrawMode(!(drawMode && drawKind === 'border'), 'border'));
-drawFinishBtn.addEventListener('click', finishActiveLine);
-drawUndoBtn.addEventListener('click', undoPoint);
-shopToggleBtn.addEventListener('click', () => setDrawMode(!(drawMode && drawKind === 'shop'), 'shop'));
-
-// "Clear all borders" needs a second click within a few seconds to confirm, so a stray click
-// doesn't wipe out drawn work. The button turns red and its tooltip says so while it is armed.
-function armTwiceConfirm(button, defaultText, confirmText, onConfirm) {
-  let armed = false;
-  let armTimeout = null;
-  const set = (on) => {
-    armed = on;
-    button.classList.toggle('armed', on);
-    button.dataset.tip = on ? confirmText : defaultText;
-    button.setAttribute('aria-label', on ? confirmText : defaultText);
-  };
-  button.addEventListener('click', () => {
-    if (!armed) { set(true); armTimeout = setTimeout(() => set(false), 3000); return; }
-    clearTimeout(armTimeout);
-    set(false);
-    onConfirm();
-  });
-}
-armTwiceConfirm(drawClearBtn, 'Clear all borders', 'Click again to clear all borders', clearAllBorders);
-
-const helpBtn = document.getElementById('helpToggle'), helpPanel = document.getElementById('drawHint');
-helpBtn.addEventListener('click', () => {
-  helpPanel.hidden = !helpPanel.hidden;
-  helpBtn.setAttribute('aria-expanded', String(!helpPanel.hidden));
-  helpBtn.classList.toggle('active', !helpPanel.hidden);
-});
-
-document.getElementById('drawExport').addEventListener('click', exportBorders);
-document.getElementById('shopExport').addEventListener('click', exportShops);
-
-// --- Search ---------------------------------------------------------
-// Searches labeled borders and shops by substring match and zooms the map
-// to a close-up view of whichever result is picked. The index is rebuilt
-// from the live `borders`/`shops` arrays on every keystroke rather than
-// cached, since both can change at any time while editing.
-const DETAIL_ZOOM = 13;
-const searchBox = document.getElementById('msearch');
-const searchOpenBtn = document.getElementById('btn-search');
-const searchInput = document.getElementById('search-input');
-const searchList = document.getElementById('search-results');
-let currentResults = [];
-let searchActiveIndex = -1;
-
-function openSearch() { searchBox.classList.add('open'); searchOpenBtn.setAttribute('aria-expanded', 'true'); searchInput.focus(); }
-function closeSearch() {
-  searchBox.classList.remove('open'); searchOpenBtn.setAttribute('aria-expanded', 'false');
-  searchInput.value = ''; searchList.innerHTML = ''; currentResults = []; searchActiveIndex = -1; searchInput.blur();
-}
-searchOpenBtn.addEventListener('click', openSearch);
-document.getElementById('search-close').addEventListener('click', closeSearch);
-
-// Rebuilt on every keystroke, since borders and shops change while editing.
-function buildSearchIndex() {
-  const idx = [];
-  for (const b of borders) if (b.label) idx.push({ type: 'border', label: b.label, color: b.color, ref: b });
-  for (const s of shops) if (s.label) idx.push({ type: 'shop', label: s.label, ref: s });
-  return idx;
-}
-
-function renderSearchResults(query) {
-  const q = query.trim().toLowerCase();
-  currentResults = q ? buildSearchIndex().filter((r) => r.label.toLowerCase().includes(q)).slice(0, 8) : [];
-  searchActiveIndex = currentResults.length ? 0 : -1;
-  if (!q) { searchList.innerHTML = ''; return; }
-  searchList.innerHTML = currentResults.length
-    ? currentResults.map((r, i) => {
-        const icon = r.type === 'border'
-          ? `<i class="c-${String(r.color).replace('#', '').toLowerCase()}"></i>`
-          : (r.ref.icon ? `<img class="shop-icon" src="${r.ref.icon}" alt="">` : `<img src="assets/shop-icon.png" alt="">`);
-        return `<li class="sresult" role="option" aria-selected="${i === 0}" data-index="${i}"><span class="sresult__icon">${icon}</span><span>${escapeHtml(r.label)}<small>${r.type === 'border' ? 'Border' : 'Shop'}</small></span></li>`;
-      }).join('')
-    : '<li class="msearch__empty">No matches</li>';
-  searchList.querySelectorAll('.sresult').forEach((li) => li.addEventListener('click', () => selectSearchResult(Number(li.dataset.index))));
-}
-
-function selectSearchResult(i) {
-  const r = currentResults[i];
-  if (!r) return;
-  if (r.type === 'border') map.fitBounds(r.ref.layer.getBounds(), { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
-  else { map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM); openShopEditor(r.ref); }
-  closeSearch();
-}
-
-searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
-searchInput.addEventListener('keydown', (e) => {
-  e.stopPropagation();
-  if (e.key === 'Escape') closeSearch();
-  else if (e.key === 'Enter') { e.preventDefault(); selectSearchResult(searchActiveIndex); }
-  else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (!currentResults.length) return;
-    searchActiveIndex = (searchActiveIndex + (e.key === 'ArrowDown' ? 1 : -1) + currentResults.length) % currentResults.length;
-    [...searchList.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === searchActiveIndex)));
-  }
-});
-document.addEventListener('pointerdown', (e) => {
-  if (searchBox.classList.contains('open') && !searchBox.contains(e.target) && !searchOpenBtn.contains(e.target)) closeSearch();
-});
-
-loadBorders();
-loadShops();
-
-loadWorld();
-createCubiomesModule().then((mod) => {
-  cubiomes = mod;
-  cubiomes.ccall('seed_init', null, ['string'], [SEED]);
-  seedInitialized = true;
-});
-</script>
-</body>
+    </header>
+
+    <main class="map-main">
+      <h1 class="sr-only">Voxel map editor</h1>
+      <div id="map" role="application" aria-label="Map editor"></div>
+
+      <div class="mapui mapui--tr">
+        <button class="mapbtn" id="btn-search" aria-label="Search the map" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10" cy="10" r="6.5" />
+            <path d="M15 15l6 6" />
+          </svg>
+        </button>
+        <button class="mapbtn" id="btn-spawn" aria-label="Back to spawn">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 22C12 22 4.5 14.5 4.5 9.5a7.5 7.5 0 0 1 15 0C19.5 14.5 12 22 12 22Z" />
+            <circle cx="12" cy="9.5" r="2.5" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="mapui mapui--br">
+        <button class="mapbtn" id="btn-in" aria-label="Zoom in">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+        <button class="mapbtn" id="btn-out" aria-label="Zoom out">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+        </button>
+      </div>
+
+      <p class="mapinfo" id="mapinfo"><strong id="footerHover"></strong><span id="zoomBpp"></span></p>
+
+      <div class="msearch" id="msearch" role="search">
+        <div class="msearch__bar">
+          <input
+            id="search-input"
+            type="text"
+            inputmode="search"
+            enterkeyhint="search"
+            placeholder="Search borders and shops"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            aria-label="Search borders and shops"
+          />
+          <button class="mapbtn" id="search-close" aria-label="Close search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </div>
+        <ul class="msearch__results" id="search-results" role="listbox" aria-label="Results"></ul>
+      </div>
+
+      <div
+        id="drawTools"
+        class="epanel etools"
+        role="toolbar"
+        aria-label="Editor tools"
+        aria-orientation="vertical"
+      >
+        <button
+          class="ibtn"
+          id="drawToggle"
+          aria-label="Draw border"
+          data-tip="Draw border"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h10v6h6v10H4Z" />
+            <path class="ibtn__dot" d="M3 3h2v2H3zM13 3h2v2h-2zM19 9h2v2h-2zM19 19h2v2h-2zM3 19h2v2H3z" />
+          </svg>
+        </button>
+        <button
+          class="ibtn"
+          id="shopToggle"
+          aria-label="Draw shop outline"
+          data-tip="Draw shop outline"
+          aria-pressed="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9v11h16V9" />
+            <path d="M3 4h18l1 5H2Z" />
+            <path d="M10 20v-6h4v6" />
+          </svg>
+        </button>
+        <div class="tool-divider"></div>
+        <button
+          class="ibtn"
+          id="drawFinish"
+          aria-label="Finish shape"
+          data-tip="Finish shape (Enter)"
+          disabled
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" /></svg>
+        </button>
+        <button
+          class="ibtn"
+          id="drawUndo"
+          aria-label="Undo point"
+          data-tip="Undo point (Esc clears)"
+          disabled
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5L4 10l5 5" />
+            <path d="M4 10h10a6 6 0 0 1 0 12h-3" />
+          </svg>
+        </button>
+        <button
+          class="ibtn ibtn--danger"
+          id="drawClear"
+          aria-label="Clear all borders"
+          data-tip="Clear all borders"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15" />
+            <path d="M10 10v7M14 10v7" />
+          </svg>
+        </button>
+        <div class="tool-divider"></div>
+        <button
+          class="ibtn ibtn--primary"
+          id="drawExport"
+          aria-label="Export borders.json"
+          data-tip="Export borders.json"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4" /></svg
+          ><b class="ibtn__tag">B</b>
+        </button>
+        <button
+          class="ibtn ibtn--primary"
+          id="shopExport"
+          aria-label="Export shops.json"
+          data-tip="Export shops.json"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4" /></svg
+          ><b class="ibtn__tag">S</b>
+        </button>
+        <div class="tool-divider"></div>
+        <button
+          class="ibtn"
+          id="helpToggle"
+          aria-label="How it works"
+          data-tip="How it works"
+          aria-expanded="false"
+          aria-controls="drawHint"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 9a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.2-1.5 2.4v.5" />
+            <path class="ibtn__dot" d="M11 18h2v2h-2z" />
+          </svg>
+        </button>
+      </div>
+      <div class="epanel ehelp" id="drawHint" hidden>
+        <h2>How it works</h2>
+        <p class="hint">
+          Borders and shop outlines use straight horizontal and vertical lines on the block grid. Click to add
+          corners. Enter, a double-click or a click on the first corner finishes; Esc clears.
+        </p>
+        <p class="hint">
+          Click a shop to give it an icon and products. Export each file when done, put it in docs/ and push.
+        </p>
+      </div>
+
+      <div id="borderEditor" class="epanel">
+        <h2>Border</h2>
+        <input class="efield" id="borderLabelInput" type="text" placeholder="Label" maxlength="40" />
+        <label class="toggle-row">
+          <input type="checkbox" id="borderShowLabelInput" checked />
+          <span>Show label on map</span>
+        </label>
+        <span class="field-label">Owners (shown on their player page)</span>
+        <div id="ownerChips" class="owner-chips"></div>
+        <input
+          class="efield"
+          id="ownerInput"
+          list="rosterList"
+          type="text"
+          placeholder="Add a player"
+          autocomplete="off"
+        />
+        <span class="field-label">Colour</span>
+        <div id="colorSwatches"></div>
+        <div class="eactions">
+          <button class="ebtn ebtn--danger" id="borderDelete">Delete</button>
+          <button class="ebtn" id="borderCancel">Cancel</button>
+          <button class="ebtn ebtn--primary" id="borderSave">Save</button>
+        </div>
+      </div>
+
+      <div id="shopEditor" class="epanel">
+        <h2>Shop</h2>
+        <input class="efield" id="shopLabelInput" type="text" placeholder="Shop name" maxlength="40" />
+        <span class="field-label">Owner</span>
+        <input
+          class="efield"
+          id="shopOwnerInput"
+          list="rosterList"
+          type="text"
+          placeholder="Player name"
+          autocomplete="off"
+        />
+        <datalist id="rosterList"></datalist>
+
+        <span class="field-label">Icon</span>
+        <div class="icon-row">
+          <label class="icon-drop" id="shopIconDrop" title="Drop a 16x16 PNG here">
+            <img class="icon-drop__img" id="shopIconPreview" alt="" width="16" height="16" hidden />
+            <span class="icon-drop__empty" id="shopIconEmpty">16×16</span>
+            <input type="file" id="shopIconInput" accept="image/png,image/gif,image/webp" class="sr-only" />
+          </label>
+          <div class="icon-row__actions">
+            <button type="button" class="ebtn ebtn--sm" id="shopIconPick">Upload PNG</button>
+            <button type="button" class="ebtn ebtn--sm ebtn--danger" id="shopIconRemove" hidden>
+              Remove
+            </button>
+          </div>
+        </div>
+        <p class="hint" id="shopIconHint">
+          Pixel art, 16×16. Shown on the Shops page and in search, not on the map.
+        </p>
+
+        <label class="toggle-row">
+          <input type="checkbox" id="shopServiceInput" />
+          <span>Service shop (offers services, not items)</span>
+        </label>
+        <span class="field-label" id="shopLinesLabel">Products</span>
+        <ul class="plines" id="shopProducts"></ul>
+        <button type="button" class="ebtn ebtn--sm" id="shopAddProduct">+ Add product</button>
+        <datalist id="itemList"></datalist>
+
+        <label class="toggle-row" id="shopSpoilerRow">
+          <input type="checkbox" id="shopSpoilerInput" />
+          <span>Spoiler wall (fill the shape black)</span>
+        </label>
+        <div class="eactions">
+          <button class="ebtn ebtn--danger" id="shopDelete">Delete</button>
+          <button class="ebtn" id="shopCancel">Cancel</button>
+          <button class="ebtn ebtn--primary" id="shopSave">Save</button>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script type="module" src="js/editor.js"></script>
+  </body>
 </html>

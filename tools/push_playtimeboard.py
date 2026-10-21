@@ -15,7 +15,11 @@ Same SFTP settings as tools/sync_logs.py, plus
   SFTP_PLAYTIMEBOARD   optional   default "plugins/PlaytimeBoard/config.yml"
 A copy of the old file is kept next to it as config.yml.voxel-bak before the first change of a run.
 """
-import json, os, re, sys
+
+import json
+import os
+import re
+import sys
 
 # The key and the indented lines under it; blank lines and comments at the left edge belong to the next setting.
 BLOCK = re.compile(r'(?m)^adjust-minutes:[ \t]*(?:\{\})?[ \t]*\n(?:[ \t]+\S.*\n)*')
@@ -43,7 +47,11 @@ def wanted_minutes(data_dir):
 
 def with_adjustments(text, minutes):
     """The config text with only the adjust-minutes block replaced (added at the end if it is missing)."""
-    block = 'adjust-minutes:\n' + ''.join(f'  "{n}": -{m}\n' for n, m in minutes.items()) if minutes else 'adjust-minutes: {}\n'
+    block = (
+        'adjust-minutes:\n' + ''.join(f'  "{n}": -{m}\n' for n, m in minutes.items())
+        if minutes
+        else 'adjust-minutes: {}\n'
+    )
     if BLOCK.search(text):
         return BLOCK.sub(lambda _: block, text, count=1)
     return text.rstrip('\n') + '\n\n' + block
@@ -60,6 +68,7 @@ def main():
     minutes = wanted_minutes(sys.argv[1])
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import sync_logs
+
     path = (os.environ.get('SFTP_PLAYTIMEBOARD') or 'plugins/PlaytimeBoard/config.yml').strip('/')
     transport, sftp = sync_logs.connect()
     try:

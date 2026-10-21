@@ -36,13 +36,14 @@ and a pattern built from the logo's grid. It is mobile first (the base CSS is th
 and follows the visitor's light or dark setting.
 
 - `docs/assets/brand.css`: the brand tokens (copied from the guide's `tokens.json`) and the base components: button, card, tag, face.
-- `docs/assets/site.css`: header, hero, news, stats and the players pages.
+- `docs/assets/site.css`: page frame, shared pieces, then one section per page (home, players, shops) and the charts. A contents list at the top says where.
 - `docs/assets/map.css`: the map's controls and labels in the same terms.
 - `docs/assets/editor.css`: the editor's panels and buttons.
-- **All styling lives in these four files; pages and scripts carry no inline `style`.** Fonts, sizes, colours, spacing and line weights are CSS, and
-  the scripts only pick class names. Data-driven sizes are classes too: bar widths and heights are `w-0` to `w-100` and `h-0` to `h-100`
-  (`widthClass()` / `heightClass()` in `docs/js/ui.js`), spacing is `mt-1` to `mt-4`, and chart lines and pattern fills are named classes
-  (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in the CSS and it changes everywhere.
+- **All styling lives in these four files; pages and scripts carry no inline `style` and no inline `<script>`.** Fonts, sizes, colours,
+  spacing and line weights are CSS, and the scripts only pick class names. Data-driven sizes are SVG attributes: bars and the hour chart
+  are drawn by `bar()` and `columns()` in `docs/js/ui.js`, and their colours are classes (`bar__fill`, `tbar__seg--afk`). Chart lines and
+  pattern fills are named classes too (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in
+  the CSS and it changes everywhere.
 - `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
 - `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
 - Player heads are shown square (to keep the pixel grid) with `image-rendering: pixelated`. The guide lists round corners for avatars, but square heads suit Minecraft's grid; change `.face` in `brand.css` if you prefer round.
@@ -53,10 +54,17 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 
 | File | Job |
 | --- | --- |
-| `docs/js/ui.js` | Site paths (works from any base URL), DOM helpers, player faces, number and time formatting |
+| `docs/js/ui.js` | Site paths (works from any base URL), DOM and SVG helpers, `getJSON`, bars, player faces, number and time formatting |
+| `docs/js/widgets.js` | Pieces the homepage and player page share: the stat tile and the hour chart |
 | `docs/js/data.js` | Loads the CSVs and computes every number the site shows (a port of the original stats dashboard, so the numbers match) |
-| `docs/js/map-core.js` | The world map: Leaflet over the WASM tile renderer, plus borders, shops and the spawn marker. Shared by the home preview and the Map page |
-| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js` | One per page |
+| `docs/js/map-core.js` | The world map: the explored-world tiles, spawn pin, map buttons and biome lookup (`createBaseMap`), plus borders and shops (`createWorldMap`). Shared by the home preview, the Map page and the editor |
+| `docs/js/map-search.js` | The search box over a full-screen map, used by the Map page and the editor |
+| `docs/js/shops-core.js` | Items, prices and the item search behind the Shops page and map search |
+| `docs/js/race.js`, `pattern.js` | The advancement race chart and the brand pattern |
+| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js`, `shops.js`, `editor.js` | One per page |
+
+Code style: `.prettierrc.json` (JavaScript, CSS, HTML), `ruff.toml` (Python) and `.editorconfig`. Run `npx prettier --write docs` and
+`ruff format tools && ruff check tools` before committing.
 
 ## Data files
 

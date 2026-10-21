@@ -5,6 +5,7 @@ bytes (decoded on demand) instead of Python lists. Minecraft 26.3 can write a li
 which plain states are bare strings and customised ones are compounds; NBT lists cannot mix types, so
 the strings arrive wrapped as {"": "minecraft:stone"}. Both shapes are handled by the callers.
 """
+
 import struct
 
 END, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BYTE_ARRAY, STRING, LIST, COMPOUND, INT_ARRAY, LONG_ARRAY = range(13)
@@ -25,7 +26,7 @@ def parse(data):
 def _string(data, pos):
     n = _u16(data, pos)[0]
     pos += 2
-    return data[pos:pos + n].decode('utf-8', 'replace'), pos + n
+    return data[pos : pos + n].decode('utf-8', 'replace'), pos + n
 
 
 def _payload(data, pos, tag):
@@ -56,13 +57,13 @@ def _payload(data, pos, tag):
         return out, pos
     if tag == BYTE_ARRAY:
         n = _i32(data, pos)[0]
-        return bytes(data[pos + 4:pos + 4 + n]), pos + 4 + n
+        return bytes(data[pos + 4 : pos + 4 + n]), pos + 4 + n
     if tag == INT_ARRAY:
         n = _i32(data, pos)[0]
-        return bytes(data[pos + 4:pos + 4 + 4 * n]), pos + 4 + 4 * n
+        return bytes(data[pos + 4 : pos + 4 + 4 * n]), pos + 4 + 4 * n
     if tag == LONG_ARRAY:
         n = _i32(data, pos)[0]
-        return bytes(data[pos + 4:pos + 4 + 8 * n]), pos + 4 + 8 * n   # raw big-endian longs
+        return bytes(data[pos + 4 : pos + 4 + 8 * n]), pos + 4 + 8 * n  # raw big-endian longs
     raise ValueError(f'unknown tag {tag}')
 
 

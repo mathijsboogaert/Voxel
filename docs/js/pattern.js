@@ -4,8 +4,10 @@
 // come out the same thickness (outlining each cell separately doubled the lines between cells).
 // Decorative only: callers put it where no text sits on top of it.
 
-const NS = 'http://www.w3.org/2000/svg';
-const CELL = 64, STROKE = 4;
+import { svgEl } from './ui.js';
+
+const CELL = 64,
+  STROKE = 4;
 const R = CELL;
 
 // Each block: fills (drawn under the lines) and arcs (the curved lines), in cell coordinates.
@@ -34,12 +36,7 @@ const BLOCKS = {
   }),
 };
 
-const make = (tag, attrs = {}, cls) => {
-  const n = document.createElementNS(NS, tag);
-  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
-  if (cls) n.setAttribute('class', cls);
-  return n;
-};
+const make = (tag, attrs = {}, cls) => svgEl(tag, { ...attrs, class: cls });
 
 /**
  * pattern(['square', 'disc@90', 'leaf', 'cut@180'], {rows: 1})
@@ -47,11 +44,12 @@ const make = (tag, attrs = {}, cls) => {
  */
 export function pattern(spec, { rows = 1 } = {}) {
   const cols = Math.ceil(spec.length / rows);
-  const W = cols * CELL, H = rows * CELL;
-  const svg = make('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true', focusable: 'false' });
-  svg.setAttribute('class', 'pattern');
+  const W = cols * CELL,
+    H = rows * CELL;
+  const svg = make('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true', focusable: 'false' }, 'pattern');
 
-  const fills = make('g'), arcs = make('g');
+  const fills = make('g'),
+    arcs = make('g');
   spec.forEach((item, i) => {
     const [kind, rot = '0'] = item.split('@');
     const block = kind === 'disc-amber' ? BLOCKS.disc('amber') : BLOCKS[kind]();

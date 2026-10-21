@@ -11,7 +11,14 @@ writes into <data-folder>:
                     tell how much AFK time fell inside each session
 Without a scoreboard.dat it does nothing.
 """
-import csv, gzip, json, os, sys, time
+
+import contextlib
+import csv
+import gzip
+import json
+import os
+import sys
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'world'))
 import nbt  # noqa: E402
@@ -20,16 +27,16 @@ import nbt  # noqa: E402
 def read_counters(path):
     with open(path, 'rb') as f:
         raw = f.read()
-    try:
+    with contextlib.suppress(OSError):  # the file may or may not be gzipped
         raw = gzip.decompress(raw)
-    except OSError:
-        pass
     data = nbt.parse(raw).get('data', {})
     players = {}
     for e in data.get('PlayerScores', []):
         obj = e.get('Objective')
         if obj in ('pt.total', 'pt.afktotal'):
-            players.setdefault(e['Name'], {'active': 0, 'afk': 0})['active' if obj == 'pt.total' else 'afk'] = int(e.get('Score') or 0)
+            players.setdefault(e['Name'], {'active': 0, 'afk': 0})['active' if obj == 'pt.total' else 'afk'] = int(
+                e.get('Score') or 0
+            )
     return players
 
 
@@ -54,7 +61,9 @@ def main():
             for r in csv.DictReader(f):
                 last[r['player']] = (int(r['active_s']), int(r['afk_s']))
     new = not os.path.exists(hist)
-    rows = [(now, n, v['active'], v['afk']) for n, v in sorted(players.items()) if last.get(n) != (v['active'], v['afk'])]
+    rows = [
+        (now, n, v['active'], v['afk']) for n, v in sorted(players.items()) if last.get(n) != (v['active'], v['afk'])
+    ]
     if rows or new:
         with open(hist, 'a', newline='') as f:
             w = csv.writer(f)
