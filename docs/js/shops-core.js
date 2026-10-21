@@ -54,7 +54,7 @@ export function priceEl(db, p) {
   return el('span', { class: 'price', title: label },
     el('span', { class: 'sr-only' }, label),
     el('span', { 'aria-hidden': 'true' }, String(p.price)),
-    el('img', { class: 'price__icon', src: url('assets/diamond.svg'), alt: '', width: 16, height: 16 }));
+    el('img', { class: 'price__icon', src: url('assets/diamond.png'), alt: '', width: 16, height: 16 }));
 }
 
 /** A stable anchor for a shop on the Shops page. */
