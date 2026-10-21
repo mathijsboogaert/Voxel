@@ -59,6 +59,7 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 | `docs/js/widgets.js` | Pieces the homepage and player page share: the stat tile and the hour chart |
 | `docs/js/data.js` | Loads the CSVs and computes every number the site shows (a port of the original stats dashboard, so the numbers match) |
 | `docs/js/map-core.js` | The world map: the explored-world tiles, spawn pin, map buttons and biome lookup (`createBaseMap`), plus borders and shops (`createWorldMap`). Shared by the home preview, the Map page and the editor |
+| `docs/js/nav.js` | The menu: on a phone it folds out from the menu button, one row per page with its icon and name; from 640px the icons sit in the header |
 | `docs/js/map-search.js` | The search box over a full-screen map, used by the Map page and the editor |
 | `docs/js/shops-core.js` | Items, prices and the item search behind the Shops page and map search |
 | `docs/js/race.js`, `pattern.js` | The advancement race chart and the brand pattern |

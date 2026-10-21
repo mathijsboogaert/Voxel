@@ -82,47 +82,115 @@ main > .wrap {
   display: block;
 }
 
-/* The menu icons (assets/icons/nav) are 8x8 pixel art in the style of the game's village map marker; they are
-   shown at 32px (4x) so every pixel stays square. The name is there for screen readers and as a tooltip. */
+/* The menu. Its icons (assets/icons/nav) are 8x8 pixel art in the style of the game's village map
+   marker, shown at 32px (4x) so every pixel stays square.
+   Phone: a menu button folds the menu out under the header, one row per page with its icon and name
+   (js/nav.js). From 640px: the icons sit in the header and the names are kept for screen readers. */
+.site-header .wrap {
+  position: relative;
+}
+.nav-toggle {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-right: -12px; /* the lines line up with the page edge, the tap area reaches past it */
+  padding: 0;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.nav-toggle svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: square;
+}
+.nav-toggle__close,
+.nav-open .nav-toggle__open {
+  display: none;
+}
+.nav-open .nav-toggle__close {
+  display: inline;
+}
+
 .nav {
-  display: flex;
-  gap: var(--space-1);
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--stroke-2); /* below the header's bottom line */
+  background: var(--paper);
+  border-bottom: var(--stroke-2) solid var(--line);
+}
+.nav-open .nav {
+  display: grid;
 }
 .nav a {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 48px;
-  min-height: 48px;
-  padding-inline: 8px;
-  border-bottom: var(--stroke-4) solid transparent;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding-inline: var(--space-3);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+.nav a + a {
+  border-top: var(--stroke-1) solid var(--line-soft);
 }
 .nav a:hover {
-  border-bottom-color: var(--line-soft);
+  background: var(--paper-sunken);
 }
+/* The current page: a teal bar along the left edge. */
 .nav a[aria-current='page'] {
-  border-bottom-color: var(--teal);
+  box-shadow: inset var(--stroke-4) 0 0 var(--teal);
 }
 .nav__icon {
   display: block;
+  flex: none;
   width: 32px;
   height: 32px;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
 }
-/* On the narrowest phones, and on the editor's five-item menu on a phone, the wordmark gives way. */
-@media (max-width: 340px) {
-  .brand__name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+
+@media (min-width: 640px) {
+  .nav-toggle {
+    display: none;
   }
-}
-@media (max-width: 480px) {
-  .site-header:has(.nav > a:nth-child(5)) .brand__name {
+  .nav,
+  .nav-open .nav {
+    display: flex;
+    position: static;
+    gap: var(--space-1);
+    margin: 0;
+    background: none;
+    border: 0;
+  }
+  .nav a {
+    justify-content: center;
+    min-width: 48px;
+    min-height: 48px;
+    padding-inline: 8px;
+    border-bottom: var(--stroke-4) solid transparent;
+  }
+  .nav a + a {
+    border-top: 0;
+  }
+  .nav a:hover {
+    background: none;
+    border-bottom-color: var(--line-soft);
+  }
+  .nav a[aria-current='page'] {
+    border-bottom-color: var(--teal);
+    box-shadow: none;
+  }
+  .nav__label {
     position: absolute;
     width: 1px;
     height: 1px;

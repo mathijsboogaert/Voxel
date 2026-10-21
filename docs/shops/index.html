@@ -31,22 +31,34 @@
           />
           <span class="brand__name">Voxel</span>
         </a>
-        <nav class="nav" aria-label="Main">
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="nav-toggle__open" d="M3 6h18M3 12h18M3 18h18" />
+            <path class="nav-toggle__close" d="M5 5l14 14M19 5L5 19" />
+          </svg>
+        </button>
+        <nav class="nav" id="site-nav" aria-label="Main">
           <a href="../" title="Home">
             <img class="nav__icon" src="../assets/icons/nav/village.png" alt="" width="32" height="32" />
-            <span class="sr-only">Home</span>
+            <span class="nav__label">Home</span>
           </a>
           <a href="../map/" title="Map">
             <img class="nav__icon" src="../assets/icons/nav/map.png" alt="" width="32" height="32" />
-            <span class="sr-only">Map</span>
+            <span class="nav__label">Map</span>
           </a>
           <a href="../players/" title="Players">
             <img class="nav__icon" src="../assets/icons/nav/steve.png" alt="" width="32" height="32" />
-            <span class="sr-only">Players</span>
+            <span class="nav__label">Players</span>
           </a>
           <a href="./" aria-current="page" title="Shops">
             <img class="nav__icon" src="../assets/icons/nav/diamond.png" alt="" width="32" height="32" />
-            <span class="sr-only">Shops</span>
+            <span class="nav__label">Shops</span>
           </a>
         </nav>
       </div>
@@ -80,6 +92,7 @@
       </div>
     </main>
 
+    <script type="module" src="../js/nav.js"></script>
     <script type="module" src="../js/shops.js"></script>
   </body>
 </html>
