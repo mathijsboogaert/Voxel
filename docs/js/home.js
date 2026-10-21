@@ -267,7 +267,7 @@ function renderBoard(st, holder) {
     ),
   );
   holder.replaceChildren(
-    el('div', { class: 'chips', role: 'tablist', 'aria-label': 'Leaderboard' }, tabs),
+    el('div', { class: 'chips chips--4', role: 'tablist', 'aria-label': 'Leaderboard' }, tabs),
     el('p', { class: 'label' }, board.caption),
     el(
       'ul',
