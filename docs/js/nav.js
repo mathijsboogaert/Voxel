@@ -1,5 +1,5 @@
 // The site menu. On a phone it folds out from the menu button (each page as its icon and name);
-// on wider screens the icons are always in the header and the button is hidden (site.css).
+// on wider screens the whole menu is in the header and the button is hidden (site.css).
 const header = document.querySelector('.site-header');
 const toggle = header && header.querySelector('.nav-toggle');
 
@@ -22,5 +22,5 @@ if (toggle) {
   document.addEventListener('pointerdown', (e) => {
     if (isOpen() && !header.contains(e.target)) setOpen(false);
   });
-  matchMedia('(min-width: 640px)').addEventListener('change', () => setOpen(false));
+  matchMedia('(min-width: 768px)').addEventListener('change', () => setOpen(false));
 }
