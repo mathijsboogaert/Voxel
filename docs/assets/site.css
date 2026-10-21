@@ -942,22 +942,40 @@ main > .wrap {
 
 /* ==== 5. Shops ======================================================================= */
 
-/* Shops fill columns top to bottom, so a long list of products doesn't leave gaps beside it. */
+/* A grid of equal cards. Each card has three bands (head, body, foot); where the browser supports subgrid the bands line
+   up across a row, so icons, product lists and owner lines sit level whatever each shop sells. */
 .slist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
-  column-gap: var(--space-3);
 }
 .scard {
-  break-inside: avoid;
-  margin-bottom: var(--space-3);
   display: grid;
-  gap: var(--space-3);
+  grid-template-rows: auto 1fr auto;
+  row-gap: var(--space-3);
   padding: var(--space-4);
   background: var(--paper-sunken);
   border: var(--stroke-2) solid var(--line);
   scroll-margin-top: 96px;
+}
+@supports (grid-template-rows: subgrid) {
+  .slist {
+    row-gap: 0;
+  }
+  .scard {
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    margin-bottom: var(--space-3);
+  }
+}
+.scard__body {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  min-width: 0;
 }
 .scard--focus {
   border-color: var(--teal);
@@ -1079,17 +1097,6 @@ main > .wrap {
   padding-left: var(--space-3);
   text-align: right;
   white-space: nowrap;
-}
-
-@media (min-width: 760px) {
-  .slist {
-    columns: 2;
-  }
-}
-@media (min-width: 1100px) {
-  .slist {
-    columns: 3;
-  }
 }
 
 /* ==== 6. Charts ====================================================================== */

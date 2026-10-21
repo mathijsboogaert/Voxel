@@ -1,6 +1,6 @@
 // One player's page: face, status, a few numbers, when they play, who they play with,
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
-import { loadStats } from './data.js?v=fafad71b';
+import { loadStats } from './data.js?v=465638b2';
 import { raceBlock } from './race.js?v=811a9c3b';
 import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b4c787b7';
 import { statTile, hourChart } from './widgets.js?v=5044ce61';

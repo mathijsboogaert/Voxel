@@ -79,8 +79,12 @@ function card(db, s, reason) {
         el('h2', {}, s.label),
       ),
     ),
-    reason ? el('p', { class: 'scard__why' }, reason) : null,
-    productTable(db, s),
+    el(
+      'div',
+      { class: 'scard__body' },
+      reason ? el('p', { class: 'scard__why' }, reason) : null,
+      productTable(db, s),
+    ),
     el('div', { class: 'scard__foot' }, owner, el('a', { href: mapHref(s) }, 'On the map')),
   );
 }

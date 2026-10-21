@@ -1,5 +1,5 @@
 // Homepage: news, map preview, stats overview and player faces.
-import { loadStats } from './data.js?v=fafad71b';
+import { loadStats } from './data.js?v=465638b2';
 import {
   el,
   url,
