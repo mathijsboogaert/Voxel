@@ -67,7 +67,7 @@ export function priceEl(db, p) {
     { class: 'price', title: label },
     el('span', { class: 'sr-only' }, label),
     el('span', { 'aria-hidden': 'true' }, String(p.price)),
-    el('img', { class: 'price__icon', src: url('assets/diamond.png'), alt: '', width: 16, height: 16 }),
+    el('img', { class: 'price__icon', src: url('assets/icons/diamond.png'), alt: '', width: 16, height: 16 }),
   );
 }
 

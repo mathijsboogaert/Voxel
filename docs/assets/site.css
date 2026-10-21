@@ -82,6 +82,8 @@ main > .wrap {
   display: block;
 }
 
+/* The menu is Minecraft textures (assets/icons): village, map, Steve, diamond. They are 8 or 16 pixels,
+   shown at 32px (4x or 2x) so every pixel stays square. The name is there for screen readers and as a tooltip. */
 .nav {
   display: flex;
   gap: var(--space-1);
@@ -89,11 +91,10 @@ main > .wrap {
 .nav a {
   display: flex;
   align-items: center;
-  min-height: 44px;
-  padding-inline: 12px;
-  color: var(--ink);
-  font-weight: 600;
-  text-decoration: none;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  padding-inline: 8px;
   border-bottom: var(--stroke-4) solid transparent;
 }
 .nav a:hover {
@@ -102,8 +103,15 @@ main > .wrap {
 .nav a[aria-current='page'] {
   border-bottom-color: var(--teal);
 }
-/* Four menu items and the wordmark don't fit a phone: the wordmark gives way, the mark stays. */
-@media (max-width: 480px) {
+.nav__icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+/* On the narrowest phones, and on the editor's five-item menu on a phone, the wordmark gives way. */
+@media (max-width: 340px) {
   .brand__name {
     position: absolute;
     width: 1px;
@@ -112,13 +120,15 @@ main > .wrap {
     clip: rect(0 0 0 0);
     white-space: nowrap;
   }
-  .nav a {
-    padding-inline: 10px;
-  }
 }
-@media (max-width: 340px) {
-  .nav a {
-    padding-inline: 6px;
+@media (max-width: 480px) {
+  .site-header:has(.nav > a:nth-child(5)) .brand__name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }
 
