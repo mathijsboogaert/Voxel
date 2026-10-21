@@ -1,40 +1,40 @@
 {
-  "generated_at": "2026-10-21T19:38:05Z",
+  "generated_at": "2026-10-21T21:16:03Z",
   "players": {
     "BBGPlays": {
       "active": 14832,
       "afk": 0
     },
     "Cute_Iris": {
-      "active": 794,
+      "active": 6779,
       "afk": 0
     },
     "Detective_Mikey": {
-      "active": 64162,
+      "active": 68406,
       "afk": 1806
     },
     "EchoinSilence": {
-      "active": 71351,
+      "active": 75255,
       "afk": 188144
     },
     "EmrysPendragon": {
-      "active": 52554,
+      "active": 56813,
       "afk": 0
     },
     "FrTylerFr": {
-      "active": 2712,
+      "active": 8712,
       "afk": 0
     },
     "Hamersveld": {
-      "active": 4343,
+      "active": 8810,
       "afk": 0
     },
     "JayGoGamer": {
-      "active": 3588,
-      "afk": 0
+      "active": 8583,
+      "afk": 1001
     },
     "Mathi_Craft": {
-      "active": 55949,
+      "active": 61853,
       "afk": 64609
     },
     "Mister_Shade": {
@@ -53,12 +53,16 @@
       "active": 48063,
       "afk": 0
     },
+    "briosh721": {
+      "active": 5162,
+      "afk": 0
+    },
     "finndutemps": {
       "active": 29629,
       "afk": 0
     },
     "kayushka": {
-      "active": 8796,
+      "active": 13210,
       "afk": 0
     }
   }
