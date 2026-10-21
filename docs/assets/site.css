@@ -1031,6 +1031,25 @@ main > .wrap {
   vertical-align: top;
   border-top: var(--stroke-1) solid var(--line-soft);
 }
+/* A group of products (Logs, Tuff blocks): one row that opens to list every kind. */
+.pgroup summary {
+  cursor: pointer;
+  list-style: none;
+}
+.pgroup summary::-webkit-details-marker {
+  display: none;
+}
+.pgroup summary::after {
+  content: ' +';
+  font-weight: 600;
+  color: var(--teal-text);
+}
+.pgroup[open] summary::after {
+  content: ' −';
+}
+.pgroup p {
+  margin-top: var(--space-1);
+}
 .ptable td:last-child,
 .ptable th:last-child {
   padding-left: var(--space-3);

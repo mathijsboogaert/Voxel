@@ -97,6 +97,8 @@ A shop without one gets the general shop icon. In the editor, click a shop and u
 what it is paid in, Diamond unless you pick another item). In `shops.json` a line is
 `{ "item": "oak_log", "amount": 64, "price": 2, "priceItem": "diamond" }`. No price shows as "Ask".
 
+**Groups.** A product line can have a `group` (the editor's Group field, like "Logs"). Lines in the same group with the same amount and price show on the Shops page as one row, "32× Logs · 10 kinds", which opens to list every kind. Search still finds each kind on its own.
+
 **Service shops** (storage, lawsuits, rides) offer services instead of items. Tick **Service shop** in the shop's editor: its lines
 become free text with a price (`{ "service": "Ghast storage, per week", "price": 2, "priceItem": "diamond" }`) and the shop gets
 `"kind": "service"`. It shows a Service tag, the Shops page can filter All / Items / Services, and search matches the service text.

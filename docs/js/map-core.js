@@ -3,7 +3,7 @@
 // plus the borders, shops and spawn marker from the site's JSON files.
 // Leaflet itself is loaded by the page as a global (window.L).
 import { url, el, svgEl, getJSON, byId, SEED, SPAWN } from './ui.js?v=28a5c906';
-import { shopHref, isOpen } from './shops-core.js?v=b7624f88';
+import { shopHref, isOpen } from './shops-core.js?v=b4c787b7';
 
 // 1 map unit = 4096 blocks. At NATIVE_ZOOM that is exactly one pixel per block; every
 // zoom level out doubles blocks per pixel. Latitude is -Z so north stays up.

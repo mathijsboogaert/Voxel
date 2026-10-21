@@ -14,7 +14,7 @@ import {
   getJSON,
 } from './ui.js?v=28a5c906';
 import { pattern } from './pattern.js?v=b453333a';
-import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b7624f88';
+import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b4c787b7';
 import { raceBlock } from './race.js?v=811a9c3b';
 import { statTile, hourChart } from './widgets.js?v=5044ce61';
 
@@ -343,7 +343,7 @@ function initPreview() {
     if (started) return;
     started = true;
     try {
-      const { createWorldMap } = await import('./map-core.js?v=c7e0d2ef');
+      const { createWorldMap } = await import('./map-core.js?v=844e802b');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,

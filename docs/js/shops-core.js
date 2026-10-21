@@ -54,6 +54,21 @@ export const isOpen = (s) => !!s && !s.spoiler;
 /** What a line offers: "64× Oak Log" for an item, the text itself for a service. */
 export const offerText = (db, p) => (p.service ? p.service : amountText(db, p.item, p.amount));
 
+/**
+ * A shop's product lines as rows for its price list. Lines with the same group name (p.group, like "Logs")
+ * and the same amount and price become one row, so a shop with many kinds of one thing stays short.
+ * Rows keep the order of their first line. Each row: {lines, group}; group is '' for a single line.
+ */
+export function productRows(shop) {
+  const rows = new Map();
+  for (const p of shop.products || []) {
+    const key = p.group ? [p.group, p.amount, p.price, p.priceItem, p.free].join('|') : Symbol();
+    if (!rows.has(key)) rows.set(key, { lines: [], group: p.group || '' });
+    rows.get(key).lines.push(p);
+  }
+  return [...rows.values()].map((r) => (r.lines.length > 1 ? r : { lines: r.lines, group: '' }));
+}
+
 /** "1 Diamond", "Free", or '' when the shop has not set a price. */
 export function priceText(db, p) {
   if (p.free) return 'Free';

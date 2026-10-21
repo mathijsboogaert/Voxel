@@ -10,9 +10,9 @@ import {
   latLngToWorld,
   blocksPerPixel,
   DETAIL_ZOOM,
-} from './map-core.js?v=c7e0d2ef';
+} from './map-core.js?v=844e802b';
 import { el, byId, url, getJSON, colorClass, SEED } from './ui.js?v=28a5c906';
-import { loadItems, shopIconEl } from './shops-core.js?v=b7624f88';
+import { loadItems, shopIconEl } from './shops-core.js?v=b4c787b7';
 import { mapSearch } from './map-search.js?v=277ac403';
 
 const { map } = await createBaseMap(byId('map'));
@@ -682,7 +682,16 @@ function productRow(p) {
     'aria-label': 'Paid in',
   });
 
+  // Lines with the same group and price show as one row on the Shops page ("32× Logs · 10 kinds").
+  const group = field('pline__group', {
+    type: 'text',
+    placeholder: 'Group, like Logs (optional)',
+    'aria-label': 'Group',
+    maxlength: 30,
+  });
+
   item.value = service ? p.service || '' : p.item ? nameOf(p.item) : '';
+  group.value = p.group || '';
   item.dataset.id = p.item || '';
   amount.value = p.amount || '';
   price.value = p.free ? 0 : p.price || '';
@@ -704,6 +713,7 @@ function productRow(p) {
   );
   line.append(
     item,
+    group,
     el(
       'div',
       { class: 'pline__row' },
@@ -723,7 +733,8 @@ const renderProducts = (list) => productsEl.replaceChildren(...list.map(productR
 function readProducts(asService = serviceMode()) {
   const out = [];
   for (const line of productsEl.children) {
-    const [item, amount, price, currency] = line.querySelectorAll('input');
+    const [item, group, amount, price, currency] = line.querySelectorAll('input');
+    const grouped = group.value.trim() ? { group: group.value.trim() } : {};
     const n = parseInt(price.value, 10);
     const paidIn = currency.value.trim() ? itemByName(currency.value) : null;
     let cost = {};
@@ -732,12 +743,12 @@ function readProducts(asService = serviceMode()) {
 
     if (asService) {
       const text = item.value.trim();
-      if (text) out.push({ service: text, ...cost });
+      if (text) out.push({ service: text, ...cost, ...grouped });
       continue;
     }
     const found = itemByName(item.value);
     const id = found ? found.id : !itemDb ? item.dataset.id : ''; // before the item list loads, keep what was there
-    if (id) out.push({ item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1), ...cost });
+    if (id) out.push({ item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1), ...cost, ...grouped });
   }
   return out;
 }

@@ -12,10 +12,24 @@ import {
   shopSlug,
   isService,
   isOpen,
-} from './shops-core.js?v=b7624f88';
+  productRows,
+  itemName,
+} from './shops-core.js?v=b4c787b7';
 
 const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
 const plural = (n, word) => `${n} ${n === 1 ? word : word + 's'}`;
+
+/** What a row offers: one item or service, or a group that opens to show every kind in it. */
+function offerCell(db, { lines, group }) {
+  if (!group) return offerText(db, lines[0]);
+  const amount = lines[0].amount > 1 ? `${lines[0].amount}× ` : '';
+  return el(
+    'details',
+    { class: 'pgroup' },
+    el('summary', {}, `${amount}${group}`, el('span', { class: 'small' }, ` · ${lines.length} kinds`)),
+    el('p', { class: 'small' }, lines.map((p) => itemName(db, p.item)).join(', ')),
+  );
+}
 
 function productTable(db, s) {
   const lines = s.products || [];
@@ -42,7 +56,9 @@ function productTable(db, s) {
     el(
       'tbody',
       {},
-      lines.map((p) => el('tr', {}, el('td', {}, offerText(db, p)), el('td', {}, priceEl(db, p) || 'Ask'))),
+      productRows(s).map((row) =>
+        el('tr', {}, el('td', {}, offerCell(db, row)), el('td', {}, priceEl(db, row.lines[0]) || 'Ask')),
+      ),
     ),
   );
 }

@@ -29,61 +29,71 @@
         "item": "oak_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "spruce_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "birch_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "jungle_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "acacia_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "dark_oak_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "mangrove_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "cherry_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "pale_oak_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       },
       {
         "item": "poplar_log",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Logs"
       }
     ]
   },
@@ -295,85 +305,36 @@
         "item": "tuff",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "tuff_slab",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "tuff_stairs",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "tuff_wall",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Tuff blocks"
       },
       {
         "item": "polished_tuff",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "polished_tuff_slab",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "polished_tuff_stairs",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "polished_tuff_wall",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Tuff blocks"
       },
       {
         "item": "chiseled_tuff",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Tuff blocks"
       },
       {
         "item": "tuff_bricks",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "tuff_brick_slab",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "tuff_brick_stairs",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
-      },
-      {
-        "item": "tuff_brick_wall",
-        "amount": 32,
-        "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Tuff blocks"
       },
       {
         "item": "chiseled_tuff_bricks",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Tuff blocks"
       }
     ]
   },
