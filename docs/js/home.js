@@ -14,7 +14,7 @@ import {
   getJSON,
 } from './ui.js?v=28a5c906';
 import { pattern } from './pattern.js?v=b453333a';
-import { shopIconEl, shopHref } from './shops-core.js?v=45dd4b43';
+import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b7624f88';
 import { raceBlock } from './race.js?v=811a9c3b';
 import { statTile, hourChart } from './widgets.js?v=5044ce61';
 
@@ -72,7 +72,7 @@ async function buildNews(st) {
     });
   }
 
-  for (const s of shops) {
+  for (const s of shops.filter(isOpen)) {
     const at = Date.parse(s.added || '');
     if (at && now - at < 21 * DAY) items.push({ kind: 'shop', title: s.label, at, player: s.owner, shop: s });
   }
@@ -343,7 +343,7 @@ function initPreview() {
     if (started) return;
     started = true;
     try {
-      const { createWorldMap } = await import('./map-core.js?v=90249fc6');
+      const { createWorldMap } = await import('./map-core.js?v=c7e0d2ef');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,

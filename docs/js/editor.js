@@ -10,9 +10,9 @@ import {
   latLngToWorld,
   blocksPerPixel,
   DETAIL_ZOOM,
-} from './map-core.js?v=90249fc6';
+} from './map-core.js?v=c7e0d2ef';
 import { el, byId, url, getJSON, colorClass, SEED } from './ui.js?v=28a5c906';
-import { loadItems, shopIconEl } from './shops-core.js?v=45dd4b43';
+import { loadItems, shopIconEl } from './shops-core.js?v=b7624f88';
 import { mapSearch } from './map-search.js?v=277ac403';
 
 const { map } = await createBaseMap(byId('map'));

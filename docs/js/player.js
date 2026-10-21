@@ -2,7 +2,7 @@
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
 import { loadStats } from './data.js?v=fafad71b';
 import { raceBlock } from './race.js?v=811a9c3b';
-import { shopIconEl, shopHref } from './shops-core.js?v=45dd4b43';
+import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b7624f88';
 import { statTile, hourChart } from './widgets.js?v=5044ce61';
 import {
   el,
@@ -131,7 +131,7 @@ function timeOnline(p) {
 function placesCard(places) {
   const row = (place) => {
     const isShop = place.kind === 'shop';
-    const hasProducts = isShop && (place.shop.products || []).length > 0;
+    const hasProducts = isShop && isOpen(place.shop) && (place.shop.products || []).length > 0;
     return el(
       'li',
       { class: 'place' },

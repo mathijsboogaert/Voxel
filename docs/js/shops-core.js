@@ -46,6 +46,11 @@ export function amountText(db, id, n) {
 }
 /** A service shop (storage, lawsuits, a taxi) offers services written as text instead of Minecraft items. */
 export const isService = (s) => !!s && s.kind === 'service';
+/**
+ * A shop behind a spoiler wall is still being built: it shows on the map and its owner's page,
+ * but not on the Shops page or in the homepage news until the wall comes down.
+ */
+export const isOpen = (s) => !!s && !s.spoiler;
 /** What a line offers: "64× Oak Log" for an item, the text itself for a service. */
 export const offerText = (db, p) => (p.service ? p.service : amountText(db, p.item, p.amount));
 

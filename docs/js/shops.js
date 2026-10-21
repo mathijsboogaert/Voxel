@@ -11,7 +11,8 @@ import {
   priceEl,
   shopSlug,
   isService,
-} from './shops-core.js?v=45dd4b43';
+  isOpen,
+} from './shops-core.js?v=b7624f88';
 
 const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
 const plural = (n, word) => `${n} ${n === 1 ? word : word + 's'}`;
@@ -127,7 +128,7 @@ function render(db, all, query) {
 
 Promise.all([loadItems(), getJSON('shops.json', [])])
   .then(([db, data]) => {
-    const shops = data.filter((s) => s.label).sort((a, b) => a.label.localeCompare(b.label));
+    const shops = data.filter((s) => s.label && isOpen(s)).sort((a, b) => a.label.localeCompare(b.label));
     const input = byId('filter');
     const q = new URLSearchParams(location.search).get('q');
     if (q) input.value = q;

@@ -228,7 +228,7 @@ District around its shops. The seed is fixed in `docs/js/ui.js` (`SEED`, and `SP
 horizontal and vertical lines only (each corner keeps the previous corner's x or z; the shape is closed with one extra corner if needed). Double-click,
 Enter, clicking the first corner or **Finish shape** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
 visibility and owners; clicking a border later reopens it. **Draw shop outline** works the same way, over the shop's building: the outline (orange with a dark edge) leaves the build visible
-underneath, and finishing it asks for a name and owner. Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
+underneath, and finishing it asks for a name and owner. Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Such a shop counts as still being built: it stays on the map and on its owner's page, but is left off the Shops page and the homepage news until the wall comes down. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
 them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off. The tools are a strip of icon buttons on the left (hover one for its name, or press **?**);
 **Clear all borders** (the bin) needs a second click within three seconds to confirm. There is no "clear all shops": delete shops one by one.
 A shop's editor also holds its icon and products (see Shops, products and item search).
