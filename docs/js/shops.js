@@ -17,7 +17,6 @@ import {
 } from './shops-core.js?v=b4c787b7';
 
 const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
-const plural = (n, word) => `${n} ${n === 1 ? word : word + 's'}`;
 
 /** What a row offers: one item or service, or a group that opens to show every kind in it. */
 function offerCell(db, { lines, group }) {
@@ -44,16 +43,6 @@ function productTable(db, s) {
     'table',
     { class: 'ptable' },
     el(
-      'thead',
-      {},
-      el(
-        'tr',
-        {},
-        el('th', { scope: 'col' }, service ? 'Service' : 'Item'),
-        el('th', { scope: 'col' }, 'Price'),
-      ),
-    ),
-    el(
       'tbody',
       {},
       productRows(s).map((row) =>
@@ -63,11 +52,14 @@ function productTable(db, s) {
   );
 }
 
+/**
+ * One shop: its icon, kind (Shop or Service), name and owner on top, what it offers in the middle,
+ * and where it is at the bottom.
+ */
 function card(db, s, reason) {
   const owner = s.owner
     ? el('a', { class: 'scard__owner', href: playerHref(s.owner) }, faceEl(s.owner, 'sm'), s.owner)
     : null;
-  const tag = isService(s) ? el('span', { class: 'tag tag--amber' }, 'Service') : null;
   return el(
     'li',
     { class: 'scard', id: shopSlug(s) },
@@ -78,8 +70,9 @@ function card(db, s, reason) {
       el(
         'div',
         { class: 'scard__title' },
+        el('p', { class: 'label eyebrow' }, isService(s) ? 'Service' : 'Shop'),
         el('h2', {}, s.label),
-        el('div', { class: 'scard__meta' }, owner, tag),
+        owner,
       ),
     ),
     reason ? el('p', { class: 'scard__why' }, reason) : null,
@@ -98,7 +91,10 @@ const KINDS = { all: 'All', items: 'Items', services: 'Services' };
 let kind = 'all';
 const ofKind = (s) => kind === 'all' || (kind === 'services') === isService(s);
 
+/** The filter: one button per kind, with how many shops it shows. */
 function renderChips(db, shops) {
+  const count = { all: shops.length, services: shops.filter(isService).length };
+  count.items = count.all - count.services;
   const chips = Object.entries(KINDS).map(([key, label]) =>
     el(
       'button',
@@ -113,18 +109,13 @@ function renderChips(db, shops) {
         },
       },
       label,
+      el('span', { class: 'chip__count' }, count[key]),
     ),
   );
   byId('kinds').replaceChildren(...chips);
 }
 
 function render(db, all, query) {
-  const services = all.filter(isService).length;
-  const items = all.reduce((n, s) => n + (isService(s) ? 0 : (s.products || []).length), 0);
-  byId('count').textContent =
-    `${plural(all.length - services, 'shop')} selling ${plural(items, 'item')}, and ${plural(services, 'service')}. ` +
-    "Search for an item and it also finds shops that sell what it's made from.";
-
   const shops = all.filter(ofKind);
   const q = query.trim();
   const none = byId('none');

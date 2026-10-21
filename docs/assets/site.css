@@ -236,24 +236,30 @@ main > .wrap {
   flex: 1 1 100%;
 }
 
-/* Tabs and filters: square toggle buttons in equal columns, one per option (two per row for four
-   options on a phone), so they line up with the grid around them. */
+/* Tabs and filters: one segmented control. The buttons share a frame and are split by lines (the gaps
+   show the frame colour), in equal columns: one per option, or two per row for four options on a phone. */
 .chips {
   display: grid;
   grid-template-columns: repeat(var(--chips, 3), minmax(0, 1fr));
-  gap: var(--space-2);
+  gap: var(--stroke-2);
   margin-bottom: var(--space-3);
+  background: var(--line);
+  border: var(--stroke-2) solid var(--line);
 }
 .chips--4 {
   --chips: 2;
 }
 .chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 44px;
-  padding: 0 var(--space-2);
+  padding: 0 var(--space-3);
   font: 600 14px/20px var(--font-sans);
-  background: var(--paper);
   color: var(--ink);
-  border: var(--stroke-2) solid var(--line);
+  background: var(--paper);
+  border: 0;
   border-radius: 0;
   cursor: pointer;
 }
@@ -261,7 +267,14 @@ main > .wrap {
   background: var(--paper-sunken);
 }
 .chip[aria-selected='true'] {
+  color: var(--on-brand);
   background: var(--teal);
+}
+.chip__count {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.chip[aria-selected='true'] .chip__count {
   color: var(--on-brand);
 }
 
@@ -272,8 +285,14 @@ main > .wrap {
   margin-bottom: var(--space-4);
 }
 .toolbar .chips {
-  gap: var(--space-3); /* the same gap as the card columns under it */
   margin-bottom: 0;
+}
+/* Search and filter side by side from 768px: the search takes the room, the filter its own width. */
+@media (min-width: 768px) {
+  .toolbar--split {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+  }
 }
 .field {
   width: 100%;
@@ -970,22 +989,27 @@ main > .wrap {
 .scard__title {
   min-width: 0;
 }
+.scard__title .eyebrow {
+  margin-bottom: 2px;
+}
 .scard__title h2 {
   font: 600 20px/26px var(--font-display);
   overflow-wrap: anywhere;
 }
-.scard__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: 4px;
+.scard__why {
+  padding: var(--space-2) var(--space-3);
+  font-weight: 600;
+  background: var(--paper);
+  border-left: 4px solid var(--teal);
 }
+/* The owner, under the shop's name. */
 .scard__owner {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-weight: 600;
+  max-width: 100%;
+  margin-top: 6px;
+  font: 600 14px/20px var(--font-sans);
   color: var(--ink);
   text-decoration: none;
 }
@@ -996,12 +1020,7 @@ main > .wrap {
 .scard__owner:hover {
   text-decoration: underline;
 }
-.scard__why {
-  padding: var(--space-2) var(--space-3);
-  font-weight: 600;
-  background: var(--paper);
-  border-left: 4px solid var(--teal);
-}
+/* Bottom line: where it is, and the link to see it on the map. */
 .scard__foot {
   display: flex;
   align-items: baseline;
@@ -1012,6 +1031,7 @@ main > .wrap {
 }
 .scard__foot a {
   font-weight: 600;
+  white-space: nowrap;
 }
 .ptable {
   width: 100%;
