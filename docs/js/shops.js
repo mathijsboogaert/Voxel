@@ -11,10 +11,13 @@ import {
   priceEl,
   shopSlug,
   isService,
+  kindLabel,
+  sellsGoods,
+  offersServices,
+  lineName,
   isOpen,
   productRows,
-  itemName,
-} from './shops-core.js?v=b4c787b7';
+} from './shops-core.js?v=b52c5647';
 
 const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
 
@@ -26,15 +29,13 @@ function offerCell(db, { lines, group }) {
     'details',
     { class: 'pgroup' },
     el('summary', {}, `${amount}${group}`, el('span', { class: 'small' }, ` · ${lines.length} kinds`)),
-    el('p', { class: 'small' }, lines.map((p) => itemName(db, p.item)).join(', ')),
+    el('p', { class: 'small' }, lines.map((p) => lineName(db, p)).join(', ')),
   );
 }
 
 function productTable(db, s) {
-  const lines = s.products || [];
-  const service = isService(s);
-  if (!lines.length) {
-    const empty = service
+  if (!(s.products || []).length) {
+    const empty = isService(s)
       ? 'No services listed yet. Ask the owner what they offer.'
       : 'No products listed yet. Drop by and have a look.';
     return el('p', { class: 'small' }, empty);
@@ -53,7 +54,7 @@ function productTable(db, s) {
 }
 
 /**
- * One shop: its icon, kind (Shop or Service) and name on top, what it offers in the middle,
+ * One shop: its icon, kind (Shop, Service, or Shop & service) and name on top, what it offers in the middle,
  * and its owner and the way to it on the map at the bottom.
  */
 function card(db, s, reason) {
@@ -75,7 +76,7 @@ function card(db, s, reason) {
       el(
         'div',
         { class: 'scard__title' },
-        el('p', { class: 'label eyebrow' }, isService(s) ? 'Service' : 'Shop'),
+        el('p', { class: 'label eyebrow' }, kindLabel(s)),
         el('h2', {}, s.label),
       ),
     ),
@@ -89,15 +90,19 @@ function card(db, s, reason) {
   );
 }
 
-// Which shops to show: all, the ones selling items, or the services.
+// Which shops to show: all, the ones that sell things, or the ones that offer services.
+// A shop that does both shows under both.
 const KINDS = { all: 'All', items: 'Items', services: 'Services' };
 let kind = 'all';
-const ofKind = (s) => kind === 'all' || (kind === 'services') === isService(s);
+const ofKind = (s) => kind === 'all' || (kind === 'services' ? offersServices(s) : sellsGoods(s));
 
 /** The filter: one button per kind, with how many shops it shows. */
 function renderChips(db, shops) {
-  const count = { all: shops.length, services: shops.filter(isService).length };
-  count.items = count.all - count.services;
+  const count = {
+    all: shops.length,
+    items: shops.filter(sellsGoods).length,
+    services: shops.filter(offersServices).length,
+  };
   const chips = Object.entries(KINDS).map(([key, label]) =>
     el(
       'button',

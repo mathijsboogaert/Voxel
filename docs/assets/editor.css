@@ -249,6 +249,15 @@
   padding-bottom: var(--space-2);
   border-bottom: var(--stroke-1) solid var(--line-soft);
 }
+/* The kind of line (Item, Other, Service) and its name, side by side. */
+.pline__head {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 4px;
+}
+.pline__kind {
+  padding-inline: 6px;
+}
 .pline__row {
   display: grid;
   grid-template-columns: 52px auto 52px minmax(0, 1fr) 28px;

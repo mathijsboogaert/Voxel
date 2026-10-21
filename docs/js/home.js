@@ -1,5 +1,5 @@
 // Homepage: news, map preview, stats overview and player faces.
-import { loadStats } from './data.js?v=465638b2';
+import { loadStats } from './data.js?v=2048caf9';
 import {
   el,
   url,
@@ -14,7 +14,7 @@ import {
   getJSON,
 } from './ui.js?v=28a5c906';
 import { pattern } from './pattern.js?v=b453333a';
-import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b4c787b7';
+import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b52c5647';
 import { raceBlock } from './race.js?v=811a9c3b';
 import { statTile, hourChart } from './widgets.js?v=5044ce61';
 
@@ -343,7 +343,7 @@ function initPreview() {
     if (started) return;
     started = true;
     try {
-      const { createWorldMap } = await import('./map-core.js?v=dc1eb255');
+      const { createWorldMap } = await import('./map-core.js?v=556333c2');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,

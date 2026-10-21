@@ -99,9 +99,14 @@ what it is paid in, Diamond unless you pick another item). In `shops.json` a lin
 
 **Groups.** A product line can have a `group` (the editor's Group field, like "Logs"). Lines in the same group with the same amount and price show on the Shops page as one row, "32× Logs · 10 kinds", which opens to list every kind. Search still finds each kind on its own.
 
-**Service shops** (storage, lawsuits, rides) offer services instead of items. Tick **Service shop** in the shop's editor: its lines
-become free text with a price (`{ "service": "Ghast storage, per week", "price": 2, "priceItem": "diamond" }`) and the shop gets
-`"kind": "service"`. It shows a Service tag, the Shops page can filter All / Items / Services, and search matches the service text.
+**Kinds of lines.** Each line in a shop is one of three kinds, picked per line in the editor:
+- **Item**: a Minecraft item, `{ "item": "oak_log", "amount": 32, "price": 1, "priceItem": "diamond" }`.
+- **Other**: something for sale that isn't an item, like a Happy Ghast, `{ "name": "Happy Ghast", "amount": 1, "price": 4 }`.
+- **Service**: free text, like `{ "service": "Delivery" }`.
+
+What a shop is follows from its lines: only items or other products makes it a **Shop**, only services a **Service**, and both a
+**Shop & service** (The Flying Dutchman). The Shops page filter shows a mixed shop under both Items and Services, and search
+matches the text of other products and services.
 
 **Search** (Map page and Shops page) finds shops by name and by what they sell, and it knows recipes: someone looking for
 oak planks finds the shop that sells oak logs ("Sells Oak Log, which crafts into Oak Planks"), and sticks find it too, one step

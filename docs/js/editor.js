@@ -10,9 +10,9 @@ import {
   latLngToWorld,
   blocksPerPixel,
   DETAIL_ZOOM,
-} from './map-core.js?v=dc1eb255';
+} from './map-core.js?v=556333c2';
 import { el, byId, url, getJSON, colorClass, SEED } from './ui.js?v=28a5c906';
-import { loadItems, shopIconEl } from './shops-core.js?v=b4c787b7';
+import { loadItems, shopIconEl, lineKind } from './shops-core.js?v=b52c5647';
 import { mapSearch } from './map-search.js?v=277ac403';
 
 const { map } = await createBaseMap(byId('map'));
@@ -473,7 +473,7 @@ ownerInput.addEventListener('keydown', (e) => {
 // A shop is an outline over its building (drawn with the same tool as borders), so the build stays
 // visible. Older shops that are only a point keep a marker icon until they are redrawn.
 
-let shops = []; // {x, z, points, label, owner, added, spoiler, icon, kind, products, marker, shape}
+let shops = []; // {x, z, points, label, owner, added, spoiler, icon, products, marker, shape}
 
 const outlineClass = (spoiler) => `shop-outline border-line${spoiler ? ' shop-outline--spoiler' : ''}`;
 const pointIcon = L.icon({
@@ -493,7 +493,6 @@ const serializeShop = (s) => ({
   ...(s.owner ? { owner: s.owner } : {}),
   ...(s.added ? { added: s.added } : {}),
   ...(s.icon ? { icon: s.icon } : {}),
-  ...(s.kind === 'service' ? { kind: 'service' } : {}),
   ...(s.products.length ? { products: s.products } : {}),
 });
 const saveShops = () => keepInBrowser(SHOP_KEY, shops.map(serializeShop));
@@ -509,7 +508,6 @@ function addShop(data) {
     added: data.added || '', // when it was placed; drives "new shop" news on the homepage
     spoiler: !!data.spoiler && !!points,
     icon: data.icon || '',
-    kind: data.kind === 'service' ? 'service' : '',
     products: Array.isArray(data.products) ? data.products : [],
   };
   const onClick = (e) => {
@@ -550,7 +548,6 @@ const shopSpoilerInput = byId('shopSpoilerInput');
 const shopSaveBtn = byId('shopSave');
 const shopCancelBtn = byId('shopCancel');
 const productsEl = byId('shopProducts');
-const serviceInput = byId('shopServiceInput');
 
 let editingShop = null;
 
@@ -619,12 +616,12 @@ iconDrop.addEventListener('drop', (e) => {
   readIcon(e.dataTransfer.files[0]);
 });
 
-// Products are Minecraft items (docs/data/items.json); a service shop's lines are free text instead.
+// Each line is a Minecraft item (docs/data/items.json), another product that isn't an item (a Happy Ghast),
+// or a service (Delivery). A shop can mix them; what it is (Shop, Service or both) follows from its lines.
 let itemDb = null;
 const itemByName = (text) => itemDb && itemDb.byName.get(text.trim().toLowerCase());
 const nameOf = (id) =>
   itemDb && itemDb.byId.get(id) ? itemDb.byId.get(id).name : (id || '').replaceAll('_', ' ');
-const serviceMode = () => serviceInput.checked;
 
 loadItems().then((db) => {
   const typed = editingShop ? readProducts() : null; // the panel was opened before the list arrived
@@ -634,17 +631,18 @@ loadItems().then((db) => {
   if (typed) renderProducts(typed);
 });
 
-function syncServiceMode() {
-  byId('shopLinesLabel').textContent = serviceMode() ? 'Services' : 'Products';
-  byId('shopAddProduct').textContent = serviceMode() ? '+ Add service' : '+ Add product';
-}
+const LINE_KINDS = { item: 'Item', other: 'Other', service: 'Service' };
+const PLACEHOLDER = {
+  item: 'Item, like Oak Log',
+  other: 'Name, like Happy Ghast',
+  service: 'Service, like Delivery',
+};
 
 /** Flags a typed item name that isn't a Minecraft item. */
 const checkItem = (input) =>
   input.classList.toggle('efield--bad', !!input.value.trim() && !!itemDb && !itemByName(input.value));
 
-function productRow(p) {
-  const service = serviceMode();
+function productRow(p, kind = lineKind(p)) {
   const field = (cls, attrs) =>
     el('input', {
       class: `efield efield--sm ${cls}`,
@@ -652,54 +650,70 @@ function productRow(p) {
       ...attrs,
       onkeydown: (e) => e.stopPropagation(),
     });
-  const item = service
-    ? field('pline__item', {
-        type: 'text',
-        placeholder: 'Service, like Ghast storage per week',
-        'aria-label': 'Service',
-        maxlength: 60,
-      })
-    : field('pline__item', { type: 'text', list: 'itemList', placeholder: 'Item', 'aria-label': 'Item' });
-  const amount = field('pline__n', {
-    type: 'number',
-    min: 1,
-    max: 9999,
-    placeholder: '1',
-    'aria-label': 'How many',
-  });
-  const price = field('pline__n', {
-    type: 'number',
-    min: 0,
-    max: 9999,
-    placeholder: '?',
-    'aria-label': 'Price',
-    title: '0 means free',
-  });
-  const currency = field('pline__cur', {
-    type: 'text',
-    list: 'itemList',
-    placeholder: 'Diamond',
-    'aria-label': 'Paid in',
-  });
-
-  // Lines with the same group and price show as one row on the Shops page ("32× Logs · 10 kinds").
-  const group = field('pline__group', {
-    type: 'text',
-    placeholder: 'Group, like Logs (optional)',
-    'aria-label': 'Group',
-    maxlength: 30,
-  });
-
-  item.value = service ? p.service || '' : p.item ? nameOf(p.item) : '';
-  group.value = p.group || '';
-  item.dataset.id = p.item || '';
-  amount.value = p.amount || '';
-  price.value = p.free ? 0 : p.price || '';
-  currency.value = p.priceItem && p.priceItem !== 'diamond' ? nameOf(p.priceItem) : '';
-  for (const input of service ? [currency] : [item, currency])
+  const fields = {
+    name: field('pline__item', {
+      type: 'text',
+      placeholder: PLACEHOLDER[kind],
+      'aria-label': LINE_KINDS[kind],
+      maxlength: 60,
+      ...(kind === 'item' ? { list: 'itemList' } : {}),
+    }),
+    // Lines with the same group and price show as one row on the Shops page ("32× Logs · 10 kinds").
+    group: field('pline__group', {
+      type: 'text',
+      placeholder: 'Group, like Logs (optional)',
+      'aria-label': 'Group',
+      maxlength: 30,
+    }),
+    amount: field('pline__n', {
+      type: 'number',
+      min: 1,
+      max: 9999,
+      placeholder: '1',
+      'aria-label': 'How many',
+    }),
+    price: field('pline__n', {
+      type: 'number',
+      min: 0,
+      max: 9999,
+      placeholder: '?',
+      'aria-label': 'Price',
+      title: '0 means free',
+    }),
+    currency: field('pline__cur', {
+      type: 'text',
+      list: 'itemList',
+      placeholder: 'Diamond',
+      'aria-label': 'Paid in',
+    }),
+  };
+  fields.name.value = p.service || (p.item ? nameOf(p.item) : p.name || '');
+  fields.name.dataset.id = p.item || '';
+  fields.group.value = p.group || '';
+  fields.amount.value = p.amount || '';
+  fields.price.value = p.free ? 0 : p.price || '';
+  fields.currency.value = p.priceItem && p.priceItem !== 'diamond' ? nameOf(p.priceItem) : '';
+  for (const input of kind === 'item' ? [fields.name, fields.currency] : [fields.currency]) {
     input.addEventListener('input', () => checkItem(input));
+    checkItem(input);
+  }
 
-  const line = el('li', { class: service ? 'pline pline--service' : 'pline' });
+  const line = el('li', { class: `pline pline--${kind}` });
+  line.fields = fields;
+  line.kind = kind;
+  // Switching the kind keeps what was typed: an item name becomes the text of a product or service, and back.
+  const kindSelect = el(
+    'select',
+    {
+      class: 'efield efield--sm pline__kind',
+      'aria-label': 'Kind',
+      onchange: () =>
+        line.replaceWith(productRow(asKind(readLine(line, true) || {}, kindSelect.value), kindSelect.value)),
+    },
+    Object.entries(LINE_KINDS).map(([value, label]) =>
+      el('option', { value, selected: value === kind }, label),
+    ),
+  );
   const remove = el(
     'button',
     {
@@ -712,65 +726,61 @@ function productRow(p) {
     '×',
   );
   line.append(
-    item,
-    group,
+    el('div', { class: 'pline__head' }, kindSelect, fields.name),
+    fields.group,
     el(
       'div',
       { class: 'pline__row' },
-      amount,
+      fields.amount,
       el('span', { class: 'pline__for' }, 'for'),
-      price,
-      currency,
+      fields.price,
+      fields.currency,
       remove,
     ),
   );
   return line;
 }
 
-const renderProducts = (list) => productsEl.replaceChildren(...list.map(productRow));
-
-/** The rows as product objects. A typed item that isn't a Minecraft item is left out. */
-function readProducts(asService = serviceMode()) {
-  const out = [];
-  for (const line of productsEl.children) {
-    const [item, group, amount, price, currency] = line.querySelectorAll('input');
-    const grouped = group.value.trim() ? { group: group.value.trim() } : {};
-    const n = parseInt(price.value, 10);
-    const paidIn = currency.value.trim() ? itemByName(currency.value) : null;
-    let cost = {};
-    if (n > 0) cost = { price: n, priceItem: paidIn ? paidIn.id : 'diamond' };
-    else if (n === 0) cost = { free: true }; // a price of 0 means free
-
-    if (asService) {
-      const text = item.value.trim();
-      if (text) out.push({ service: text, ...cost, ...grouped });
-      continue;
-    }
-    const found = itemByName(item.value);
-    const id = found ? found.id : !itemDb ? item.dataset.id : ''; // before the item list loads, keep what was there
-    if (id) out.push({ item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1), ...cost, ...grouped });
-  }
-  return out;
+/** A line as another kind, keeping its name, amount, price and group. */
+function asKind(p, kind) {
+  const text = p.service || p.name || (p.item ? nameOf(p.item) : '');
+  const { service, name, item, ...rest } = p; // eslint-disable-line no-unused-vars
+  if (kind === 'service') return { ...rest, service: text };
+  if (kind === 'other') return { ...rest, name: text };
+  const found = text && itemByName(text);
+  return { ...rest, ...(found ? { item: found.id } : { name: text }) }; // an unknown name stays typed, flagged red
 }
 
-serviceInput.addEventListener('change', () => {
-  // Switching keeps what was typed: item names become service text and back (unknown names are dropped).
-  const kept = readProducts(!serviceMode());
-  syncServiceMode();
-  if (serviceMode()) {
-    renderProducts(kept.map((p) => ({ ...p, service: p.service || nameOf(p.item), item: undefined })));
-  } else {
-    const asItems = kept.map((p) => {
-      const found = itemByName(p.service || nameOf(p.item));
-      return found ? { ...p, service: undefined, item: found.id } : null;
-    });
-    renderProducts(asItems.filter(Boolean));
-  }
-});
+/**
+ * One line as an object, or null when it is empty. A typed item that isn't a Minecraft item is left out,
+ * unless keep is set (when switching kinds, so the text isn't lost).
+ */
+function readLine(line, keep = false) {
+  const f = line.fields;
+  const text = f.name.value.trim();
+  const n = parseInt(f.price.value, 10);
+  const paidIn = f.currency.value.trim() ? itemByName(f.currency.value) : null;
+  const out = {};
+  if (n > 0) Object.assign(out, { price: n, priceItem: paidIn ? paidIn.id : 'diamond' });
+  else if (n === 0) out.free = true; // a price of 0 means free
+  if (f.group.value.trim()) out.group = f.group.value.trim();
+  const amount = Math.max(1, parseInt(f.amount.value, 10) || 1);
+
+  if (line.kind === 'service') return text ? { service: text, ...out } : null;
+  if (line.kind === 'other') return text ? { name: text, amount, ...out } : null;
+  const found = itemByName(f.name.value);
+  const id = found ? found.id : !itemDb ? f.name.dataset.id : ''; // before the item list loads, keep what was there
+  if (id) return { item: id, amount, ...out };
+  return keep && text ? { name: text, amount, ...out } : null;
+}
+
+const renderProducts = (list) => productsEl.replaceChildren(...list.map((p) => productRow(p)));
+const readProducts = () => [...productsEl.children].map((line) => readLine(line)).filter(Boolean);
+
 byId('shopAddProduct').addEventListener('click', () => {
-  const line = productRow({});
+  const line = productRow({}, 'item');
   productsEl.append(line);
-  line.querySelector('input').focus();
+  line.fields.name.focus();
 });
 
 function openShopEditor(shop) {
@@ -779,11 +789,9 @@ function openShopEditor(shop) {
   editingIcon = shop.icon;
   shopLabelInput.value = shop.label;
   shopOwnerInput.value = shop.owner;
-  serviceInput.checked = shop.kind === 'service';
   shopSpoilerInput.checked = shop.spoiler;
   byId('shopSpoilerRow').hidden = !shop.points; // only outlines can be filled
   showIcon();
-  syncServiceMode();
   renderProducts(shop.products);
   shopPanel.classList.add('open');
   shopLabelInput.focus();
@@ -812,7 +820,6 @@ shopSaveBtn.addEventListener('click', () => {
     owner: matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim(),
     spoiler: !!editingShop.points && shopSpoilerInput.checked,
     icon: editingIcon,
-    kind: serviceMode() ? 'service' : '',
     products: readProducts(),
   });
   if (editingShop.shape) {

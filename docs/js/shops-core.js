@@ -44,15 +44,36 @@ export function amountText(db, id, n) {
   const name = itemName(db, id);
   return n && n !== 1 ? `${n}\u00d7 ${name}` : name;
 }
-/** A service shop (storage, lawsuits, a taxi) offers services written as text instead of Minecraft items. */
-export const isService = (s) => !!s && s.kind === 'service';
+/**
+ * A shop's lines are of three kinds: a Minecraft item ({item}), something else for sale that isn't an item,
+ * like a Happy Ghast ({name}), or a service, like Delivery ({service}). What a shop is follows from its lines,
+ * so one shop can both sell things and offer services.
+ */
+export const lineKind = (p) => (p.service ? 'service' : p.item ? 'item' : 'other');
+const linesOf = (s) => (s && s.products) || [];
+/** Sells things: items or other products. */
+export const sellsGoods = (s) => linesOf(s).some((p) => lineKind(p) !== 'service');
+/** Offers services. A shop without lines yet can still be marked as a service shop (kind: 'service'). */
+export const offersServices = (s) =>
+  linesOf(s).some((p) => lineKind(p) === 'service') || (!linesOf(s).length && !!s && s.kind === 'service');
+/** Only services, nothing for sale. */
+export const isService = (s) => offersServices(s) && !sellsGoods(s);
+/** "Shop", "Service" or "Shop & service". */
+export const kindLabel = (s) =>
+  sellsGoods(s) && offersServices(s) ? 'Shop & service' : offersServices(s) ? 'Service' : 'Shop';
 /**
  * A shop behind a spoiler wall is still being built: it shows on the map and its owner's page,
  * but not on the Shops page or in the homepage news until the wall comes down.
  */
 export const isOpen = (s) => !!s && !s.spoiler;
-/** What a line offers: "64× Oak Log" for an item, the text itself for a service. */
-export const offerText = (db, p) => (p.service ? p.service : amountText(db, p.item, p.amount));
+/** What a line offers: "64× Oak Log" for an item, "2× Happy Ghast" for another product, the text for a service. */
+export function offerText(db, p) {
+  if (p.service) return p.service;
+  if (p.item) return amountText(db, p.item, p.amount);
+  return p.amount > 1 ? `${p.amount}\u00d7 ${p.name}` : p.name || '';
+}
+/** A line's own name, without the amount: for listing the kinds in a group. */
+export const lineName = (db, p) => p.service || (p.item ? itemName(db, p.item) : p.name || '');
 
 /**
  * A shop's product lines as rows for its price list. Lines with the same group name (p.group, like "Logs")
@@ -169,32 +190,36 @@ export function findShops(db, shops, query) {
   const words = q.split(/\s+/).filter(Boolean);
 
   for (const s of shops) {
-    // A service matches on its own words ("ghast" finds "Ghast storage").
-    const services = (s.products || []).filter(
-      (p) => p.service && words.every((w) => p.service.toLowerCase().includes(w)),
-    );
-    if (services.length) offer(s, 4.5, ['Offers ', ...joinLines(services.slice(0, 2))], services[0]);
-    if (isService(s) && words.every((w) => 'service'.startsWith(w) || 'services'.startsWith(w)))
+    // A service or another product matches on its own words ("ghast" finds "Ghast storage" and "Happy Ghast").
+    const texts = (s.products || []).filter((p) => {
+      const text = (p.service || (!p.item && p.name) || '').toLowerCase();
+      return text && words.every((w) => text.includes(w));
+    });
+    const sold = texts.filter((p) => !p.service);
+    const offered = texts.filter((p) => p.service);
+    if (sold.length) offer(s, 4.5, ['Sells ', ...joinLines(sold.slice(0, 2))], sold[0]);
+    if (offered.length) offer(s, 4.5, ['Offers ', ...joinLines(offered.slice(0, 2))], offered[0]);
+    if (offersServices(s) && words.every((w) => 'service'.startsWith(w) || 'services'.startsWith(w)))
       offer(s, 3, 'Offers services');
-    const sold = sells.get(s);
+    const items = sells.get(s);
     // Sells it outright (all the matching lines, a couple named).
-    const direct = targets.filter((t) => sold.has(t.i)).map((t) => sold.get(t.i));
+    const direct = targets.filter((t) => items.has(t.i)).map((t) => items.get(t.i));
     const more = direct.length > 2 ? `, and ${direct.length - 2} more` : '';
     const directText = direct.length ? ['Sells ', ...joinLines(direct.slice(0, 2)), more] : '';
     if (s.label && s.label.toLowerCase().includes(q))
       offer(s, 5, directText || (best.get(s) || {}).reason || '', direct[0] || null);
-    if (direct.length) offer(s, 4 + (exact.some((t) => sold.has(t.i)) ? 0.5 : 0), directText, direct[0]);
-    if (!sold.size || !targets.length || (best.get(s) || {}).score >= 4) continue;
+    if (direct.length) offer(s, 4 + (exact.some((t) => items.has(t.i)) ? 0.5 : 0), directText, direct[0]);
+    if (!items.size || !targets.length || (best.get(s) || {}).score >= 4) continue;
 
     for (const t of partTargets) {
-      if (sold.has(t.i)) continue;
+      if (items.has(t.i)) continue;
       // Sells a part: something in one of its recipes. The more of the recipe the shop covers, the better.
       for (const [kind, , slots] of db.recipes.get(t.i) || []) {
         let covered = 0,
           part = null;
         for (const sl of slots) {
           const alts = slotItems(db, sl).filter((a) => a !== t.i);
-          const got = alts.find((a) => sold.has(a));
+          const got = alts.find((a) => items.has(a));
           if (got != null) {
             covered++;
             part = part ?? got;
@@ -219,7 +244,7 @@ export function findShops(db, shops, query) {
               for (const sl2 of slots2) {
                 const alts2 = slotItems(db, sl2);
                 if (alts2.length > BIG_SLOT) continue;
-                const got = alts2.find((a) => a !== t.i && a !== mid && sold.has(a));
+                const got = alts2.find((a) => a !== t.i && a !== mid && items.has(a));
                 if (got != null)
                   offer(
                     s,

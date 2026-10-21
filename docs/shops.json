@@ -155,7 +155,6 @@
     "owner": "EmrysPendragon",
     "added": "2026-10-18T14:40:30.797Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR42mNk8Fv4n4ECwMRAIWBB5vzfGEdQA6P/IspcgG4JCzE24XMZUS5AdzZVA5GJHH8TFQbExAhZXkAPDxZyAo7+gUhTAxgHPDcCAE8YEwPb8Xt7AAAAAElFTkSuQmCC",
-    "kind": "service",
     "products": [
       {
         "service": "Ghast parking",
@@ -196,7 +195,6 @@
     "owner": "EchoinSilence",
     "added": "2026-10-18T14:41:00.914Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaElEQVR42rWTUQ4AMQREjfvfefplI0J1a7efqHlDQEQog6ddAclZgxGBqe8oWgIAdwQkn88ASop/ZuDVvZWMQt+sLKvTE/UdxbczMOXKisU9oVbJ2KTKwx9T5r+LIV5jVM4G5xties4LRgZGB4iS6oIAAAAASUVORK5CYII=",
-    "kind": "service",
     "products": [
       {
         "service": "Kills"
@@ -253,7 +251,6 @@
     ],
     "owner": "Roefus",
     "added": "2026-10-18T14:43:16.649Z",
-    "kind": "service",
     "products": [
       {
         "service": "Legal action (lawsuits)"
@@ -363,7 +360,6 @@
     "owner": "EchoinSilence",
     "added": "2026-10-19T21:21:54.081Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApUlEQVR42mNkUE77z0ABYCKk4NPKL5QZ8PPKEfINeD11B0FXEHSBaLMHXlcw4bNdNNsDbgguV+B2wQviwoIJp+3NHhheweYKFANe1+7AajuuwMV0gQTEEHTbYYAvnAdhCVYDXkAMITslijZ7MDC8QHUihhclGOCxg2IATBMuQ2BOh2mG8RmRMxM2/2MVQ0ojjOi5ET2QRJs9EK55geRVKGCkNDsDAI/FUi0fNecSAAAAAElFTkSuQmCC",
-    "kind": "service",
     "products": [
       {
         "service": "Bailiff (deurwaarder)"
@@ -524,13 +520,13 @@
     "owner": "EmrysPendragon",
     "added": "2026-10-21T07:16:20.983Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA5UlEQVR42q1RIRLCMBDcy/AEanCVnalBgwqyD8CA6cNAtIYHVCYKNKYMjrga+ENQlwltGmBgTe/29rZ7LfAj6C6lBYBEa2KyqSsLALM0HV2cL5YEAIKJu5SWzb6BmCqFqVKjgs4YdMYMasaEC2dC9CLwzwidJFblA6vyEY3pJ+jDJYiZzNIUnTHhBHqfkN4n9O5jjf0RlyBkEoo8SBAii82W+K1jdRRNXdnz6Whj9d/g7i4PjQWA3bqgTxZZL7iReQaZZ27gC5nzn6yn+nJzC7q9QuYZQn1/xtxEt1dH+OJ+3zfm+RNqjn0N8MtuTwAAAABJRU5ErkJggg==",
-    "kind": "service",
     "products": [
       {
         "service": "Delivery"
       },
       {
-        "service": "Happy Ghast",
+        "name": "Happy Ghast",
+        "amount": 1,
         "price": 4,
         "priceItem": "diamond"
       }

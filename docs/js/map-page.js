@@ -9,9 +9,9 @@ import {
   blocksPerPixel,
   DETAIL_ZOOM,
   DEFAULT_ZOOM,
-} from './map-core.js?v=dc1eb255';
+} from './map-core.js?v=556333c2';
 import { el, byId, faceEl, playerHref, colorClass, getJSON, SPAWN } from './ui.js?v=28a5c906';
-import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=b4c787b7';
+import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=b52c5647';
 import { mapSearch } from './map-search.js?v=277ac403';
 
 const params = new URLSearchParams(location.search);
