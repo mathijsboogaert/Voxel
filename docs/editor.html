@@ -791,7 +791,7 @@ function productRow(p) {
     <div class="pline__row">
       <input class="efield efield--sm pline__n" type="number" min="1" max="9999" placeholder="1" aria-label="How many">
       <span class="pline__for">for</span>
-      <input class="efield efield--sm pline__n" type="number" min="0" max="9999" placeholder="?" aria-label="Price">
+      <input class="efield efield--sm pline__n" type="number" min="0" max="9999" placeholder="?" aria-label="Price" title="0 means free">
       <input class="efield efield--sm pline__cur" list="itemList" type="text" placeholder="Diamond" autocomplete="off" aria-label="Paid in">
       <button type="button" class="pline__x" aria-label="Remove product" title="Remove">\u00d7</button>
     </div>`;
@@ -805,7 +805,7 @@ function productRow(p) {
   item.value = serviceMode() ? (p.service || '') : p.item ? nameOf(p.item) : '';
   item.dataset.id = p.item || '';
   amount.value = p.amount || '';
-  price.value = p.price || '';
+  price.value = p.free ? 0 : p.price || '';
   cur.value = p.priceItem && p.priceItem !== 'diamond' ? nameOf(p.priceItem) : '';
   const check = (inp) => inp.classList.toggle('efield--bad', !!inp.value.trim() && !!itemDb && !itemByName(inp.value));
   for (const inp of serviceMode() ? [cur] : [item, cur]) inp.addEventListener('input', () => check(inp));
@@ -820,7 +820,7 @@ function readProducts(asService = serviceMode()) {
   for (const li of productsEl.children) {
     const [item, amount, price, cur] = li.querySelectorAll('input');
     const pr = parseInt(price.value, 10);
-    const priceOf = () => { const c = cur.value.trim() ? itemByName(cur.value) : null; return pr > 0 ? { price: pr, priceItem: c ? c.id : 'diamond' } : {}; };
+    const priceOf = () => { const c = cur.value.trim() ? itemByName(cur.value) : null; return pr > 0 ? { price: pr, priceItem: c ? c.id : 'diamond' } : pr === 0 ? { free: true } : {}; }; // a price of 0 means free
     if (asService) {
       const text = item.value.trim();
       if (text) out.push({ service: text, ...priceOf() });

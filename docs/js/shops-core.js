@@ -38,8 +38,9 @@ export const isService = (s) => !!s && s.kind === 'service';
 /** What a line offers: "64× Oak Log" for an item, the text itself for a service. */
 export const offerText = (db, p) => (p.service ? p.service : amountText(db, p.item, p.amount));
 
-/** "1 Diamond", or '' when the shop has not set a price. */
+/** "1 Diamond", "Free", or '' when the shop has not set a price. */
 export function priceText(db, p) {
+  if (p.free) return 'Free';
   if (!p.price) return '';
   return amountText(db, p.priceItem || 'diamond', p.price);
 }
@@ -98,7 +99,7 @@ export function findShops(db, shops, query) {
   const singular = q.replace(/s$/, '');
   const exact = targets.filter((t) => t.lower === q || t.lower === singular);
   const partTargets = exact.length ? exact : targets;
-  const lineText = (p) => { const price = priceText(db, p); return offerText(db, p) + (price ? ' for ' + price : ''); };
+  const lineText = (p) => { const price = priceText(db, p); return offerText(db, p) + (p.free ? ', free' : price ? ' for ' + price : ''); };
   const words = q.split(/\s+/).filter(Boolean);
 
   for (const s of shops) {
