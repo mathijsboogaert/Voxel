@@ -1,107 +1,173 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Voxel</title>
-<meta name="description" content="Voxel is a small Minecraft survival server. See the world map, who plays, and the numbers.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Voxel">
-<meta property="og:description" content="Our Minecraft survival world, mapped and counted. News, the map, and a page for every player.">
-<meta property="og:image" content="https://mathijsboogaert.github.io/Voxel/assets/logo-mark.png">
-<meta name="twitter:card" content="summary">
-<meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="assets/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="assets/brand.css">
-<link rel="stylesheet" href="assets/site.css">
-<link rel="stylesheet" href="assets/map.css">
-</head>
-<body>
-
-<header class="site-header">
-  <div class="wrap">
-    <a class="brand" href="./" aria-label="Voxel, home">
-      <img class="brand__mark mark--light" src="assets/logo-mark.png" alt="" width="36" height="36">
-      <img class="brand__mark mark--dark" src="assets/logo-mark-reversed.png" alt="" width="36" height="36">
-      <span class="brand__name">Voxel</span>
-    </a>
-    <nav class="nav" aria-label="Main">
-      <a href="./" aria-current="page">Home</a>
-      <a href="map/">Map</a>
-      <a href="players/">Players</a>
-    </nav>
-  </div>
-</header>
-
-<main>
-  <section class="hero">
-    <div class="wrap">
-      <div class="frieze" data-frieze></div>
-      <p class="label eyebrow">Minecraft survival server</p>
-      <h1 class="display">Voxel</h1>
-      <p class="lede">Our survival world, mapped and counted.</p>
-      <div class="hero__cta">
-        <a class="btn btn--primary" href="map/">Open the map</a>
-        <a class="btn" href="players/">Meet the players</a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Voxel</title>
+    <meta
+      name="description"
+      content="Voxel is a small Minecraft survival server. See the world map, who plays, and the numbers."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Voxel" />
+    <meta
+      property="og:description"
+      content="Our Minecraft survival world, mapped and counted. News, the map, and a page for every player."
+    />
+    <meta property="og:image" content="https://mathijsboogaert.github.io/Voxel/assets/logo-mark.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="assets/favicon.png?v=ad829b4b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="assets/brand.css?v=ed552aa7" />
+    <link rel="stylesheet" href="assets/site.css?v=7d15cd7a" />
+    <link rel="stylesheet" href="assets/map.css?v=dfbab8c6" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="./" aria-label="Voxel, home">
+          <img
+            class="brand__mark mark--light"
+            src="assets/logo-mark.png?v=5ef92691"
+            alt=""
+            width="36"
+            height="36"
+          />
+          <img
+            class="brand__mark mark--dark"
+            src="assets/logo-mark-reversed.png?v=11f13e0e"
+            alt=""
+            width="36"
+            height="36"
+          />
+          <span class="brand__name">Voxel</span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="nav-toggle__open" d="M3 6h18M3 12h18M3 18h18" />
+            <path class="nav-toggle__close" d="M5 5l14 14M19 5L5 19" />
+          </svg>
+        </button>
+        <nav class="nav" id="site-nav" aria-label="Main">
+          <a href="./" aria-current="page">
+            <img
+              class="nav__icon"
+              src="assets/icons/nav/village.png?v=328b0ab3"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Home</span>
+          </a>
+          <a href="map/">
+            <img class="nav__icon" src="assets/icons/nav/map.png?v=b6a9cf2e" alt="" width="32" height="32" />
+            <span class="nav__label">Map</span>
+          </a>
+          <a href="players/">
+            <img
+              class="nav__icon"
+              src="assets/icons/nav/steve.png?v=717ed7db"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Players</span>
+          </a>
+          <a href="shops/">
+            <img
+              class="nav__icon"
+              src="assets/icons/nav/diamond.png?v=f095b32b"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Shops</span>
+          </a>
+        </nav>
       </div>
-    </div>
-  </section>
+    </header>
 
-  <section class="section" id="news" aria-labelledby="news-title" hidden>
-    <div class="wrap">
-      <div class="head">
-        <p class="label eyebrow">News</p>
-        <h2 id="news-title">What's happening</h2>
-      </div>
-      <div class="news-grid" id="news-body"></div>
-    </div>
-  </section>
+    <main>
+      <section class="hero">
+        <div class="wrap">
+          <div class="frieze" data-frieze></div>
+          <p class="label eyebrow">Minecraft survival server</p>
+          <h1 class="display">Voxel</h1>
+          <p class="lede">Our survival world, mapped and counted.</p>
+          <div class="actions">
+            <a class="btn btn--primary" href="map/">Open the map</a>
+            <a class="btn" href="players/">Meet the players</a>
+          </div>
+        </div>
+      </section>
 
-  <section class="section band--teal" id="world" aria-labelledby="world-title">
-    <div class="wrap">
-      <div class="head">
-        <p class="label">The world</p>
-        <h2 id="world-title">Take a look around</h2>
-      </div>
-      <div class="map-preview">
-        <div class="map-surface" id="preview-map"></div>
-        <div class="map-loading" id="preview-loading">Loading the map</div>
-        <a class="map-preview__link" href="map/" aria-label="Open the full map"></a>
-        <span class="btn" aria-hidden="true">Open the map</span>
-      </div>
-      <p class="small">Spawn town, the shopping district and the neighbours. Tap to explore everything.</p>
-    </div>
-  </section>
+      <section class="section" id="news" aria-labelledby="news-title" hidden>
+        <div class="wrap">
+          <div class="head">
+            <p class="label eyebrow">News</p>
+            <h2 id="news-title">What's happening</h2>
+          </div>
+          <div class="news-grid" id="news-body"></div>
+        </div>
+      </section>
 
-  <section class="section" id="stats" aria-labelledby="stats-title">
-    <div class="wrap">
-      <div class="head">
-        <p class="label eyebrow">Stats</p>
-        <h2 id="stats-title">The server in numbers</h2>
-        <p class="small" id="updated"></p>
-      </div>
-      <div id="stats-body"><p class="small">Loading the numbers</p></div>
-    </div>
-  </section>
+      <section class="section band--teal" id="world" aria-labelledby="world-title">
+        <div class="wrap">
+          <div class="head">
+            <p class="label">The world</p>
+            <h2 id="world-title">Take a look around</h2>
+          </div>
+          <div class="map-preview">
+            <div class="map-surface" id="preview-map"></div>
+            <div class="map-loading" id="preview-loading">Loading the map</div>
+            <a class="map-preview__link" href="map/" aria-label="Open the full map"></a>
+            <span class="btn" aria-hidden="true">Open the map</span>
+          </div>
+          <p class="small">
+            Spawn town, the shopping district and the neighbours. Tap to explore everything.
+          </p>
+        </div>
+      </section>
 
-  <section class="section section--flush" id="players" aria-labelledby="players-title" >
-    <div class="wrap">
-      <div class="head">
-        <p class="label eyebrow">Players</p>
-        <h2 id="players-title">Who's around</h2>
-      </div>
-      <ul class="grid-faces" id="players-grid"></ul>
-      <div class="section-cta"><a class="btn" href="players/" id="players-all">All players</a></div>
-    </div>
-  </section>
-</main>
+      <section class="section" id="stats" aria-labelledby="stats-title">
+        <div class="wrap">
+          <div class="head">
+            <p class="label eyebrow">Stats</p>
+            <h2 id="stats-title">The server in numbers</h2>
+            <p class="small" id="updated"></p>
+          </div>
+          <div class="stack" id="stats-body"><p class="small">Loading the numbers</p></div>
+        </div>
+      </section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script type="module" src="js/home.js"></script>
-</body>
+      <section class="section section--flush" id="players" aria-labelledby="players-title">
+        <div class="wrap">
+          <div class="head">
+            <p class="label eyebrow">Players</p>
+            <h2 id="players-title">Who's around</h2>
+          </div>
+          <ul class="grid-faces" id="players-grid"></ul>
+          <div class="section-cta"><a class="btn" href="players/" id="players-all">All players</a></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script type="module" src="js/nav.js?v=0aa91664"></script>
+    <script type="module" src="js/home.js?v=19932ab4"></script>
+  </body>
 </html>

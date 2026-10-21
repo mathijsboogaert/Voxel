@@ -13,6 +13,7 @@ the stats come from the server's own logs.
 | Home | `docs/index.html` | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who is around |
 | Map | `docs/map/index.html` | The full pannable, zoomable world map with borders, shops and search. Read-only |
 | Players | `docs/players/index.html` | Everyone, with face, playtime and when they were last on |
+| Shops | `docs/shops/index.html` | Every shop with its own icon, owner and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`) |
 | Player | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements |
 | Editor | `docs/editor.html` | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site |
 
@@ -35,14 +36,16 @@ and a pattern built from the logo's grid. It is mobile first (the base CSS is th
 and follows the visitor's light or dark setting.
 
 - `docs/assets/brand.css`: the brand tokens (copied from the guide's `tokens.json`) and the base components: button, card, tag, face.
-- `docs/assets/site.css`: header, hero, news, stats and the players pages.
+- `docs/assets/site.css`: page frame, shared pieces, then one section per page (home, players, shops) and the charts. A contents list at the top says where.
 - `docs/assets/map.css`: the map's controls and labels in the same terms.
 - `docs/assets/editor.css`: the editor's panels and buttons.
-- **All styling lives in these four files; pages and scripts carry no inline `style`.** Fonts, sizes, colours, spacing and line weights are CSS, and
-  the scripts only pick class names. Data-driven sizes are classes too: bar widths and heights are `w-0` to `w-100` and `h-0` to `h-100`
-  (`widthClass()` / `heightClass()` in `docs/js/ui.js`), spacing is `mt-1` to `mt-4`, and chart lines and pattern fills are named classes
-  (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in the CSS and it changes everywhere.
+- **All styling lives in these four files; pages and scripts carry no inline `style` and no inline `<script>`.** Fonts, sizes, colours,
+  spacing and line weights are CSS, and the scripts only pick class names. Data-driven sizes are SVG attributes: bars and the hour chart
+  are drawn by `bar()` and `columns()` in `docs/js/ui.js`, and their colours are classes (`bar__fill`, `tbar__seg--afk`). Chart lines and
+  pattern fills are named classes too (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in
+  the CSS and it changes everywhere.
 - `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
+- `docs/assets/icons/`: the diamond used for prices (Minecraft's own 26.3 texture, from misode/mcmeta). `icons/nav/` holds the menu icons: 8x8 pixel art in the style of the game's village map marker, which is the Home icon itself. The other four (the filled map, Steve, a diamond, the book and quill for the editor) are drawn by `tools/draw_nav_icons.py`; change a grid there and run it to redraw them. All are shown at a whole multiple so the pixels stay square.
 - `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
 - Player heads are shown square (to keep the pixel grid) with `image-rendering: pixelated`. The guide lists round corners for avatars, but square heads suit Minecraft's grid; change `.face` in `brand.css` if you prefer round.
 
@@ -52,10 +55,23 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 
 | File | Job |
 | --- | --- |
-| `docs/js/ui.js` | Site paths (works from any base URL), DOM helpers, player faces, number and time formatting |
+| `docs/js/ui.js` | Site paths (works from any base URL), DOM and SVG helpers, `getJSON`, bars, player faces, number and time formatting |
+| `docs/js/widgets.js` | Pieces the homepage and player page share: the stat tile and the hour chart |
 | `docs/js/data.js` | Loads the CSVs and computes every number the site shows (a port of the original stats dashboard, so the numbers match) |
-| `docs/js/map-core.js` | The world map: Leaflet over the WASM tile renderer, plus borders, shops and the spawn marker. Shared by the home preview and the Map page |
-| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js` | One per page |
+| `docs/js/map-core.js` | The world map: the explored-world tiles, spawn pin, map buttons and biome lookup (`createBaseMap`), plus borders and shops (`createWorldMap`). Shared by the home preview, the Map page and the editor |
+| `docs/js/nav.js` | The menu: on a phone it folds out from the menu button, one row per page with its icon and name; from 768px the menu sits in the header, icons with names |
+| `docs/js/map-search.js` | The search box over a full-screen map, used by the Map page and the editor |
+| `docs/js/shops-core.js` | Items, prices and the item search behind the Shops page and map search |
+| `docs/js/race.js`, `pattern.js` | The advancement race chart and the brand pattern |
+| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js`, `shops.js`, `editor.js` | One per page |
+
+Code style: `.prettierrc.json` (JavaScript, CSS, HTML), `ruff.toml` (Python) and `.editorconfig`. Run `npx prettier --write docs` and
+`ruff format tools && ruff check tools` before committing.
+
+**Versions in links.** Every link to a stylesheet, script or image carries a version (`site.css?v=1a2b3c4d`), a hash of the
+file. GitHub Pages lets browsers keep files for 10 minutes; without versions a browser can mix a new page with an old
+stylesheet or icon. After changing anything in `docs/` (and after formatting), run `python3 tools/stamp_versions.py`.
+It only touches links whose file changed, and running it twice changes nothing.
 
 ## Data files
 
@@ -66,8 +82,38 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 | `docs/data/players.json` and `docs/faces/*.png` | `tools/fetch_faces.py` | The roster (name and UUID) and each player's head |
 | `docs/data/adjust.json` | by hand | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time |
 | `docs/borders.json` | the editor | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names) |
-| `docs/shops.json` | the editor | Shops: `x`, `z`, `label`, `owner`, and `added` (when it was placed) |
+| `docs/shops.json` | the editor | Shops: `x`, `z`, `points`, `label`, `owner`, `added` (when it was placed), `icon` (a 16x16 PNG as a `data:` URL) and `products` |
+| `docs/data/items.json` | `tools/build_items.py` | Every Minecraft 26.3 item with its English name and recipes, for the item pickers and item search |
 | `docs/news.json` | by hand | Extra news items, mainly events with a countdown (below) |
+
+## Shops, products and item search
+
+Each shop can have its own **icon**: 16x16 pixel art, drawn at 2x or 3x so the pixels stay square. It shows wherever shops are
+listed (the Shops page, search results, homepage news, player pages), never on the map itself, where shops are their outlines.
+A shop without one gets the general shop icon. In the editor, click a shop and use **Upload PNG** (or drop the file on the square).
+16x16 is stored as is; a bigger square image that is a multiple of 16 (32, 64...) is scaled down pixel for pixel.
+
+**Products** are Minecraft items, picked from the game's own list: the item, how many, and optionally a price (an amount and
+what it is paid in, Diamond unless you pick another item). In `shops.json` a line is
+`{ "item": "oak_log", "amount": 64, "price": 2, "priceItem": "diamond" }`. No price shows as "Ask".
+
+**Groups.** A product line can have a `group` (the editor's Group field, like "Logs"). Lines in the same group with the same amount and price show on the Shops page as one row, "32× Logs · 10 kinds", which opens to list every kind. Search still finds each kind on its own.
+
+**Service shops** (storage, lawsuits, rides) offer services instead of items. Tick **Service shop** in the shop's editor: its lines
+become free text with a price (`{ "service": "Ghast storage, per week", "price": 2, "priceItem": "diamond" }`) and the shop gets
+`"kind": "service"`. It shows a Service tag, the Shops page can filter All / Items / Services, and search matches the service text.
+
+**Search** (Map page and Shops page) finds shops by name and by what they sell, and it knows recipes: someone looking for
+oak planks finds the shop that sells oak logs ("Sells Oak Log, which crafts into Oak Planks"), and sticks find it too, one step
+further. It follows crafting, furnaces, the stonecutter and smithing, from the game's own recipe files. The ranking: the shop's
+name, then selling the item itself, then a part of it, then a part of a part. The code is `findShops` in `docs/js/shops-core.js`.
+
+The item data is `docs/data/items.json`, built from the official 26.3 game data (as extracted by
+[misode/mcmeta](https://github.com/misode/mcmeta)). After a Minecraft update, rebuild it with the new version and commit:
+
+```bash
+python3 tools/build_items.py 26.4
+```
 
 ## Advancement points
 
@@ -190,12 +236,13 @@ District around its shops. The seed is fixed in `docs/js/ui.js` (`SEED`, and `SP
 horizontal and vertical lines only (each corner keeps the previous corner's x or z; the shape is closed with one extra corner if needed). Double-click,
 Enter, clicking the first corner or **Finish shape** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
 visibility and owners; clicking a border later reopens it. **Draw shop outline** works the same way, over the shop's building: the outline (orange with a dark edge) leaves the build visible
-underneath, and finishing it asks for a name and owner. Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
-them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off, and each **Clear all** needs a
-second click within three seconds to confirm.
+underneath, and finishing it asks for a name and owner. Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Such a shop counts as still being built: it stays on the map and on its owner's page, but is left off the Shops page and the homepage news until the wall comes down. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
+them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off. The tools are a strip of icon buttons on the left (hover one for its name, or press **?**);
+**Clear all borders** (the bin) needs a second click within three seconds to confirm. There is no "clear all shops": delete shops one by one.
+A shop's editor also holds its icon and products (see Shops, products and item search).
 
 While you work, the editor autosaves to your browser's `localStorage` as a backup; that never reaches the site. The real files are
-`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json**, replace the file in `docs/` with the download,
+`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json** (the two download buttons, B and S), replace the file in `docs/` with the download,
 and commit. There is no backend, so a visitor who finds `editor.html` can draw in their own browser but cannot change what anyone else sees.
 
 If you change `wasm/seedmap_wasm.c` (or re-vendor cubiomes), rebuild with:

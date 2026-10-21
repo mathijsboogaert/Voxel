@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Fill docs/viewer_template.html with a seed's JSON metadata + PNG filename."""
+
 import json
 import os
 import sys

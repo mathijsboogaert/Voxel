@@ -11,7 +11,14 @@ so the hourly job only calls the API for players it has not seen before.
 A player Mojang does not know (offline-mode account, renamed) gets no face file; the site shows
 a plain letter tile for them instead.
 """
-import csv, json, os, sys, time, urllib.error, urllib.request
+
+import csv
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.request
 
 PROFILE = 'https://api.mojang.com/users/profiles/minecraft/{}'
 HEAD = 'https://minotar.net/helm/{}/128.png'  # face plus hat layer, 128px (shown pixelated)
@@ -24,8 +31,11 @@ def get(url, tries=3):
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r:
                 return r.read()
         except urllib.error.HTTPError as e:
-            if e.code in (204, 404): return None
-            if e.code == 429: time.sleep(5 * (i + 1)); continue
+            if e.code in (204, 404):
+                return None
+            if e.code == 429:
+                time.sleep(5 * (i + 1))
+                continue
             raise
         except (urllib.error.URLError, TimeoutError):
             time.sleep(2 * (i + 1))
@@ -62,7 +72,8 @@ def main():
                 time.sleep(0.3)
             png = get(HEAD.format(uuid or name)) if uuid else None
             if png and png[:4] == b'\x89PNG':
-                with open(face, 'wb') as f: f.write(png)
+                with open(face, 'wb') as f:
+                    f.write(png)
                 fetched += 1
                 have_face = True
             elif not have_face:
@@ -74,8 +85,12 @@ def main():
         roster.append(entry)
 
     with open(path, 'w') as f:
-        json.dump(roster, f, indent=2); f.write('\n')
-    print(f'{len(roster)} players, {fetched} heads downloaded' + (f', no face for: {", ".join(missing)}' if missing else ''))
+        json.dump(roster, f, indent=2)
+        f.write('\n')
+    print(
+        f'{len(roster)} players, {fetched} heads downloaded'
+        + (f', no face for: {", ".join(missing)}' if missing else '')
+    )
 
 
 if __name__ == '__main__':

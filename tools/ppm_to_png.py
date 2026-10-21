@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Convert a binary PPM (P6) image to PNG using only the stdlib (zlib)."""
+
 import struct
 import sys
 import zlib
@@ -17,7 +18,7 @@ def read_ppm(path):
     while len(tokens) < 3:
         while data[pos] in b" \t\r\n":
             pos += 1
-        if data[pos:pos + 1] == b"#":
+        if data[pos : pos + 1] == b"#":
             while data[pos] not in b"\r\n":
                 pos += 1
             continue
@@ -27,14 +28,15 @@ def read_ppm(path):
         tokens.append(data[start:pos])
     width, height, maxval = (int(t) for t in tokens)
     pos += 1  # single whitespace byte before pixel data
-    pixels = data[pos:pos + width * height * 3]
+    pixels = data[pos : pos + width * height * 3]
     return width, height, pixels
 
 
 def write_png(path, width, height, rgb):
     def chunk(tag, payload):
-        return (struct.pack(">I", len(payload)) + tag + payload +
-                struct.pack(">I", zlib.crc32(tag + payload) & 0xffffffff))
+        return (
+            struct.pack(">I", len(payload)) + tag + payload + struct.pack(">I", zlib.crc32(tag + payload) & 0xFFFFFFFF)
+        )
 
     sig = b"\x89PNG\r\n\x1a\n"
     ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)  # 8-bit RGB
@@ -43,7 +45,7 @@ def write_png(path, width, height, rgb):
     stride = width * 3
     for y in range(height):
         raw.append(0)  # no filter
-        raw.extend(rgb[y * stride:(y + 1) * stride])
+        raw.extend(rgb[y * stride : (y + 1) * stride])
     idat = zlib.compress(bytes(raw), 9)
 
     with open(path, "wb") as f:

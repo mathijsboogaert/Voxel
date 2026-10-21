@@ -16,7 +16,13 @@ Reads its settings from environment variables (in CI these are repository secret
 Only the files build_stats.py needs are fetched: YYYY-MM-DD-n.log.gz and latest.log. Their
 modified times are kept, because latest.log has no date in its name and is dated from its mtime.
 """
-import base64, hashlib, io, os, re, sys
+
+import base64
+import hashlib
+import io
+import os
+import re
+import sys
 
 LOG_NAME = re.compile(r'^(\d{4}-\d{2}-\d{2}-\d+\.log\.gz|latest\.log)$')
 
@@ -28,12 +34,15 @@ def wanted(names):
 
 def connect():
     import paramiko
+
     host, user = os.environ['SFTP_HOST'], os.environ['SFTP_USER']
     port = int(os.environ.get('SFTP_PORT') or 2022)
     transport = paramiko.Transport((host, port))
     transport.connect()
     expect = (os.environ.get('SFTP_HOST_FINGERPRINT') or '').strip()
-    seen = 'SHA256:' + base64.b64encode(hashlib.sha256(transport.get_remote_server_key().asbytes()).digest()).decode().rstrip('=')
+    seen = 'SHA256:' + base64.b64encode(
+        hashlib.sha256(transport.get_remote_server_key().asbytes()).digest()
+    ).decode().rstrip('=')
     if expect and expect != seen:
         transport.close()
         sys.exit(f'Host key mismatch: expected {expect}, server presented {seen}. Refusing to connect.')

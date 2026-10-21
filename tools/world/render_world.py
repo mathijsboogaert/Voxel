@@ -28,7 +28,21 @@ Options:
 
 Standard library plus Pillow. Reading the format: Anvil .mca files, chunks written by Minecraft 26.x.
 """
-import argparse, array, collections, gzip, json, math, os, pickle, re, struct, sys, tarfile, time, zlib
+
+import argparse
+import array
+import collections
+import gzip
+import json
+import math
+import os
+import pickle
+import re
+import struct
+import sys
+import tarfile
+import time
+import zlib
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from PIL import Image, ImageFilter
@@ -43,7 +57,7 @@ SPAWN = (32, -4)
 PIXELS = REGION * REGION
 FLUID_WATER, FLUID_LAVA = 1, 2
 LAVA_COLOR = 0xE0540A
-BLUR = 3          # biome tint blend radius, in blocks
+BLUR = 3  # biome tint blend radius, in blocks
 
 
 # ------------------------------------------------------------------------------------------------
@@ -54,7 +68,7 @@ class Source:
 
     def __init__(self, path):
         self.path = os.path.abspath(path)
-        self.entries = {}   # (rx, rz) -> (offset, size, mtime) for a tar, (None, size, mtime) for files
+        self.entries = {}  # (rx, rz) -> (offset, size, mtime) for a tar, (None, size, mtime) for files
         self._fd = None
         pat = re.compile(r'r\.(-?\d+)\.(-?\d+)\.mca$')
         if os.path.isdir(self.path):
@@ -100,12 +114,23 @@ def tables():
     """Colour tables, loaded once per process."""
     global _TABLES
     if _TABLES is None:
-        c = json.load(open(os.path.join(HERE, 'colors.json')))
+        with open(os.path.join(HERE, 'colors.json')) as f:
+            c = json.load(f)
         fluids = set(c['water']) | {'minecraft:lava'}
         _TABLES = dict(
-            color=c['blocks'], air=set(c['air']) | {'minecraft:air'}, fluid=fluids, glass=set(c['glass']),
-            flat=set(c['flat']), grass=set(c['grass']), foliage=set(c['foliage']), dry=set(c['dry_foliage']),
-            overrides={'grass': c['biome_grass'], 'foliage': c['biome_foliage'], 'dry_foliage': c['biome_dry_foliage']},
+            color=c['blocks'],
+            air=set(c['air']) | {'minecraft:air'},
+            fluid=fluids,
+            glass=set(c['glass']),
+            flat=set(c['flat']),
+            grass=set(c['grass']),
+            foliage=set(c['foliage']),
+            dry=set(c['dry_foliage']),
+            overrides={
+                'grass': c['biome_grass'],
+                'foliage': c['biome_foliage'],
+                'dry_foliage': c['biome_dry_foliage'],
+            },
         )
     return _TABLES
 
@@ -158,22 +183,30 @@ def scan_region(job):
     depth = bytearray(PIXELS)
     fluid = bytearray(PIXELS)
     bidx = bytearray(PIXELS)
-    names = ['minecraft:plains']        # index 0 doubles as "no data" so blurs never mix in black
+    names = ['minecraft:plains']  # index 0 doubles as "no data" so blurs never mix in black
     name_ix = {'minecraft:plains': 0}
     glass_cols = {}
     unknown = collections.Counter()
     skipped = 0
 
     for ci in range(1024):
-        off = int.from_bytes(buf[ci * 4:ci * 4 + 3], 'big')
+        off = int.from_bytes(buf[ci * 4 : ci * 4 + 3], 'big')
         if not off:
             continue
         pos = off * 4096
         length = struct.unpack_from('>I', buf, pos)[0]
         comp = buf[pos + 4]
-        body = buf[pos + 5:pos + 4 + length]
+        body = buf[pos + 5 : pos + 4 + length]
         try:
-            raw = zlib.decompress(body) if comp == 2 else gzip.decompress(body) if comp == 1 else body if comp == 3 else None
+            raw = (
+                zlib.decompress(body)
+                if comp == 2
+                else gzip.decompress(body)
+                if comp == 1
+                else body
+                if comp == 3
+                else None
+            )
             if raw is None:
                 skipped += 1
                 continue
@@ -209,7 +242,7 @@ def scan_region(job):
         cx, cz = ci & 31, ci >> 5
         for zi in range(16):
             for xi in range(16):
-                y = hm[zi * 16 + xi] + min_y - 1          # the highest block; the heightmap stores the air above it
+                y = hm[zi * 16 + xi] + min_y - 1  # the highest block; the heightmap stores the air above it
                 fl_y = None
                 fl_id = None
                 gl = []
@@ -248,19 +281,19 @@ def scan_region(job):
                     if col > 0:
                         found = True
                         break
-                    y -= 1                                   # black means "invisible" (buttons, signs...)
+                    y -= 1  # black means "invisible" (buttons, signs...)
                 if not found and fl_y is None:
-                    continue                                 # nothing here (void)
+                    continue  # nothing here (void)
                 pi = (cz * 16 + zi) * REGION + cx * 16 + xi
                 present[pi] = 1
-                if not found:                                # fluid all the way down
+                if not found:  # fluid all the way down
                     y = min_y
                     col = 0x202020
                     bid = 'minecraft:stone'
                 if bid in FLAT:
                     y -= 1
                 heights[pi] = y
-                rgb[pi * 3:pi * 3 + 3] = col.to_bytes(3, 'big')
+                rgb[pi * 3 : pi * 3 + 3] = col.to_bytes(3, 'big')
                 kd = 1 if bid in GRASS else 2 if bid in FOLIAGE else 3 if bid in DRY else 0
                 kind[pi] = kd
                 if gl:
@@ -285,9 +318,20 @@ def scan_region(job):
                         names.append(bn)
                     bidx[pi] = ix if ix < 256 else 0
 
-    rec = dict(fp=fingerprint, present=bytes(present), heights=heights.tobytes(), rgb=bytes(rgb), kind=bytes(kind),
-               depth=bytes(depth), fluid=bytes(fluid), bidx=bytes(bidx), biomes=names, glass=glass_cols,
-               unknown=dict(unknown), skipped=skipped)
+    rec = dict(
+        fp=fingerprint,
+        present=bytes(present),
+        heights=heights.tobytes(),
+        rgb=bytes(rgb),
+        kind=bytes(kind),
+        depth=bytes(depth),
+        fluid=bytes(fluid),
+        bidx=bytes(bidx),
+        biomes=names,
+        glass=glass_cols,
+        unknown=dict(unknown),
+        skipped=skipped,
+    )
     with open(cache_file, 'wb') as f:
         f.write(zlib.compress(pickle.dumps(rec, protocol=4), 3))
     return key, sum(present), dict(unknown), skipped
@@ -310,7 +354,14 @@ def shade_region(job):
     rx, rz = key
     t = tables()
     rec = load_record(os.path.join(cache_dir, f'r.{rx}.{rz}.rec'))
-    present, rgb, kind, depth, fluid, bidx = rec['present'], rec['rgb'], rec['kind'], rec['depth'], rec['fluid'], rec['bidx']
+    present, rgb, kind, depth, fluid, bidx = (
+        rec['present'],
+        rec['rgb'],
+        rec['kind'],
+        rec['depth'],
+        rec['fluid'],
+        rec['bidx'],
+    )
     heights = array.array('h')
     heights.frombytes(rec['heights'])
     glass = rec['glass']
@@ -325,9 +376,13 @@ def shade_region(job):
             nh.frombytes(nrec['heights'])
             npres = nrec['present']
             if which == 'n':
-                north_row = [(nh[(REGION - 1) * REGION + x] if npres[(REGION - 1) * REGION + x] else None) for x in range(REGION)]
+                north_row = [
+                    (nh[(REGION - 1) * REGION + x] if npres[(REGION - 1) * REGION + x] else None) for x in range(REGION)
+                ]
             else:
-                west_col = [(nh[z * REGION + REGION - 1] if npres[z * REGION + REGION - 1] else None) for z in range(REGION)]
+                west_col = [
+                    (nh[z * REGION + REGION - 1] if npres[z * REGION + REGION - 1] else None) for z in range(REGION)
+                ]
 
     # Biome tints become four palette images; a small blur blends them across biome edges.
     names = rec['biomes']
@@ -350,7 +405,7 @@ def shade_region(job):
             continue
         r, g, b = rgb[pi * 3], rgb[pi * 3 + 1], rgb[pi * 3 + 2]
         kd = kind[pi]
-        if kd:                                   # biome tint: the block's own colour averaged with the biome's
+        if kd:  # biome tint: the block's own colour averaged with the biome's
             tb = grass_t if kd == 1 else foliage_t if kd == 2 else dry_t
             r, g, b = (r + tb[pi * 3]) >> 1, (g + tb[pi * 3 + 1]) >> 1, (b + tb[pi * 3 + 2]) >> 1
         fl = fluid[pi]
@@ -360,13 +415,21 @@ def shade_region(job):
             # Hill shade: lighter where the ground is higher than to the north and west (light from the north-west).
             z, x = divmod(pi, REGION)
             h = heights[pi]
-            hn = heights[pi - REGION] if z > 0 and present[pi - REGION] else (north_row[x] if z == 0 and north_row and north_row[x] is not None else h)
-            hw = heights[pi - 1] if x > 0 and present[pi - 1] else (west_col[z] if x == 0 and west_col and west_col[z] is not None else h)
+            hn = (
+                heights[pi - REGION]
+                if z > 0 and present[pi - REGION]
+                else (north_row[x] if z == 0 and north_row and north_row[x] is not None else h)
+            )
+            hw = (
+                heights[pi - 1]
+                if x > 0 and present[pi - 1]
+                else (west_col[z] if x == 0 and west_col and west_col[z] is not None else h)
+            )
             f = 1.0 + _clamp(((h - hn) + (h - hw)) * 0.06, -0.20, 0.20)
             if fl == FLUID_WATER:
                 f = 1.0
             r, g, b = int(r * f), int(g * f), int(b * f)
-            if fl == FLUID_WATER:                # water over whatever is on the floor, deeper = more opaque and darker
+            if fl == FLUID_WATER:  # water over whatever is on the floor, deeper = more opaque and darker
                 d = depth[pi]
                 wr, wg, wb = water_t[pi * 3], water_t[pi * 3 + 1], water_t[pi * 3 + 2]
                 a = min(0.93, 0.42 + 0.035 * d)
@@ -376,7 +439,7 @@ def shade_region(job):
                 b = int((b + (wb - b) * a) * dark)
         gl = glass.get(pi)
         if gl:
-            for gc in reversed(gl):              # deepest pane first, then the ones above it
+            for gc in reversed(gl):  # deepest pane first, then the ones above it
                 r += (((gc >> 16) & 255) - r) * 0.6
                 g += (((gc >> 8) & 255) - g) * 0.6
                 b += ((gc & 255) - b) * 0.6
@@ -399,7 +462,9 @@ def people_regions(docs, margin):
     for name in ('borders.json', 'shops.json'):
         path = os.path.join(docs, name)
         if os.path.exists(path):
-            for item in json.load(open(path)):
+            with open(path) as f:
+                items = json.load(f)
+            for item in items:
                 pts = item.get('points') or [item]
                 xs = [p['x'] for p in pts if 'x' in p]
                 zs = [p['z'] for p in pts if 'z' in p]
@@ -413,7 +478,12 @@ def people_regions(docs, margin):
 
 
 def region_range(x0, z0, x1, z1):
-    return (math.floor(x0 / REGION), math.floor(z0 / REGION), math.floor((x1 - 1) / REGION), math.floor((z1 - 1) / REGION))
+    return (
+        math.floor(x0 / REGION),
+        math.floor(z0 / REGION),
+        math.floor((x1 - 1) / REGION),
+        math.floor((z1 - 1) / REGION),
+    )
 
 
 def reduce_half(img):
@@ -432,7 +502,7 @@ def build_tiles(region_pngs, detail, out_dir, box, source_label):
     pyramid = {}
     # Zoom 12 (one pixel per block) and 11, for the detailed regions.
     level12 = {}
-    for (rx, rz) in detail:
+    for rx, rz in detail:
         if (rx, rz) not in region_pngs:
             continue
         img = Image.open(region_pngs[(rx, rz)]).convert('RGBA')
@@ -498,15 +568,21 @@ def build_tiles(region_pngs, detail, out_dir, box, source_label):
             p = os.path.abspath(os.path.join(root, fn))
             if fn.endswith(('.png', '.webp')) and p not in keep:
                 os.remove(p)
-    for root, dirs, files in os.walk(out_dir, topdown=False):       # tidy empty folders
+    for root, _dirs, _files in os.walk(out_dir, topdown=False):  # tidy empty folders
         if root != out_dir and not os.listdir(root):
             os.rmdir(root)
 
     x0, z0, x1, z1 = box
     manifest = dict(
-        version=1, tileSize=TILE, minZoom=MIN_ZOOM, maxZoom=NATIVE_ZOOM, detailMinZoom=DETAIL_MIN_ZOOM, format='webp',
+        version=1,
+        tileSize=TILE,
+        minZoom=MIN_ZOOM,
+        maxZoom=NATIVE_ZOOM,
+        detailMinZoom=DETAIL_MIN_ZOOM,
+        format='webp',
         bounds=dict(x0=x0, z0=z0, x1=x1, z1=z1),
-        generated=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), source=source_label,
+        generated=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        source=source_label,
         tiles={str(z): sorted([x, y] for (x, y) in tiles) for z, tiles in pyramid.items()},
     )
     with open(os.path.join(out_dir, 'manifest.json'), 'w') as f:
@@ -548,13 +624,22 @@ def main():
     todo = sorted(regions)
     if not todo:
         sys.exit('None of the wanted regions are in the archive.')
-    box = (min(k[0] for k in todo) * REGION, min(k[1] for k in todo) * REGION,
-           (max(k[0] for k in todo) + 1) * REGION, (max(k[1] for k in todo) + 1) * REGION)
-    print(f'{len(todo)} regions in the map (blocks x {box[0]}..{box[2]}, z {box[1]}..{box[3]}); '
-          f'full detail for {len(detail)} of them ({len(detail) * 100 // len(todo)}%), the rest from zoom 10 and out.')
+    box = (
+        min(k[0] for k in todo) * REGION,
+        min(k[1] for k in todo) * REGION,
+        (max(k[0] for k in todo) + 1) * REGION,
+        (max(k[1] for k in todo) + 1) * REGION,
+    )
+    print(
+        f'{len(todo)} regions in the map (blocks x {box[0]}..{box[2]}, z {box[1]}..{box[3]}); '
+        f'full detail for {len(detail)} of them ({len(detail) * 100 // len(todo)}%), the rest from zoom 10 and out.'
+    )
 
     t0 = time.time()
-    recfile = lambda k: os.path.join(a.cache, f'r.{k[0]}.{k[1]}.rec')
+
+    def recfile(k):
+        return os.path.join(a.cache, f'r.{k[0]}.{k[1]}.rec')
+
     stale = []
     for k in todo:
         fp = src.fingerprint(k)
@@ -567,7 +652,10 @@ def main():
                 ok = False
         if not ok:
             stale.append((k, src.path, f, fp))
-    print(f'Phase 1: reading {len(stale)} changed regions ({len(todo) - len(stale)} unchanged, from cache) with {a.workers} workers')
+    print(
+        f'Phase 1: reading {len(stale)} changed regions ({len(todo) - len(stale)} unchanged, from cache)',
+        f'with {a.workers} workers',
+    )
     unknown = collections.Counter()
     done = 0
     with ProcessPoolExecutor(a.workers) as pool:
@@ -575,25 +663,45 @@ def main():
             done += 1
             unknown.update(unk)
             if done % 20 == 0 or done == len(stale) or skipped:
-                print(f'  [{done}/{len(stale)}] r.{key[0]}.{key[1]}: {n // 256} chunks' + (f', {skipped} unreadable' if skipped else ''), flush=True)
+                print(
+                    f'  [{done}/{len(stale)}] r.{key[0]}.{key[1]}: {n // 256} chunks'
+                    + (f', {skipped} unreadable' if skipped else ''),
+                    flush=True,
+                )
 
         # Phase 2 redoes every region that changed or sits next to one that did (shading reads neighbours).
         changed = {j[0] for j in stale}
-        redo = [k for k in todo if k in changed or (k[0] - 1, k[1]) in changed or (k[0], k[1] - 1) in changed
-                or not os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))]
+        redo = [
+            k
+            for k in todo
+            if k in changed
+            or (k[0] - 1, k[1]) in changed
+            or (k[0], k[1] - 1) in changed
+            or not os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))
+        ]
         print(f'Phase 2: colouring and shading {len(redo)} regions')
         jobs = [(k, a.cache, os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png')) for k in redo]
         for i, _ in enumerate(pool.map(shade_region, jobs, chunksize=1), 1):
             if i % 50 == 0 or i == len(jobs):
                 print(f'  [{i}/{len(jobs)}]', flush=True)
 
-    pngs = {k: os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png') for k in todo if os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))}
+    pngs = {
+        k: os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png')
+        for k in todo
+        if os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))
+    }
     print(f'Phase 3: building tiles for {len(pngs)} regions')
     count, size, secs, pyramid = build_tiles(pngs, detail, out_dir, box, os.path.basename(a.source))
     per_zoom = ', '.join(f'z{z}: {len(t)}' for z, t in sorted(pyramid.items(), reverse=True))
-    print(f'Wrote {count} tiles ({per_zoom}), {size / 1e6:.1f} MB, to {out_dir} in {secs:.0f}s (whole run {time.time() - t0:.0f}s)')
+    print(
+        f'Wrote {count} tiles ({per_zoom}), {size / 1e6:.1f} MB, to {out_dir}',
+        f'in {secs:.0f}s (whole run {time.time() - t0:.0f}s)',
+    )
     if unknown:
-        print('Blocks with no colour in colors.json (drawn grey):', ', '.join(f'{k} x{v}' for k, v in unknown.most_common(15)))
+        print(
+            'Blocks with no colour in colors.json (drawn grey):',
+            ', '.join(f'{k} x{v}' for k, v in unknown.most_common(15)),
+        )
     if a.preview and 8 in pyramid:
         tiles = pyramid[8]
         xs, ys = [k[0] for k in tiles], [k[1] for k in tiles]
