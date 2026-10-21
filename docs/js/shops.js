@@ -53,8 +53,8 @@ function productTable(db, s) {
 }
 
 /**
- * One shop: its icon, kind (Shop or Service), name and owner on top, what it offers in the middle,
- * and where it is at the bottom.
+ * One shop: its icon, kind (Shop or Service) and name on top, what it offers in the middle,
+ * and its owner and place at the bottom.
  */
 function card(db, s, reason) {
   const owner = s.owner
@@ -72,7 +72,6 @@ function card(db, s, reason) {
         { class: 'scard__title' },
         el('p', { class: 'label eyebrow' }, isService(s) ? 'Service' : 'Shop'),
         el('h2', {}, s.label),
-        owner,
       ),
     ),
     reason ? el('p', { class: 'scard__why' }, reason) : null,
@@ -80,6 +79,7 @@ function card(db, s, reason) {
     el(
       'div',
       { class: 'scard__foot' },
+      owner,
       el('span', { class: 'small' }, `X ${fmtInt(s.x)}, Z ${fmtInt(s.z)}`),
       el('a', { href: mapHref(s) }, 'On the map'),
     ),

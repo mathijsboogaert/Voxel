@@ -1002,34 +1002,34 @@ main > .wrap {
   background: var(--paper);
   border-left: 4px solid var(--teal);
 }
-/* The owner, under the shop's name. */
+/* Bottom: the owner on its own line, then the coordinates and the map link. */
+.scard__foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--stroke-1) solid var(--line-soft);
+}
 .scard__owner {
+  grid-column: 1 / -1;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  justify-self: start;
   max-width: 100%;
-  margin-top: 6px;
-  font: 600 14px/20px var(--font-sans);
+  font-weight: 600;
   color: var(--ink);
   text-decoration: none;
 }
 .scard__owner .face {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 .scard__owner:hover {
   text-decoration: underline;
 }
-/* Bottom line: where it is, and the link to see it on the map. */
-.scard__foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-top: var(--space-3);
-  border-top: var(--stroke-1) solid var(--line-soft);
-}
-.scard__foot a {
+.scard__foot a:not(.scard__owner) {
   font-weight: 600;
   white-space: nowrap;
 }
