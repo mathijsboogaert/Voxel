@@ -2,7 +2,7 @@
 // The search box takes an item or a shop name and also finds shops that sell the parts of an item
 // (see findShops in shops-core.js). Deep link: shops/#shop-slug scrolls to one shop.
 import { el, url, faceEl, playerHref, fmtInt } from './ui.js';
-import { loadItems, findShops, matchItems, shopIconEl, offerText, priceText, shopSlug, isService } from './shops-core.js';
+import { loadItems, findShops, matchItems, shopIconEl, offerText, priceEl, shopSlug, isService } from './shops-core.js';
 
 const $ = (id) => document.getElementById(id);
 const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
@@ -15,7 +15,7 @@ function productTable(db, s) {
     el('thead', {}, el('tr', {}, el('th', { scope: 'col' }, service ? 'Service' : 'Item'), el('th', { scope: 'col' }, 'Price'))),
     el('tbody', {}, lines.map((p) => el('tr', {},
       el('td', {}, offerText(db, p)),
-      el('td', {}, priceText(db, p) || 'Ask')))));
+      el('td', {}, priceEl(db, p) || 'Ask')))));
 }
 
 function card(db, s, reason) {

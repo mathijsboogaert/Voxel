@@ -228,6 +228,9 @@ main > .wrap { padding-bottom: var(--space-6); }
 .shop-icon--default { width: 28px; height: 28px; }
 .shop-chip .shop-icon, .place__icon .shop-icon { width: 32px; height: 32px; }
 .shop-chip .shop-icon--default, .place__icon .shop-icon--default { width: 28px; height: 28px; }
+/* A price in diamonds: the number and the diamond icon, at 1x so its pixels stay square. */
+.price { display: inline-flex; align-items: center; gap: 4px; vertical-align: -2px; }
+.price__icon { display: block; width: 16px; height: 16px; image-rendering: crisp-edges; image-rendering: pixelated; }
 .place__links { display: flex; gap: var(--space-3); }
 
 .slist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: minmax(0, 1fr); }

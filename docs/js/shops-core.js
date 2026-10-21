@@ -45,6 +45,18 @@ export function priceText(db, p) {
   return amountText(db, p.priceItem || 'diamond', p.price);
 }
 
+/** A price to show: a number with the diamond icon for diamonds, "Free", other currencies as text, or null when unset. */
+export function priceEl(db, p) {
+  if (p.free) return 'Free';
+  if (!p.price) return null;
+  if ((p.priceItem || 'diamond') !== 'diamond') return priceText(db, p);
+  const label = `${p.price} ${p.price === 1 ? 'diamond' : 'diamonds'}`;
+  return el('span', { class: 'price', title: label },
+    el('span', { class: 'sr-only' }, label),
+    el('span', { 'aria-hidden': 'true' }, String(p.price)),
+    el('img', { class: 'price__icon', src: url('assets/diamond.svg'), alt: '', width: 16, height: 16 }));
+}
+
 /** A stable anchor for a shop on the Shops page. */
 export const shopSlug = (s) => String(s.label || 'shop').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'shop';
 export const shopHref = (s) => url('shops/') + '#' + shopSlug(s);
@@ -99,19 +111,21 @@ export function findShops(db, shops, query) {
   const singular = q.replace(/s$/, '');
   const exact = targets.filter((t) => t.lower === q || t.lower === singular);
   const partTargets = exact.length ? exact : targets;
-  const lineText = (p) => { const price = priceText(db, p); return offerText(db, p) + (p.free ? ', free' : price ? ' for ' + price : ''); };
+  // Reasons are lists of text and nodes (prices show the diamond icon); el() takes them as children.
+  const lineText = (p) => { const price = priceEl(db, p); return [offerText(db, p), p.free ? ', free' : price ? [' for ', price] : ''].flat(); };
+  const joinLines = (lines) => lines.flatMap((p, i) => (i ? [', ', ...lineText(p)] : lineText(p)));
   const words = q.split(/\s+/).filter(Boolean);
 
   for (const s of shops) {
     // A service matches on its own words ("ghast" finds "Ghast storage").
     const services = (s.products || []).filter((p) => p.service && words.every((w) => p.service.toLowerCase().includes(w)));
-    if (services.length) offer(s, 4.5, 'Offers ' + services.slice(0, 2).map(lineText).join(', '), services[0]);
+    if (services.length) offer(s, 4.5, ['Offers ', ...joinLines(services.slice(0, 2))], services[0]);
     if (isService(s) && words.every((w) => 'service'.startsWith(w) || 'services'.startsWith(w))) offer(s, 3, 'Offers services');
     const sold = sells.get(s);
     // Sells it outright (all the matching lines, a couple named).
     const direct = targets.filter((t) => sold.has(t.i)).map((t) => sold.get(t.i));
     const more = direct.length > 2 ? `, and ${direct.length - 2} more` : '';
-    const directText = direct.length ? 'Sells ' + direct.slice(0, 2).map(lineText).join(', ') + more : '';
+    const directText = direct.length ? ['Sells ', ...joinLines(direct.slice(0, 2)), more] : '';
     if (s.label && s.label.toLowerCase().includes(q)) offer(s, 5, directText || (best.get(s) || {}).reason || '', direct[0] || null);
     if (direct.length) offer(s, 4 + (exact.some((t) => sold.has(t.i)) ? 0.5 : 0), directText, direct[0]);
     if (!sold.size || !targets.length || (best.get(s) || {}).score >= 4) continue;
