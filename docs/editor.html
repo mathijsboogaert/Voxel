@@ -139,7 +139,11 @@
     </div>
     <p class="hint" id="shopIconHint">Pixel art, 16×16. Shown on the Shops page and in search, not on the map.</p>
 
-    <span class="field-label">Products</span>
+    <label class="toggle-row">
+      <input type="checkbox" id="shopServiceInput">
+      <span>Service shop (offers services, not items)</span>
+    </label>
+    <span class="field-label" id="shopLinesLabel">Products</span>
     <ul class="plines" id="shopProducts"></ul>
     <button type="button" class="ebtn ebtn--sm" id="shopAddProduct">+ Add product</button>
     <datalist id="itemList"></datalist>
@@ -473,6 +477,7 @@ const serializeShop = (s) => ({
   ...(s.owner ? { owner: s.owner } : {}),
   ...(s.added ? { added: s.added } : {}),
   ...(s.icon ? { icon: s.icon } : {}),
+  ...(s.kind === 'service' ? { kind: 'service' } : {}),
   ...(s.products && s.products.length ? { products: s.products } : {}),
 });
 
@@ -481,7 +486,7 @@ function addShopLayer(x, z, label, extra = {}) {
   const points = extra.points && extra.points.length >= 3 ? extra.points : null;
   const shop = {
     x, z, points, label, owner: extra.owner || '', added: extra.added || '', spoiler: !!extra.spoiler && !!points,
-    icon: extra.icon || '', products: Array.isArray(extra.products) ? extra.products : [],
+    icon: extra.icon || '', products: Array.isArray(extra.products) ? extra.products : [], kind: extra.kind === 'service' ? 'service' : '',
   };
   // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
   if (points) {
@@ -517,7 +522,7 @@ async function loadShops() {
     try { data = JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY) || '[]'); } catch (e) { data = []; }
   }
 
-  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points, spoiler: s.spoiler, icon: s.icon, products: s.products });
+  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points, spoiler: s.spoiler, icon: s.icon, products: s.products, kind: s.kind });
 }
 
 function exportShops() {
@@ -760,9 +765,27 @@ import('./js/shops-core.js').then((m) => m.loadItems()).then((db) => {
 const itemByName = (txt) => itemDb && itemDb.byName.get(txt.trim().toLowerCase());
 const nameOf = (id) => (itemDb && itemDb.byId.get(id) ? itemDb.byId.get(id).name : (id || '').replaceAll('_', ' '));
 
+// A service shop's lines are free text ("Ghast storage, per week") with a price; an item shop's are Minecraft items.
+const serviceInput = document.getElementById('shopServiceInput');
+const linesLabel = document.getElementById('shopLinesLabel');
+const addLineBtn = document.getElementById('shopAddProduct');
+const serviceMode = () => serviceInput.checked;
+function syncServiceMode() {
+  linesLabel.textContent = serviceMode() ? 'Services' : 'Products';
+  addLineBtn.textContent = serviceMode() ? '+ Add service' : '+ Add product';
+}
+serviceInput.addEventListener('change', () => {
+  // Switching keeps what was typed: item names become service text and back (unknown names are dropped).
+  const kept = readProducts(!serviceMode());
+  syncServiceMode();
+  renderProducts(serviceMode()
+    ? kept.map((p) => ({ service: p.service || nameOf(p.item), price: p.price, priceItem: p.priceItem }))
+    : kept.map((p) => { const it = itemByName(p.service || nameOf(p.item)); return it ? { ...p, service: undefined, item: it.id } : null; }).filter(Boolean));
+});
+
 function productRow(p) {
   const li = document.createElement('li');
-  li.className = 'pline';
+  li.className = serviceMode() ? 'pline pline--service' : 'pline';
   li.innerHTML = `
     <input class="efield efield--sm pline__item" list="itemList" type="text" placeholder="Item" autocomplete="off" aria-label="Item">
     <div class="pline__row">
@@ -773,34 +796,40 @@ function productRow(p) {
       <button type="button" class="pline__x" aria-label="Remove product" title="Remove">\u00d7</button>
     </div>`;
   const [item, amount, price, cur] = li.querySelectorAll('input');
-  item.value = p.item ? nameOf(p.item) : '';
+  if (serviceMode()) {
+    item.removeAttribute('list');
+    item.placeholder = 'Service, like Ghast storage per week';
+    item.setAttribute('aria-label', 'Service');
+    item.maxLength = 60;
+  }
+  item.value = serviceMode() ? (p.service || '') : p.item ? nameOf(p.item) : '';
   item.dataset.id = p.item || '';
   amount.value = p.amount || '';
   price.value = p.price || '';
   cur.value = p.priceItem && p.priceItem !== 'diamond' ? nameOf(p.priceItem) : '';
   const check = (inp) => inp.classList.toggle('efield--bad', !!inp.value.trim() && !!itemDb && !itemByName(inp.value));
-  for (const inp of [item, cur]) inp.addEventListener('input', () => check(inp));
+  for (const inp of serviceMode() ? [cur] : [item, cur]) inp.addEventListener('input', () => check(inp));
   for (const inp of li.querySelectorAll('input')) inp.addEventListener('keydown', (e) => e.stopPropagation());
   li.querySelector('.pline__x').addEventListener('click', () => li.remove());
   return li;
 }
 function renderProducts(list) { productsEl.replaceChildren(...list.map(productRow)); }
 /** The rows as product objects. Rows with an item that isn't a Minecraft item keep what they had (or are dropped if new). */
-function readProducts() {
+function readProducts(asService = serviceMode()) {
   const out = [];
   for (const li of productsEl.children) {
     const [item, amount, price, cur] = li.querySelectorAll('input');
+    const pr = parseInt(price.value, 10);
+    const priceOf = () => { const c = cur.value.trim() ? itemByName(cur.value) : null; return pr > 0 ? { price: pr, priceItem: c ? c.id : 'diamond' } : {}; };
+    if (asService) {
+      const text = item.value.trim();
+      if (text) out.push({ service: text, ...priceOf() });
+      continue;
+    }
     const it = itemByName(item.value);
     const id = it ? it.id : (!itemDb ? item.dataset.id : '');
     if (!id) continue;
-    const p = { item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1) };
-    const pr = parseInt(price.value, 10);
-    if (pr > 0) {
-      p.price = pr;
-      const c = cur.value.trim() ? itemByName(cur.value) : null;
-      p.priceItem = c ? c.id : 'diamond';
-    }
-    out.push(p);
+    out.push({ item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1), ...priceOf() });
   }
   return out;
 }
@@ -818,6 +847,8 @@ function openShopEditor(shop) {
   editingIcon = shop.icon || '';
   iconHint.textContent = ICON_HINT; iconHint.classList.remove('hint--error');
   showIcon();
+  serviceInput.checked = shop.kind === 'service';
+  syncServiceMode();
   renderProducts(shop.products || []);
   shopSpoilerInput.checked = !!shop.spoiler;
   shopSpoilerRow.hidden = !shop.points; // only outlines can be filled
@@ -840,6 +871,7 @@ shopSaveBtn.addEventListener('click', () => {
   editingShop.owner = matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim();
   editingShop.spoiler = !!editingShop.points && shopSpoilerInput.checked;
   editingShop.icon = editingIcon;
+  editingShop.kind = serviceMode() ? 'service' : '';
   editingShop.products = readProducts();
   if (editingShop.shape) {
     // Keep the class on the layer's options too, so it is right if the layer is added to the map later.

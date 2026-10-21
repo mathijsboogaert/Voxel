@@ -33,6 +33,11 @@ export function amountText(db, id, n) {
   const name = itemName(db, id);
   return n && n !== 1 ? `${n}\u00d7 ${name}` : name;
 }
+/** A service shop (storage, lawsuits, a taxi) offers services written as text instead of Minecraft items. */
+export const isService = (s) => !!s && s.kind === 'service';
+/** What a line offers: "64× Oak Log" for an item, the text itself for a service. */
+export const offerText = (db, p) => (p.service ? p.service : amountText(db, p.item, p.amount));
+
 /** "1 Diamond", or '' when the shop has not set a price. */
 export function priceText(db, p) {
   if (!p.price) return '';
@@ -93,15 +98,20 @@ export function findShops(db, shops, query) {
   const singular = q.replace(/s$/, '');
   const exact = targets.filter((t) => t.lower === q || t.lower === singular);
   const partTargets = exact.length ? exact : targets;
-  const lineText = (p) => { const price = priceText(db, p); return amountText(db, p.item, p.amount) + (price ? ' for ' + price : ''); };
+  const lineText = (p) => { const price = priceText(db, p); return offerText(db, p) + (price ? ' for ' + price : ''); };
+  const words = q.split(/\s+/).filter(Boolean);
 
   for (const s of shops) {
+    // A service matches on its own words ("ghast" finds "Ghast storage").
+    const services = (s.products || []).filter((p) => p.service && words.every((w) => p.service.toLowerCase().includes(w)));
+    if (services.length) offer(s, 4.5, 'Offers ' + services.slice(0, 2).map(lineText).join(', '), services[0]);
+    if (isService(s) && words.every((w) => 'service'.startsWith(w) || 'services'.startsWith(w))) offer(s, 3, 'Offers services');
     const sold = sells.get(s);
     // Sells it outright (all the matching lines, a couple named).
     const direct = targets.filter((t) => sold.has(t.i)).map((t) => sold.get(t.i));
     const more = direct.length > 2 ? `, and ${direct.length - 2} more` : '';
     const directText = direct.length ? 'Sells ' + direct.slice(0, 2).map(lineText).join(', ') + more : '';
-    if (s.label && s.label.toLowerCase().includes(q)) offer(s, 5, directText, direct[0] || null);
+    if (s.label && s.label.toLowerCase().includes(q)) offer(s, 5, directText || (best.get(s) || {}).reason || '', direct[0] || null);
     if (direct.length) offer(s, 4 + (exact.some((t) => sold.has(t.i)) ? 0.5 : 0), directText, direct[0]);
     if (!sold.size || !targets.length || (best.get(s) || {}).score >= 4) continue;
 

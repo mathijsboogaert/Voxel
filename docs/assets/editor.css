@@ -52,6 +52,8 @@
 .icon-row { display: flex; align-items: center; gap: var(--space-3); }
 .icon-drop { width: 56px; height: 56px; flex: none; display: grid; place-items: center; background: var(--paper-sunken); border: var(--stroke-2) dashed var(--line); cursor: pointer; }
 .icon-drop.over { border-style: solid; border-color: var(--teal); }
+.icon-drop:has(.icon-drop__img:not([hidden])) { width: auto; height: auto; display: block; border-style: solid; }
+.icon-drop__img { display: block; }
 .icon-drop__img { width: 48px; height: 48px; image-rendering: crisp-edges; image-rendering: pixelated; }
 .icon-drop__empty { font: 600 12px/16px var(--font-sans); color: var(--ink-muted); }
 .icon-row__actions { display: flex; flex-direction: column; gap: 4px; }
@@ -118,3 +120,6 @@ input[type=number].efield--sm::-webkit-inner-spin-button { -webkit-appearance: n
 /* The item pickers are plain text boxes with suggestions; Chrome's dropdown arrow would eat the room. */
 .pline input::-webkit-calendar-picker-indicator { display: none !important; }
 .etools { z-index: 1002; }
+/* A service line has no amount: just the service, then its price. */
+.pline--service .pline__row { grid-template-columns: 52px minmax(0, 1fr) 28px; }
+.pline--service .pline__n:first-child, .pline--service .pline__for { display: none; }

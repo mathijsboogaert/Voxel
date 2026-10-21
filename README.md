@@ -82,6 +82,10 @@ A shop without one gets the general shop icon. In the editor, click a shop and u
 what it is paid in, Diamond unless you pick another item). In `shops.json` a line is
 `{ "item": "oak_log", "amount": 64, "price": 2, "priceItem": "diamond" }`. No price shows as "Ask".
 
+**Service shops** (storage, lawsuits, rides) offer services instead of items. Tick **Service shop** in the shop's editor: its lines
+become free text with a price (`{ "service": "Ghast storage, per week", "price": 2, "priceItem": "diamond" }`) and the shop gets
+`"kind": "service"`. It shows a Service tag, the Shops page can filter All / Items / Services, and search matches the service text.
+
 **Search** (Map page and Shops page) finds shops by name and by what they sell, and it knows recipes: someone looking for
 oak planks finds the shop that sells oak logs ("Sells Oak Log, which crafts into Oak Planks"), and sticks find it too, one step
 further. It follows crafting, furnaces, the stonecutter and smithing, from the game's own recipe files. The ranking: the shop's
