@@ -12,7 +12,7 @@
   border-bottom: var(--stroke-2) solid var(--line);
 }
 .site-header .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 60px; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
+.brand { flex: none; display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; }
 .brand__mark { width: 36px; height: 36px; display: block; }
 .brand__name { font: 600 24px/1 var(--font-display); letter-spacing: -0.01em; }
 .mark--dark { display: none; }
@@ -32,12 +32,13 @@
 .nav a:hover { border-bottom-color: var(--line-soft); }
 .nav a[aria-current="page"] { border-bottom-color: var(--teal); }
 
-/* Three menu items plus the wordmark need to fit the narrowest phones. */
-@media (max-width: 380px) {
-  .nav a { padding-inline: 8px; }
-  .brand__name { font-size: 22px; }
+/* Four menu items plus the wordmark: on a phone the wordmark gives way and only the mark stays. */
+@media (max-width: 480px) {
+  .brand__name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .nav a { padding-inline: 10px; }
   .site-header .wrap { gap: 4px; }
 }
+@media (max-width: 340px) { .nav a { padding-inline: 6px; } }
 
 /* ---- Hero ------------------------------------------------------------------ */
 .hero { padding-block: var(--space-4) var(--space-5); }
@@ -220,6 +221,37 @@ main > .wrap { padding-bottom: var(--space-6); }
 .race-legend li { display: flex; align-items: center; gap: var(--space-2); }
 .race-legend__name { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .race-swatch { width: 28px; height: 8px; flex: none; overflow: visible; }
+
+/* ---- Shops page ---------------------------------------------------------------------- */
+/* A shop's own icon is 16x16 pixel art: always shown at a whole multiple (2x, 3x) so every pixel stays square. */
+.shop-icon { display: block; width: 32px; height: 32px; image-rendering: crisp-edges; image-rendering: pixelated; }
+.shop-icon--default { width: 28px; height: 28px; }
+.shop-chip .shop-icon, .place__icon .shop-icon { width: 32px; height: 32px; }
+.shop-chip .shop-icon--default, .place__icon .shop-icon--default { width: 28px; height: 28px; }
+.place__links { display: flex; gap: var(--space-3); }
+
+.slist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: minmax(0, 1fr); }
+.scard { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); background: var(--paper-sunken); border: var(--stroke-2) solid var(--line); scroll-margin-top: var(--space-4); }
+.scard--focus { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal); }
+.scard__head { display: grid; grid-template-columns: 56px minmax(0, 1fr); column-gap: var(--space-3); align-items: center; }
+.scard__icon { width: 56px; height: 56px; display: grid; place-items: center; background: var(--paper); border: var(--stroke-2) solid var(--line); }
+.scard__icon .shop-icon { width: 48px; height: 48px; }
+.scard__icon .shop-icon--default { width: 28px; height: 28px; }
+.scard__title { min-width: 0; }
+.scard__title h2 { font: 600 20px/26px var(--font-display); overflow-wrap: anywhere; }
+.scard__owner { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: 4px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.scard__owner .face { width: 20px; height: 20px; }
+.scard__owner:hover { text-decoration: underline; }
+.scard__map { font-weight: 600; }
+.scard__foot { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-top: auto; }
+.scard__why { padding: var(--space-2) var(--space-3); background: var(--paper); border-left: 4px solid var(--teal); font-weight: 600; }
+.scard__none { padding-block: var(--space-1); }
+.ptable { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ptable th { text-align: left; font: 600 12px/16px var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-muted); padding-bottom: var(--space-1); }
+.ptable td { padding-block: 6px; border-top: var(--stroke-1) solid var(--line-soft); vertical-align: top; }
+.ptable td:last-child, .ptable th:last-child { text-align: right; padding-left: var(--space-3); }
+@media (min-width: 760px) { .slist { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .slist { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* ---- Player page columns ----------------------------------------------------------- */
 .pcol { display: grid; gap: var(--space-3); align-content: start; }

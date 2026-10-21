@@ -22,7 +22,8 @@
       }
     ],
     "owner": "Mathi_Craft",
-    "added": "2026-10-18T14:38:57.830Z"
+    "added": "2026-10-18T14:38:57.830Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHUlEQVR42r1Sr2vDUBD+rgwmExnVVYQwEjq5UlfVp/onTNQGIgv7EwqTg9qKmqmZqFTVhVbUDMIWtcbNpX/BmxgXLj9eqdpn3nHcfd93d49epncaALK8hO/ZaMYAsNieCAb0OPA9G1letuIsL8EiXaD5wNKfQwtu4ODh+NNyIgXeb/943MDBZnkgAOitv881e7I5jBR8z0YYqYrMDRwAwNPzo66NIBW5eZfsMVEj7JI9wkjh/uOMzfJArN4ikCSymV+JagSZbI5jwnjW1+NZX3c6YJKm+kSNqpo0Loh3QcwoFwQAN29ftT2sXhPwteQYJG1JJ2lc0HxgaelM1qRxcdW414N/m/x1l3LGM3YVmXJGgsX2RM2GrpyR4F/xCwoDkGVUD2uOAAAAAElFTkSuQmCC"
   },
   {
     "x": -3,
@@ -52,7 +53,7 @@
   {
     "x": -52,
     "z": 194,
-    "label": "Ghast Station",
+    "label": "Park & Recreation",
     "points": [
       {
         "x": -68,
@@ -72,7 +73,8 @@
       }
     ],
     "owner": "EmrysPendragon",
-    "added": "2026-10-18T14:40:30.797Z"
+    "added": "2026-10-18T14:40:30.797Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR42mNk8Fv4n4ECwMRAIWBB5vzfGEdQA6P/IspcgG4JCzE24XMZUS5AdzZVA5GJHH8TFQbExAhZXkAPDxZyAo7+gUhTAxgHPDcCAE8YEwPb8Xt7AAAAAElFTkSuQmCC"
   },
   {
     "x": 5,
@@ -105,7 +107,8 @@
       }
     ],
     "owner": "EchoinSilence",
-    "added": "2026-10-18T14:41:00.914Z"
+    "added": "2026-10-18T14:41:00.914Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaElEQVR42rWTUQ4AMQREjfvfefplI0J1a7efqHlDQEQog6ddAclZgxGBqe8oWgIAdwQkn88ASop/ZuDVvZWMQt+sLKvTE/UdxbczMOXKisU9oVbJ2KTKwx9T5r+LIV5jVM4G5xties4LRgZGB4iS6oIAAAAASUVORK5CYII="
   },
   {
     "x": -152,
@@ -222,7 +225,8 @@
       }
     ],
     "owner": "EchoinSilence",
-    "added": "2026-10-19T21:21:54.081Z"
+    "added": "2026-10-19T21:21:54.081Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApUlEQVR42mNkUE77z0ABYCKk4NPKL5QZ8PPKEfINeD11B0FXEHSBaLMHXlcw4bNdNNsDbgguV+B2wQviwoIJp+3NHhheweYKFANe1+7AajuuwMV0gQTEEHTbYYAvnAdhCVYDXkAMITslijZ7MDC8QHUihhclGOCxg2IATBMuQ2BOh2mG8RmRMxM2/2MVQ0ojjOi5ET2QRJs9EK55geRVKGCkNDsDAI/FUi0fNecSAAAAAElFTkSuQmCC"
   },
   {
     "x": -20,
@@ -252,7 +256,7 @@
   {
     "x": -37,
     "z": 248,
-    "label": "The Fast Ghast",
+    "label": "The Flying Dutchman",
     "points": [
       {
         "x": -42,
@@ -368,6 +372,7 @@
       }
     ],
     "owner": "EmrysPendragon",
-    "added": "2026-10-21T07:16:20.983Z"
+    "added": "2026-10-21T07:16:20.983Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA5UlEQVR42q1RIRLCMBDcy/AEanCVnalBgwqyD8CA6cNAtIYHVCYKNKYMjrga+ENQlwltGmBgTe/29rZ7LfAj6C6lBYBEa2KyqSsLALM0HV2cL5YEAIKJu5SWzb6BmCqFqVKjgs4YdMYMasaEC2dC9CLwzwidJFblA6vyEY3pJ+jDJYiZzNIUnTHhBHqfkN4n9O5jjf0RlyBkEoo8SBAii82W+K1jdRRNXdnz6Whj9d/g7i4PjQWA3bqgTxZZL7iReQaZZ27gC5nzn6yn+nJzC7q9QuYZQn1/xtxEt1dH+OJ+3zfm+RNqjn0N8MtuTwAAAABJRU5ErkJggg=="
   }
 ]

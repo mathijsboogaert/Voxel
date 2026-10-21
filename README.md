@@ -13,6 +13,7 @@ the stats come from the server's own logs.
 | Home | `docs/index.html` | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who is around |
 | Map | `docs/map/index.html` | The full pannable, zoomable world map with borders, shops and search. Read-only |
 | Players | `docs/players/index.html` | Everyone, with face, playtime and when they were last on |
+| Shops | `docs/shops/index.html` | Every shop with its own icon, owner and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`) |
 | Player | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements |
 | Editor | `docs/editor.html` | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site |
 
@@ -66,8 +67,32 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 | `docs/data/players.json` and `docs/faces/*.png` | `tools/fetch_faces.py` | The roster (name and UUID) and each player's head |
 | `docs/data/adjust.json` | by hand | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time |
 | `docs/borders.json` | the editor | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names) |
-| `docs/shops.json` | the editor | Shops: `x`, `z`, `label`, `owner`, and `added` (when it was placed) |
+| `docs/shops.json` | the editor | Shops: `x`, `z`, `points`, `label`, `owner`, `added` (when it was placed), `icon` (a 16x16 PNG as a `data:` URL) and `products` |
+| `docs/data/items.json` | `tools/build_items.py` | Every Minecraft 26.3 item with its English name and recipes, for the item pickers and item search |
 | `docs/news.json` | by hand | Extra news items, mainly events with a countdown (below) |
+
+## Shops, products and item search
+
+Each shop can have its own **icon**: 16x16 pixel art, drawn at 2x or 3x so the pixels stay square. It shows wherever shops are
+listed (the Shops page, search results, homepage news, player pages), never on the map itself, where shops are their outlines.
+A shop without one gets the general shop icon. In the editor, click a shop and use **Upload PNG** (or drop the file on the square).
+16x16 is stored as is; a bigger square image that is a multiple of 16 (32, 64...) is scaled down pixel for pixel.
+
+**Products** are Minecraft items, picked from the game's own list: the item, how many, and optionally a price (an amount and
+what it is paid in, Diamond unless you pick another item). In `shops.json` a line is
+`{ "item": "oak_log", "amount": 64, "price": 2, "priceItem": "diamond" }`. No price shows as "Ask".
+
+**Search** (Map page and Shops page) finds shops by name and by what they sell, and it knows recipes: someone looking for
+oak planks finds the shop that sells oak logs ("Sells Oak Log, which crafts into Oak Planks"), and sticks find it too, one step
+further. It follows crafting, furnaces, the stonecutter and smithing, from the game's own recipe files. The ranking: the shop's
+name, then selling the item itself, then a part of it, then a part of a part. The code is `findShops` in `docs/js/shops-core.js`.
+
+The item data is `docs/data/items.json`, built from the official 26.3 game data (as extracted by
+[misode/mcmeta](https://github.com/misode/mcmeta)). After a Minecraft update, rebuild it with the new version and commit:
+
+```bash
+python3 tools/build_items.py 26.4
+```
 
 ## Advancement points
 
@@ -185,11 +210,12 @@ horizontal and vertical lines only (each corner keeps the previous corner's x or
 Enter, clicking the first corner or **Finish shape** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
 visibility and owners; clicking a border later reopens it. **Draw shop outline** works the same way, over the shop's building: the outline (orange with a dark edge) leaves the build visible
 underneath, and finishing it asks for a name and owner. Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
-them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off, and each **Clear all** needs a
-second click within three seconds to confirm.
+them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off. The tools are a strip of icon buttons on the left (hover one for its name, or press **?**);
+**Clear all borders** (the bin) needs a second click within three seconds to confirm. There is no "clear all shops": delete shops one by one.
+A shop's editor also holds its icon and products (see Shops, products and item search).
 
 While you work, the editor autosaves to your browser's `localStorage` as a backup; that never reaches the site. The real files are
-`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json**, replace the file in `docs/` with the download,
+`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json** (the two download buttons, B and S), replace the file in `docs/` with the download,
 and commit. There is no backend, so a visitor who finds `editor.html` can draw in their own browser but cannot change what anyone else sees.
 
 If you change `wasm/seedmap_wasm.c` (or re-vendor cubiomes), rebuild with:

@@ -2,6 +2,7 @@
 // across borders, shops and players. Deep links: ?find=Name, or ?x=..&z=..&zoom=..
 import { createWorldMap, worldToLatLng, latLngToWorld, blocksPerPixel, DETAIL_ZOOM, DEFAULT_ZOOM } from './map-core.js';
 import { el, url, faceEl, playerHref, colorClass, SEED, SPAWN } from './ui.js';
+import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -57,15 +58,25 @@ new Promise((ok, fail) => {
 
 /* ---- Search ----------------------------------------------------------------------- */
 const box = $('msearch'), input = $('search-input'), list = $('search-results'), openBtn = $('btn-search');
-let roster = [];
+let roster = [], items = null;
+loadItems().then((db) => { items = db; if (input.value) render(input.value); });
 fetch(url('data/players.json'), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : [])).then((p) => { roster = p; }).catch(() => {});
 
+// Borders and players by name. Shops by name or by what they sell (items.json), see shops-core.js.
 function index() {
   return [
     ...borders.filter((b) => b.label).map((b) => ({ type: 'border', label: b.label, ref: b, color: b.color })),
     ...shops.filter((s) => s.label).map((s) => ({ type: 'shop', label: s.label, ref: s })),
     ...roster.map((p) => ({ type: 'player', label: p.name, ref: p })),
   ];
+}
+function search(q) {
+  const named = (r) => r.label.toLowerCase().includes(q);
+  const shopHits = findShops(items, shops.filter((s) => s.label), q)
+    .map((h) => ({ type: 'shop', label: h.shop.label, ref: h.shop, sub: h.reason }));
+  const others = index().filter((r) => r.type !== 'shop' && named(r));
+  // A shop whose name matches goes first, then borders and players by name, then shops by what they sell.
+  return [...shopHits.filter((r) => named(r)), ...others, ...shopHits.filter((r) => !named(r))].slice(0, 8);
 }
 let results = [], active = -1;
 
@@ -77,15 +88,19 @@ function closeSearch() {
 
 function render(query) {
   const q = query.trim().toLowerCase();
-  results = q ? index().filter((r) => r.label.toLowerCase().includes(q)).slice(0, 8) : [];
+  results = q ? search(q) : [];
   active = results.length ? 0 : -1;
   if (!q) { list.replaceChildren(); return; }
-  if (!results.length) { list.replaceChildren(el('li', { class: 'msearch__empty' }, 'No matches')); return; }
+  if (!results.length) {
+    const item = matchItems(items, q, 1)[0];
+    list.replaceChildren(el('li', { class: 'msearch__empty' }, item ? `No shop sells ${item.name} yet` : 'No matches'));
+    return;
+  }
   list.replaceChildren(...results.map((r, i) => {
     const icon = r.type === 'border' ? el('i', { class: colorClass(r.color) })
-      : r.type === 'shop' ? el('img', { src: url('assets/shop-icon.png'), alt: '' })
+      : r.type === 'shop' ? shopIconEl(r.ref)
       : faceEl(r.label, 'sm');
-    const sub = r.type === 'border' ? 'Border' : r.type === 'shop' ? 'Shop' : 'Player';
+    const sub = r.type === 'border' ? 'Border' : r.type === 'shop' ? (r.sub || 'Shop') : 'Player';
     return el('li', { class: 'sresult', role: 'option', 'aria-selected': String(i === active), onclick: () => choose(i) },
       el('span', { class: 'sresult__icon' }, icon), el('span', {}, r.label, el('small', {}, sub)));
   }));

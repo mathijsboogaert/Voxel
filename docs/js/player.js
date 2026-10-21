@@ -2,6 +2,7 @@
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
 import { loadStats } from './data.js';
 import { raceBlock } from './race.js';
+import { shopIconEl, shopHref } from './shops-core.js';
 import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, hourLabel, widthClass, heightClass, lastSeen } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
@@ -92,9 +93,10 @@ function render(st, places) {
       el('p', { class: 'label' }, 'Places'),
       el('div', { class: 'mt-2' }, places.map((pl) =>
         el('div', { class: 'place' },
-          el('span', { class: 'place__icon' }, pl.kind === 'shop' ? el('img', { src: url('assets/shop-icon.png'), alt: '' }) : pinIcon()),
+          el('span', { class: 'place__icon' }, pl.kind === 'shop' ? shopIconEl(pl.shop) : pinIcon()),
           el('div', {}, el('strong', {}, pl.label), el('p', { class: 'small' }, `${pl.kind === 'shop' ? 'Shop' : 'Base'}, X ${Math.round(pl.x)}, Z ${Math.round(pl.z)}`)),
-          el('a', { href: pl.href }, 'On the map'))))));
+          el('span', { class: 'place__links' }, pl.kind === 'shop' && (pl.shop.products || []).length ? el('a', { href: shopHref(pl.shop) }, 'Products') : null,
+            el('a', { href: pl.href }, 'On the map')))))));
   }
 
   // Plays with: each bar is that partner's share of their time, out of 100%
@@ -137,7 +139,7 @@ async function placesFor(player) {
   const [borders, shops] = await Promise.all([getJSON('borders.json', []), getJSON('shops.json', [])]);
   const out = [];
   for (const b of borders) if ((b.owners || []).includes(player) && b.points?.length) out.push({ kind: 'base', label: b.label || 'Base', ...center(b.points), href: '' });
-  for (const s of shops) if (s.owner === player) out.push({ kind: 'shop', label: s.label || 'Shop', x: s.x, z: s.z, href: '' });
+  for (const s of shops) if (s.owner === player) out.push({ kind: 'shop', label: s.label || 'Shop', x: s.x, z: s.z, href: '', shop: s });
   for (const o of out) o.href = mapHref(o.x, o.z);
   return out;
 }

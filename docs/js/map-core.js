@@ -3,6 +3,12 @@
 // plus the borders, shops and spawn marker from the site's JSON files.
 // Leaflet itself is loaded by the page as a global (window.L).
 import { url, el, SPAWN } from './ui.js';
+import { shopHref } from './shops-core.js';
+
+// A shop's popup: its name, and a link to what it sells when it has products listed.
+const shopPopup = (s) => el('span', {}, s.label, (s.products || []).length
+  ? el('a', { class: 'shop-popup__link', href: shopHref(s) }, 'What it sells')
+  : null);
 
 // 1 map unit = 4096 blocks. At NATIVE_ZOOM that is exactly one pixel per block; every
 // zoom level out doubles blocks per pixel. Latitude is -Z so north stays up.
@@ -148,12 +154,12 @@ export async function createWorldMap(element, opts = {}) {
       const casing = L.polygon(ll, { fill: false, interactive: false, className: 'shop-casing' });
       // A spoiler wall (s.spoiler) is filled solid black so what is behind it can't be seen. Colours and weights are in map.css.
       const shape = L.polygon(ll, { fill: true, interactive, className: s.spoiler ? 'shop-outline shop-outline--spoiler' : 'shop-outline' });
-      if (interactive && s.label) shape.bindPopup(el('span', {}, s.label), { closeButton: false, className: 'shop-popup' });
+      if (interactive && s.label) shape.bindPopup(shopPopup(s), { closeButton: false, className: 'shop-popup' });
       const bounds = shape.getBounds();
       return { ...s, marker: L.layerGroup([casing, shape]), bounds, open: () => shape.openPopup(bounds.getCenter()) };
     }
     const marker = L.marker(worldToLatLng(s.x, s.z), { icon, interactive, keyboard: interactive });
-    if (interactive && s.label) marker.bindPopup(el('span', {}, s.label), { closeButton: false, className: 'shop-popup' });
+    if (interactive && s.label) marker.bindPopup(shopPopup(s), { closeButton: false, className: 'shop-popup' });
     return { ...s, marker, bounds: null, open: () => marker.openPopup() };
   });
   const syncShops = () => {

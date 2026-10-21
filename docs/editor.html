@@ -30,6 +30,7 @@
       <a href="./">Home</a>
       <a href="map/">Map</a>
       <a href="players/">Players</a>
+      <a href="shops/">Shops</a>
       <a href="editor.html" aria-current="page">Editor</a>
     </nav>
   </div>
@@ -63,18 +64,39 @@
     <ul class="msearch__results" id="search-results" role="listbox" aria-label="Results"></ul>
   </div>
 
-  <div id="drawTools" class="epanel etools">
-    <button class="ebtn" id="drawToggle">Draw border</button>
-    <button class="ebtn" id="drawFinish" disabled>Finish shape</button>
-    <button class="ebtn" id="drawUndo" disabled>Undo point</button>
-    <button class="ebtn" id="drawClear">Clear all</button>
+  <div id="drawTools" class="epanel etools" role="toolbar" aria-label="Editor tools" aria-orientation="vertical">
+    <button class="ibtn" id="drawToggle" aria-label="Draw border" data-tip="Draw border" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h10v6h6v10H4Z"/><path class="ibtn__dot" d="M3 3h2v2H3zM13 3h2v2h-2zM19 9h2v2h-2zM19 19h2v2h-2zM3 19h2v2H3z"/></svg>
+    </button>
+    <button class="ibtn" id="shopToggle" aria-label="Draw shop outline" data-tip="Draw shop outline" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v11h16V9"/><path d="M3 4h18l1 5H2Z"/><path d="M10 20v-6h4v6"/></svg>
+    </button>
     <div class="tool-divider"></div>
-    <button class="ebtn" id="shopToggle">Draw shop outline</button>
-    <button class="ebtn" id="shopClear">Clear all shops</button>
+    <button class="ibtn" id="drawFinish" aria-label="Finish shape" data-tip="Finish shape (Enter)" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>
+    </button>
+    <button class="ibtn" id="drawUndo" aria-label="Undo point" data-tip="Undo point (Esc clears)" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5L4 10l5 5"/><path d="M4 10h10a6 6 0 0 1 0 12h-3"/></svg>
+    </button>
+    <button class="ibtn ibtn--danger" id="drawClear" aria-label="Clear all borders" data-tip="Clear all borders">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15"/><path d="M10 10v7M14 10v7"/></svg>
+    </button>
     <div class="tool-divider"></div>
-    <button class="ebtn ebtn--primary" id="drawExport">Export borders.json</button>
-    <button class="ebtn ebtn--primary" id="shopExport">Export shops.json</button>
-    <p class="hint" id="drawHint">Borders use straight horizontal and vertical lines on the block grid. Click to add corners (Enter, double-click, or a click on the first corner finishes). Draw a shop outline the same way, over the building. Export each file when done, put it in docs/ and push.</p>
+    <button class="ibtn ibtn--primary" id="drawExport" aria-label="Export borders.json" data-tip="Export borders.json">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4"/></svg><b class="ibtn__tag">B</b>
+    </button>
+    <button class="ibtn ibtn--primary" id="shopExport" aria-label="Export shops.json" data-tip="Export shops.json">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4"/></svg><b class="ibtn__tag">S</b>
+    </button>
+    <div class="tool-divider"></div>
+    <button class="ibtn" id="helpToggle" aria-label="How it works" data-tip="How it works" aria-expanded="false" aria-controls="drawHint">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.2-1.5 2.4v.5"/><path class="ibtn__dot" d="M11 18h2v2h-2z"/></svg>
+    </button>
+  </div>
+  <div class="epanel ehelp" id="drawHint" hidden>
+    <h2>How it works</h2>
+    <p class="hint">Borders and shop outlines use straight horizontal and vertical lines on the block grid. Click to add corners. Enter, a double-click or a click on the first corner finishes; Esc clears.</p>
+    <p class="hint">Click a shop to give it an icon and products. Export each file when done, put it in docs/ and push.</p>
   </div>
 
   <div id="borderEditor" class="epanel">
@@ -102,6 +124,26 @@
     <span class="field-label">Owner</span>
     <input class="efield" id="shopOwnerInput" list="rosterList" type="text" placeholder="Player name" autocomplete="off">
     <datalist id="rosterList"></datalist>
+
+    <span class="field-label">Icon</span>
+    <div class="icon-row">
+      <label class="icon-drop" id="shopIconDrop" title="Drop a 16x16 PNG here">
+        <img class="icon-drop__img" id="shopIconPreview" alt="" width="16" height="16" hidden>
+        <span class="icon-drop__empty" id="shopIconEmpty">16×16</span>
+        <input type="file" id="shopIconInput" accept="image/png,image/gif,image/webp" class="sr-only">
+      </label>
+      <div class="icon-row__actions">
+        <button type="button" class="ebtn ebtn--sm" id="shopIconPick">Upload PNG</button>
+        <button type="button" class="ebtn ebtn--sm ebtn--danger" id="shopIconRemove" hidden>Remove</button>
+      </div>
+    </div>
+    <p class="hint" id="shopIconHint">Pixel art, 16×16. Shown on the Shops page and in search, not on the map.</p>
+
+    <span class="field-label">Products</span>
+    <ul class="plines" id="shopProducts"></ul>
+    <button type="button" class="ebtn ebtn--sm" id="shopAddProduct">+ Add product</button>
+    <datalist id="itemList"></datalist>
+
     <label class="toggle-row" id="shopSpoilerRow">
       <input type="checkbox" id="shopSpoilerInput">
       <span>Spoiler wall (fill the shape black)</span>
@@ -430,12 +472,17 @@ const serializeShop = (s) => ({
   ...(s.spoiler ? { spoiler: true } : {}),
   ...(s.owner ? { owner: s.owner } : {}),
   ...(s.added ? { added: s.added } : {}),
+  ...(s.icon ? { icon: s.icon } : {}),
+  ...(s.products && s.products.length ? { products: s.products } : {}),
 });
 
 function addShopLayer(x, z, label, extra = {}) {
   let marker;
   const points = extra.points && extra.points.length >= 3 ? extra.points : null;
-  const shop = { x, z, points, label, owner: extra.owner || '', added: extra.added || '', spoiler: !!extra.spoiler && !!points };
+  const shop = {
+    x, z, points, label, owner: extra.owner || '', added: extra.added || '', spoiler: !!extra.spoiler && !!points,
+    icon: extra.icon || '', products: Array.isArray(extra.products) ? extra.products : [],
+  };
   // owner: the player's Minecraft name; added: when it was placed (drives "new shop" news on the homepage)
   if (points) {
     const ll = pointsToLatLngs(points);
@@ -470,7 +517,7 @@ async function loadShops() {
     try { data = JSON.parse(localStorage.getItem(SHOP_STORAGE_KEY) || '[]'); } catch (e) { data = []; }
   }
 
-  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points, spoiler: s.spoiler });
+  for (const s of data) addShopLayer(s.x, s.z, s.label || '', { owner: s.owner, added: s.added, points: s.points, spoiler: s.spoiler, icon: s.icon, products: s.products });
 }
 
 function exportShops() {
@@ -482,13 +529,6 @@ function exportShops() {
   a.download = 'shops.json';
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function clearAllShops() {
-  for (const s of shops) map.removeLayer(s.marker);
-  shops = [];
-  saveShops();
-  closeShopEditor();
 }
 
 // Close the shape with straight lines only, and drop points that sit on a straight run.
@@ -658,11 +698,127 @@ const shopCancelBtn = document.getElementById('shopCancel');
 
 let editingShop = null;
 
+// --- Shop icon: a 16x16 PNG, stored in shops.json as a data: URL so the export stays one file.
+// A bigger square image that is a whole multiple of 16 (32, 48, 64...) is scaled down pixel for pixel.
+const iconInput = document.getElementById('shopIconInput');
+const iconPreview = document.getElementById('shopIconPreview');
+const iconEmpty = document.getElementById('shopIconEmpty');
+const iconRemove = document.getElementById('shopIconRemove');
+const iconHint = document.getElementById('shopIconHint');
+const iconDrop = document.getElementById('shopIconDrop');
+const ICON_HINT = iconHint.textContent;
+let editingIcon = '';
+
+function showIcon() {
+  iconPreview.hidden = !editingIcon;
+  iconEmpty.hidden = !!editingIcon;
+  iconRemove.hidden = !editingIcon;
+  if (editingIcon) iconPreview.src = editingIcon;
+}
+function iconError(msg) { iconHint.textContent = msg; iconHint.classList.add('hint--error'); }
+function readIcon(file) {
+  if (!file) return;
+  const img = new Image();
+  const src = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(src);
+    const w = img.naturalWidth, h = img.naturalHeight;
+    if (w !== h || w % 16) { iconError(`That image is ${w}×${h}. Use 16×16 (or 32×32, 64×64 and so on).`); return; }
+    const c = document.createElement('canvas');
+    c.width = c.height = 16;
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, 16, 16);
+    editingIcon = c.toDataURL('image/png');
+    iconHint.textContent = w === 16 ? ICON_HINT : `Scaled down from ${w}×${w}, pixel for pixel.`;
+    iconHint.classList.remove('hint--error');
+    showIcon();
+  };
+  img.onerror = () => { URL.revokeObjectURL(src); iconError("That file couldn't be read as an image."); };
+  img.src = src;
+}
+document.getElementById('shopIconPick').addEventListener('click', () => iconInput.click());
+iconInput.addEventListener('change', () => { readIcon(iconInput.files[0]); iconInput.value = ''; });
+iconRemove.addEventListener('click', () => { editingIcon = ''; iconHint.textContent = ICON_HINT; iconHint.classList.remove('hint--error'); showIcon(); });
+iconDrop.addEventListener('dragover', (e) => { e.preventDefault(); iconDrop.classList.add('over'); });
+iconDrop.addEventListener('dragleave', () => iconDrop.classList.remove('over'));
+iconDrop.addEventListener('drop', (e) => { e.preventDefault(); iconDrop.classList.remove('over'); readIcon(e.dataTransfer.files[0]); });
+
+// --- Products: Minecraft items (docs/data/items.json, the game's own 26.3 list), how many, and the price.
+const productsEl = document.getElementById('shopProducts');
+const itemListEl = document.getElementById('itemList');
+let itemDb = null;
+import('./js/shops-core.js').then((m) => m.loadItems()).then((db) => {
+  const open = editingShop ? readProducts() : null;   // the panel was opened before the list arrived
+  itemDb = db;
+  if (!db) return;
+  const frag = document.createDocumentFragment();
+  for (const it of db.items) { const o = document.createElement('option'); o.value = it.name; frag.append(o); }
+  itemListEl.append(frag);
+  if (open) renderProducts(open);
+});
+const itemByName = (txt) => itemDb && itemDb.byName.get(txt.trim().toLowerCase());
+const nameOf = (id) => (itemDb && itemDb.byId.get(id) ? itemDb.byId.get(id).name : (id || '').replaceAll('_', ' '));
+
+function productRow(p) {
+  const li = document.createElement('li');
+  li.className = 'pline';
+  li.innerHTML = `
+    <input class="efield efield--sm pline__item" list="itemList" type="text" placeholder="Item" autocomplete="off" aria-label="Item">
+    <div class="pline__row">
+      <input class="efield efield--sm pline__n" type="number" min="1" max="9999" placeholder="1" aria-label="How many">
+      <span class="pline__for">for</span>
+      <input class="efield efield--sm pline__n" type="number" min="0" max="9999" placeholder="?" aria-label="Price">
+      <input class="efield efield--sm pline__cur" list="itemList" type="text" placeholder="Diamond" autocomplete="off" aria-label="Paid in">
+      <button type="button" class="pline__x" aria-label="Remove product" title="Remove">\u00d7</button>
+    </div>`;
+  const [item, amount, price, cur] = li.querySelectorAll('input');
+  item.value = p.item ? nameOf(p.item) : '';
+  item.dataset.id = p.item || '';
+  amount.value = p.amount || '';
+  price.value = p.price || '';
+  cur.value = p.priceItem && p.priceItem !== 'diamond' ? nameOf(p.priceItem) : '';
+  const check = (inp) => inp.classList.toggle('efield--bad', !!inp.value.trim() && !!itemDb && !itemByName(inp.value));
+  for (const inp of [item, cur]) inp.addEventListener('input', () => check(inp));
+  for (const inp of li.querySelectorAll('input')) inp.addEventListener('keydown', (e) => e.stopPropagation());
+  li.querySelector('.pline__x').addEventListener('click', () => li.remove());
+  return li;
+}
+function renderProducts(list) { productsEl.replaceChildren(...list.map(productRow)); }
+/** The rows as product objects. Rows with an item that isn't a Minecraft item keep what they had (or are dropped if new). */
+function readProducts() {
+  const out = [];
+  for (const li of productsEl.children) {
+    const [item, amount, price, cur] = li.querySelectorAll('input');
+    const it = itemByName(item.value);
+    const id = it ? it.id : (!itemDb ? item.dataset.id : '');
+    if (!id) continue;
+    const p = { item: id, amount: Math.max(1, parseInt(amount.value, 10) || 1) };
+    const pr = parseInt(price.value, 10);
+    if (pr > 0) {
+      p.price = pr;
+      const c = cur.value.trim() ? itemByName(cur.value) : null;
+      p.priceItem = c ? c.id : 'diamond';
+    }
+    out.push(p);
+  }
+  return out;
+}
+document.getElementById('shopAddProduct').addEventListener('click', () => {
+  const li = productRow({});
+  productsEl.append(li);
+  li.querySelector('input').focus();
+});
+
 function openShopEditor(shop) {
   closeBorderEditor();
   editingShop = shop;
   shopLabelInput.value = shop.label || '';
   shopOwnerInput.value = shop.owner || '';
+  editingIcon = shop.icon || '';
+  iconHint.textContent = ICON_HINT; iconHint.classList.remove('hint--error');
+  showIcon();
+  renderProducts(shop.products || []);
   shopSpoilerInput.checked = !!shop.spoiler;
   shopSpoilerRow.hidden = !shop.points; // only outlines can be filled
   shopEditorEl.classList.add('open');
@@ -677,9 +833,14 @@ function closeShopEditor() {
 
 shopSaveBtn.addEventListener('click', () => {
   if (!editingShop) return;
+  // An item that isn't a Minecraft item would be dropped on save; point at it instead.
+  const bad = [...productsEl.querySelectorAll('.pline input[list]')].find((i) => i.value.trim() && itemDb && !itemByName(i.value));
+  if (bad) { bad.classList.add('efield--bad'); bad.focus(); bad.select(); return; }
   editingShop.label = shopLabelInput.value.trim();
   editingShop.owner = matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim();
   editingShop.spoiler = !!editingShop.points && shopSpoilerInput.checked;
+  editingShop.icon = editingIcon;
+  editingShop.products = readProducts();
   if (editingShop.shape) {
     // Keep the class on the layer's options too, so it is right if the layer is added to the map later.
     const cls = editingShop.spoiler ? 'shop-outline shop-outline--spoiler border-line' : 'shop-outline border-line';
@@ -720,10 +881,13 @@ function setDrawMode(on, kind = 'border') {
   if (on && drawMode && kind !== drawKind) finishActiveLine(); // switching tools: keep what was drawn
   drawMode = on;
   if (on) drawKind = kind;
-  drawToggleBtn.classList.toggle('active', on && drawKind === 'border');
-  drawToggleBtn.textContent = on && drawKind === 'border' ? 'Drawing…' : 'Draw border';
-  shopToggleBtn.classList.toggle('active', on && drawKind === 'shop');
-  shopToggleBtn.textContent = on && drawKind === 'shop' ? 'Drawing shop…' : 'Draw shop outline';
+  const b = on && drawKind === 'border', sh = on && drawKind === 'shop';
+  drawToggleBtn.classList.toggle('active', b);
+  drawToggleBtn.setAttribute('aria-pressed', String(b));
+  drawToggleBtn.dataset.tip = b ? 'Drawing border, click to stop' : 'Draw border';
+  shopToggleBtn.classList.toggle('active', sh);
+  shopToggleBtn.setAttribute('aria-pressed', String(sh));
+  shopToggleBtn.dataset.tip = sh ? 'Drawing shop, click to stop' : 'Draw shop outline';
   map.getContainer().classList.toggle('drawing-mode', on);
   if (on) {
     map.doubleClickZoom.disable();
@@ -766,29 +930,32 @@ drawFinishBtn.addEventListener('click', finishActiveLine);
 drawUndoBtn.addEventListener('click', undoPoint);
 shopToggleBtn.addEventListener('click', () => setDrawMode(!(drawMode && drawKind === 'shop'), 'shop'));
 
-// Both "Clear all" buttons need a second click within a few seconds to
-// confirm, so a stray click doesn't wipe out drawn work.
+// "Clear all borders" needs a second click within a few seconds to confirm, so a stray click
+// doesn't wipe out drawn work. The button turns red and its tooltip says so while it is armed.
 function armTwiceConfirm(button, defaultText, confirmText, onConfirm) {
   let armed = false;
   let armTimeout = null;
+  const set = (on) => {
+    armed = on;
+    button.classList.toggle('armed', on);
+    button.dataset.tip = on ? confirmText : defaultText;
+    button.setAttribute('aria-label', on ? confirmText : defaultText);
+  };
   button.addEventListener('click', () => {
-    if (!armed) {
-      armed = true;
-      button.textContent = confirmText;
-      armTimeout = setTimeout(() => {
-        armed = false;
-        button.textContent = defaultText;
-      }, 3000);
-      return;
-    }
+    if (!armed) { set(true); armTimeout = setTimeout(() => set(false), 3000); return; }
     clearTimeout(armTimeout);
-    armed = false;
-    button.textContent = defaultText;
+    set(false);
     onConfirm();
   });
 }
-armTwiceConfirm(drawClearBtn, 'Clear all', 'Click again to confirm', clearAllBorders);
-armTwiceConfirm(document.getElementById('shopClear'), 'Clear all shops', 'Click again to confirm', clearAllShops);
+armTwiceConfirm(drawClearBtn, 'Clear all borders', 'Click again to clear all borders', clearAllBorders);
+
+const helpBtn = document.getElementById('helpToggle'), helpPanel = document.getElementById('drawHint');
+helpBtn.addEventListener('click', () => {
+  helpPanel.hidden = !helpPanel.hidden;
+  helpBtn.setAttribute('aria-expanded', String(!helpPanel.hidden));
+  helpBtn.classList.toggle('active', !helpPanel.hidden);
+});
 
 document.getElementById('drawExport').addEventListener('click', exportBorders);
 document.getElementById('shopExport').addEventListener('click', exportShops);
@@ -831,7 +998,7 @@ function renderSearchResults(query) {
     ? currentResults.map((r, i) => {
         const icon = r.type === 'border'
           ? `<i class="c-${String(r.color).replace('#', '').toLowerCase()}"></i>`
-          : `<img src="assets/shop-icon.png" alt="">`;
+          : (r.ref.icon ? `<img class="shop-icon" src="${r.ref.icon}" alt="">` : `<img src="assets/shop-icon.png" alt="">`);
         return `<li class="sresult" role="option" aria-selected="${i === 0}" data-index="${i}"><span class="sresult__icon">${icon}</span><span>${escapeHtml(r.label)}<small>${r.type === 'border' ? 'Border' : 'Shop'}</small></span></li>`;
       }).join('')
     : '<li class="msearch__empty">No matches</li>';
@@ -842,7 +1009,7 @@ function selectSearchResult(i) {
   const r = currentResults[i];
   if (!r) return;
   if (r.type === 'border') map.fitBounds(r.ref.layer.getBounds(), { maxZoom: DETAIL_ZOOM, padding: [60, 60] });
-  else map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM);
+  else { map.setView(worldToLatLng(r.ref.x, r.ref.z), DETAIL_ZOOM); openShopEditor(r.ref); }
   closeSearch();
 }
 

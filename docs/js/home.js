@@ -2,6 +2,7 @@
 import { loadStats } from './data.js';
 import { el, url, faceEl, playerHref, fmtInt, fmtHours, relTime, fmtDay, hourLabel, widthClass, heightClass } from './ui.js';
 import { pattern } from './pattern.js';
+import { shopIconEl, shopHref } from './shops-core.js';
 import { raceBlock } from './race.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -81,9 +82,10 @@ function featuredCard(it) {
     card.append(el('div', { class: 'news-featured__who' }, faceEl(it.player, 'lg'),
       el('p', {}, el('strong', {}, it.player), ` ${it.verb}. `, el('span', { class: 'small' }, it.earners === 1 ? 'Nobody else has this one yet.' : `${it.earners} players have it.`))));
   } else if (it.kind === 'shop') {
-    card.append(el('div', { class: 'news-featured__who' }, el('span', { class: 'shop-chip' }, el('img', { src: url('assets/shop-icon.png'), alt: '' })),
+    card.append(el('div', { class: 'news-featured__who' }, el('span', { class: 'shop-chip' }, shopIconEl(it.shop)),
       el('p', {}, it.player ? [el('strong', {}, it.player), ' opened a shop. '] : 'A new shop is open. ')));
     card.append(el('a', { class: 'btn', href: findHref(it.title) }, 'Find it on the map'));
+    if ((it.shop.products || []).length) card.append(el('a', { class: 'btn', href: shopHref(it.shop) }, 'What it sells'));
   } else if (it.kind === 'event') {
     if (it.body) card.append(el('p', {}, it.body));
     card.append(countdown(it.at), el('p', { class: 'small' }, whenText(it.at)));
@@ -97,7 +99,7 @@ function featuredCard(it) {
 
 function listItem(it) {
   const visual = it.kind === 'shop'
-    ? el('span', { class: 'shop-chip' }, el('img', { src: url('assets/shop-icon.png'), alt: '' }))
+    ? el('span', { class: 'shop-chip' }, shopIconEl(it.shop))
     : it.player ? faceEl(it.player) : el('span', { class: 'shop-chip', 'aria-hidden': 'true' });
   const title = it.kind === 'achievement' ? `${it.player} ${it.verb}: ${it.title}` : it.title;
   const meta = it.kind === 'event' ? whenText(it.at) : `${KINDS[it.kind].label}, ${relTime(it.at)}`;
