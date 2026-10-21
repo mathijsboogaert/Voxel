@@ -12,19 +12,19 @@ from PIL import Image
 out = os.path.join(os.path.dirname(__file__), '..', 'docs', 'assets', 'icons', 'nav')
 K = '#000000'
 ICONS = {
-    # Treasure map: parchment with a red X.
+    # Map: the filled map item, a parchment frame around blue water and green land.
     'map': (
         [
             'aaaaaaaa',
-            'axppppxa',
-            'apxppxpa',
-            'appxxppa',
-            'appxxppa',
-            'apxppxpa',
-            'axppppxa',
+            'appppppa',
+            'aplbbgpa',
+            'apGlbgpa',
+            'apgbbGpa',
+            'apbbglpa',
+            'appppppa',
             'aaaaaaaa',
         ],
-        {'a': K, 'p': '#d9c08a', 'x': '#b0302a'},
+        {'a': K, 'p': '#f2e2c2', 'b': '#4b56f6', 'l': '#88a948', 'g': '#6f8b3a', 'G': '#1a7613'},
     ),
     # Steve: hair, eyes white and blue, nose, beard.
     'steve': (
@@ -40,19 +40,19 @@ ICONS = {
         ],
         {'a': K, 'h': '#4a3423', 's': '#b4846d', 'w': '#f0f0f0', 'b': '#523d89', 'n': '#8a5b45', 'm': '#5e3a26'},
     ),
-    # Diamond: a cut gem with a light top left and a darker point.
+    # Diamond: the diamond item's rounded gem, a white glint across the top and a dark facet at the bottom.
     'diamond': (
         [
-            '........',
-            '.aaaaaa.',
-            'awllllma',
-            'allllmma',
-            '.allmma.',
-            '..amda..',
-            '...aa...',
-            '........',
+            '..aaaa..',
+            '.aWWela.',
+            'aWeWllma',
+            'aellWlma',
+            'allmmlda',
+            'almddmda',
+            '.amdDda.',
+            '..aaaa..',
         ],
-        {'a': K, 'w': '#e8fffb', 'l': '#6fd6c8', 'm': '#2fa89a', 'd': '#1f6f66'},
+        {'a': K, 'W': '#ffffff', 'e': '#a1fbe8', 'l': '#4aedd9', 'm': '#20c5b5', 'd': '#1aaaa7', 'D': '#11727a'},
     ),
     # Book and quill: a closed book with a white feather.
     'writable-book': (
