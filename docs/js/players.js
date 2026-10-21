@@ -1,6 +1,6 @@
 // Players list: everyone with a face, playtime and when they were last on, most playtime first.
-import { loadStats } from './data.js';
-import { el, byId as $, faceEl, playerHref, fmtHours, bar, lastSeen } from './ui.js';
+import { loadStats } from './data.js?v=fafad71b';
+import { el, byId as $, faceEl, playerHref, fmtHours, bar, lastSeen } from './ui.js?v=28a5c906';
 
 let query = '';
 

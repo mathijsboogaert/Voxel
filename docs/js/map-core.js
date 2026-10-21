@@ -2,8 +2,8 @@
 // Leaflet showing the explored world from pre-rendered tiles (tools/world/render_world.py),
 // plus the borders, shops and spawn marker from the site's JSON files.
 // Leaflet itself is loaded by the page as a global (window.L).
-import { url, el, svgEl, getJSON, byId, SEED, SPAWN } from './ui.js';
-import { shopHref } from './shops-core.js';
+import { url, el, svgEl, getJSON, byId, SEED, SPAWN } from './ui.js?v=28a5c906';
+import { shopHref } from './shops-core.js?v=45dd4b43';
 
 // 1 map unit = 4096 blocks. At NATIVE_ZOOM that is exactly one pixel per block; every
 // zoom level out doubles blocks per pixel. Latitude is -Z so north stays up.
@@ -275,7 +275,7 @@ export async function createWorldMap(element, opts = {}) {
   });
 
   const icon = L.icon({
-    iconUrl: url('assets/shop-icon.png'),
+    iconUrl: url('assets/shop-icon.png?v=e30686ab'),
     className: 'shop-marker-icon',
     iconSize: [shopSize, shopSize],
     iconAnchor: [shopSize / 2, shopSize / 2],

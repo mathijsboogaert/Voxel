@@ -1,5 +1,5 @@
 // Homepage: news, map preview, stats overview and player faces.
-import { loadStats } from './data.js';
+import { loadStats } from './data.js?v=fafad71b';
 import {
   el,
   url,
@@ -12,11 +12,11 @@ import {
   hourLabel,
   bar,
   getJSON,
-} from './ui.js';
-import { pattern } from './pattern.js';
-import { shopIconEl, shopHref } from './shops-core.js';
-import { raceBlock } from './race.js';
-import { statTile, hourChart } from './widgets.js';
+} from './ui.js?v=28a5c906';
+import { pattern } from './pattern.js?v=b453333a';
+import { shopIconEl, shopHref } from './shops-core.js?v=45dd4b43';
+import { raceBlock } from './race.js?v=811a9c3b';
+import { statTile, hourChart } from './widgets.js?v=5044ce61';
 
 const $ = (sel) => document.querySelector(sel);
 const DAY = 864e5;
@@ -343,7 +343,7 @@ function initPreview() {
     if (started) return;
     started = true;
     try {
-      const { createWorldMap } = await import('./map-core.js');
+      const { createWorldMap } = await import('./map-core.js?v=90249fc6');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,

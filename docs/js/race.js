@@ -1,7 +1,7 @@
 // The advancement race: running advancement points over time, a step at every advancement.
 // Used on the homepage (the top five) and on player pages (this player highlighted against the leaders).
 // Lines differ in colour and in pattern so they don't rely on hue alone.
-import { el, svgEl as sv, faceEl, fmtInt } from './ui.js';
+import { el, svgEl as sv, faceEl, fmtInt } from './ui.js?v=28a5c906';
 
 const DAY = 864e5;
 const dayLabel = new Intl.DateTimeFormat('en-GB', {

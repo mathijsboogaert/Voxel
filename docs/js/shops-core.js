@@ -1,7 +1,7 @@
 // Shops and the items they sell: the item list (docs/data/items.json, built by tools/build_items.py from the
 // game's own 26.3 data), each shop's icon, product lines, and the item search that also finds shops selling
 // the parts of what you want (looking for planks finds the shop with logs).
-import { url, el } from './ui.js';
+import { url, el } from './ui.js?v=28a5c906';
 
 let itemsPromise = null;
 
@@ -31,7 +31,7 @@ export function shopIconEl(shop) {
   const own = !!(shop && shop.icon);
   return el('img', {
     class: own ? 'shop-icon' : 'shop-icon shop-icon--default',
-    src: own ? shop.icon : url('assets/shop-icon.png'),
+    src: own ? shop.icon : url('assets/shop-icon.png?v=e30686ab'),
     alt: '',
     width: 16,
     height: 16,
@@ -67,7 +67,13 @@ export function priceEl(db, p) {
     { class: 'price', title: label },
     el('span', { class: 'sr-only' }, label),
     el('span', { 'aria-hidden': 'true' }, String(p.price)),
-    el('img', { class: 'price__icon', src: url('assets/icons/diamond.png'), alt: '', width: 16, height: 16 }),
+    el('img', {
+      class: 'price__icon',
+      src: url('assets/icons/diamond.png?v=fd11635e'),
+      alt: '',
+      width: 16,
+      height: 16,
+    }),
   );
 }
 

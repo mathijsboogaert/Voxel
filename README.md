@@ -68,6 +68,11 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 Code style: `.prettierrc.json` (JavaScript, CSS, HTML), `ruff.toml` (Python) and `.editorconfig`. Run `npx prettier --write docs` and
 `ruff format tools && ruff check tools` before committing.
 
+**Versions in links.** Every link to a stylesheet, script or image carries a version (`site.css?v=1a2b3c4d`), a hash of the
+file. GitHub Pages lets browsers keep files for 10 minutes; without versions a browser can mix a new page with an old
+stylesheet or icon. After changing anything in `docs/` (and after formatting), run `python3 tools/stamp_versions.py`.
+It only touches links whose file changed, and running it twice changes nothing.
+
 ## Data files
 
 | File | Written by | Holds |

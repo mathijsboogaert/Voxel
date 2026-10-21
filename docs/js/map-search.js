@@ -1,6 +1,6 @@
 // The search box over a full-screen map (map page and editor): opens from #btn-search,
 // lists results as you type, and picks one with a click, Enter or the arrow keys.
-import { el, byId } from './ui.js';
+import { el, byId } from './ui.js?v=28a5c906';
 
 /**
  * mapSearch({ search, row, choose })

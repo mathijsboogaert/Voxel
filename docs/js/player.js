@@ -1,9 +1,9 @@
 // One player's page: face, status, a few numbers, when they play, who they play with,
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
-import { loadStats } from './data.js';
-import { raceBlock } from './race.js';
-import { shopIconEl, shopHref } from './shops-core.js';
-import { statTile, hourChart } from './widgets.js';
+import { loadStats } from './data.js?v=fafad71b';
+import { raceBlock } from './race.js?v=811a9c3b';
+import { shopIconEl, shopHref } from './shops-core.js?v=45dd4b43';
+import { statTile, hourChart } from './widgets.js?v=5044ce61';
 import {
   el,
   svgEl,
@@ -18,7 +18,7 @@ import {
   hourLabel,
   bar,
   lastSeen,
-} from './ui.js';
+} from './ui.js?v=28a5c906';
 
 const name = new URLSearchParams(location.search).get('name') || '';
 

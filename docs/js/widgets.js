@@ -1,5 +1,5 @@
 // Small building blocks shared by the homepage and the player page.
-import { el, hourLabel, columns } from './ui.js';
+import { el, hourLabel, columns } from './ui.js?v=28a5c906';
 
 /** A stat tile: a big number, what it counts, and an optional extra line (text or an element). */
 export function statTile(num, label, extra) {

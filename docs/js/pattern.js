@@ -4,7 +4,7 @@
 // come out the same thickness (outlining each cell separately doubled the lines between cells).
 // Decorative only: callers put it where no text sits on top of it.
 
-import { svgEl } from './ui.js';
+import { svgEl } from './ui.js?v=28a5c906';
 
 const CELL = 64,
   STROKE = 4;

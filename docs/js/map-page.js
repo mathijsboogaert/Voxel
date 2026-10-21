@@ -9,10 +9,10 @@ import {
   blocksPerPixel,
   DETAIL_ZOOM,
   DEFAULT_ZOOM,
-} from './map-core.js';
-import { el, byId, faceEl, playerHref, colorClass, getJSON, SPAWN } from './ui.js';
-import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js';
-import { mapSearch } from './map-search.js';
+} from './map-core.js?v=90249fc6';
+import { el, byId, faceEl, playerHref, colorClass, getJSON, SPAWN } from './ui.js?v=28a5c906';
+import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=45dd4b43';
+import { mapSearch } from './map-search.js?v=277ac403';
 
 const params = new URLSearchParams(location.search);
 const center =

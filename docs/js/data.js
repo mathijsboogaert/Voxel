@@ -1,7 +1,7 @@
 // Loads the three CSVs the stats job builds from the server logs and turns them into the
 // few numbers the site shows. Plain JS, no libraries. The calculations are ports of the
 // original stats dashboard so the numbers match what it showed.
-import { url, parseCSV, getJSON } from './ui.js';
+import { url, parseCSV, getJSON } from './ui.js?v=28a5c906';
 
 // Days before this were testing. Everything below counts from here.
 export const LAUNCH = '2026-10-01';

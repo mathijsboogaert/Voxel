@@ -10,10 +10,10 @@ import {
   latLngToWorld,
   blocksPerPixel,
   DETAIL_ZOOM,
-} from './map-core.js';
-import { el, byId, url, getJSON, colorClass, SEED } from './ui.js';
-import { loadItems, shopIconEl } from './shops-core.js';
-import { mapSearch } from './map-search.js';
+} from './map-core.js?v=90249fc6';
+import { el, byId, url, getJSON, colorClass, SEED } from './ui.js?v=28a5c906';
+import { loadItems, shopIconEl } from './shops-core.js?v=45dd4b43';
+import { mapSearch } from './map-search.js?v=277ac403';
 
 const { map } = await createBaseMap(byId('map'));
 wireMapButtons(map);
@@ -477,7 +477,7 @@ let shops = []; // {x, z, points, label, owner, added, spoiler, icon, kind, prod
 
 const outlineClass = (spoiler) => `shop-outline border-line${spoiler ? ' shop-outline--spoiler' : ''}`;
 const pointIcon = L.icon({
-  iconUrl: url('assets/shop-icon.png'),
+  iconUrl: url('assets/shop-icon.png?v=e30686ab'),
   className: 'shop-marker-icon',
   iconSize: [28, 28],
   iconAnchor: [14, 14],

@@ -1,7 +1,7 @@
 // Shops page: every shop with its icon, owner, place and what it sells for how much.
 // The search box takes an item or a shop name and also finds shops that sell the parts of an item
 // (see findShops in shops-core.js). Deep link: shops/#shop-slug scrolls to one shop, shops/?q=... searches.
-import { el, byId, url, getJSON, faceEl, playerHref, fmtInt } from './ui.js';
+import { el, byId, url, getJSON, faceEl, playerHref, fmtInt } from './ui.js?v=28a5c906';
 import {
   loadItems,
   findShops,
@@ -11,7 +11,7 @@ import {
   priceEl,
   shopSlug,
   isService,
-} from './shops-core.js';
+} from './shops-core.js?v=45dd4b43';
 
 const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
 const plural = (n, word) => `${n} ${n === 1 ? word : word + 's'}`;
