@@ -343,7 +343,7 @@ function initPreview() {
     if (started) return;
     started = true;
     try {
-      const { createWorldMap } = await import('./map-core.js?v=844e802b');
+      const { createWorldMap } = await import('./map-core.js?v=dc1eb255');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,

@@ -26,6 +26,7 @@
   image-rendering: pixelated;
 }
 .shop-popup .leaflet-popup-content-wrapper {
+  padding: 0;
   background: var(--paper);
   color: var(--ink);
   border: var(--stroke-2) solid var(--line);
@@ -33,12 +34,39 @@
   box-shadow: none;
 }
 .shop-popup .leaflet-popup-content {
-  margin: 8px 12px;
+  width: auto !important;
+  margin: 0;
   font: 600 14px/20px var(--font-sans);
 }
-.shop-popup__link {
-  display: block;
-  margin-top: 2px;
+/* The shop's icon fills the popup's height on the left (48px, 3x its pixels), a line, then the text. */
+.shop-popup__body {
+  display: flex;
+  align-items: stretch;
+}
+.shop-popup__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-right: var(--stroke-2) solid var(--line);
+}
+.shop-popup__icon .shop-icon {
+  width: 48px;
+  height: 48px;
+}
+.shop-popup__icon .shop-icon--default {
+  width: 32px;
+  height: 32px;
+}
+.shop-popup__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+.shop-popup .shop-popup__link {
   font-weight: 600;
   color: var(--teal-text, var(--teal));
 }

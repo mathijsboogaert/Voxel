@@ -3,7 +3,7 @@
 // plus the borders, shops and spawn marker from the site's JSON files.
 // Leaflet itself is loaded by the page as a global (window.L).
 import { url, el, svgEl, getJSON, byId, SEED, SPAWN } from './ui.js?v=28a5c906';
-import { shopHref, isOpen } from './shops-core.js?v=b4c787b7';
+import { shopHref, shopIconEl, isOpen } from './shops-core.js?v=b4c787b7';
 
 // 1 map unit = 4096 blocks. At NATIVE_ZOOM that is exactly one pixel per block; every
 // zoom level out doubles blocks per pixel. Latitude is -Z so north stays up.
@@ -229,15 +229,20 @@ export async function loadBiomeLookup() {
 
 /* ---- The world map: base map plus borders and shops ----------------------------------- */
 
-/** A shop's popup: its name, and a link to what it sells when it has products listed. */
+/** A shop's popup: its icon over the full height on the left; its name, and a link to what it sells, beside it. */
 const shopPopup = (s) =>
   el(
-    'span',
-    {},
-    s.label,
-    isOpen(s) && (s.products || []).length
-      ? el('a', { class: 'shop-popup__link', href: shopHref(s) }, 'What it sells')
-      : null,
+    'div',
+    { class: 'shop-popup__body' },
+    el('span', { class: 'shop-popup__icon' }, shopIconEl(s)),
+    el(
+      'span',
+      { class: 'shop-popup__text' },
+      el('span', {}, s.label),
+      isOpen(s) && (s.products || []).length
+        ? el('a', { class: 'shop-popup__link', href: shopHref(s) }, 'What it sells')
+        : null,
+    ),
   );
 
 /**

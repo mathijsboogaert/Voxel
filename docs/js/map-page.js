@@ -9,7 +9,7 @@ import {
   blocksPerPixel,
   DETAIL_ZOOM,
   DEFAULT_ZOOM,
-} from './map-core.js?v=844e802b';
+} from './map-core.js?v=dc1eb255';
 import { el, byId, faceEl, playerHref, colorClass, getJSON, SPAWN } from './ui.js?v=28a5c906';
 import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=b4c787b7';
 import { mapSearch } from './map-search.js?v=277ac403';
