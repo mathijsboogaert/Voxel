@@ -137,6 +137,12 @@ played time, shows it as the light-teal part of "Time online" on the player page
 config is elsewhere; only that block is touched, and the old file is kept as `config.yml.voxel-bak`). The plugin reads its config only on
 `/playtimeboard reload`, so add a panel schedule (Schedules, new, every hour at minute 55, task "Send command": `playtimeboard reload`).
 
+## Player labels
+
+Labels like Night owl or Marathon are earned by clearing a bar, so any number of players can hold the same one. The bars and the cap on how many labels one player can show
+(`MAX_LABELS`, currently 3, the ones they clear by the widest margin) are in `LABELS` near the top of the labels section of `docs/js/data.js`. Each label's icon is
+`docs/assets/badges/<name>.svg`.
+
 ## Players, faces and places
 
 A player page shows their base and shop when the map data says who owns them. In the editor, click a border and add its

@@ -208,20 +208,29 @@ export function compute({ sessions, hourly, events, roster, meta, adjust = {}, a
   const byHours = [...all].sort((a, b) => b.minutes - a.minutes);
   byHours.forEach((p, i) => { p.rank = i + 1; });
 
-  // Badges: one winner each, same rules as the original dashboard.
-  // Ties go to whoever has played more, as the original did (byHours is already in that order).
-  const best = (k, min = 0) => byHours.filter((p) => p.hours >= min).sort((a, b) => b[k] - a[k])[0];
+  // Labels: anyone who clears a label's bar gets it, so there is no limit on how many people hold one. Edit the bars here.
+  // `score` is how far past the bar the player is (1 = just clears it). A player holds at most MAX_LABELS, the ones
+  // they clear by the widest margin. `minHours` stops a few hours from counting as a habit (all solo, or twenty
+  // messages in one short visit).
+  const MAX_LABELS = 3;
+  const LABELS = [
+    { badge: 'Night owl', score: (p) => p.nightMin / 60, label: (p) => `${r1(p.nightMin / 60)} h between 01:00 and 05:00` },
+    { badge: 'Early bird', score: (p) => p.earlyMin / 60, label: (p) => `${r1(p.earlyMin / 60)} h between 05:00 and 09:00` },
+    { badge: 'Marathon', score: (p) => p.longestMin / 240, label: (p) => `${Math.floor(p.longestMin / 60)} h ${Math.round(p.longestMin % 60)} min in one go` },
+    { badge: 'On a streak', score: (p) => p.streak / 5, label: (p) => `${p.streak} days in a row` },
+    { badge: 'Regular', score: (p) => p.days / 7, label: (p) => `online on ${p.days} different days` },
+    { badge: 'Weekend warrior', minHours: 5, score: (p) => p.weekendShare / 0.5, label: (p) => `${Math.round(p.weekendShare * 100)}% of their time on Sat and Sun` },
+    { badge: 'Social butterfly', score: (p) => p.partners / 10, label: (p) => `played with ${p.partners} different people` },
+    { badge: 'Lone wolf', minHours: 5, score: (p) => p.soloShare / 0.3, label: (p) => `${Math.round(p.soloShare * 100)}% of their time on their own` },
+    { badge: 'Chatterbox', minHours: 3, score: (p) => p.chatPerHour / 7, label: (p) => `${r1(p.chatPerHour)} messages per hour played` },
+  ];
   const badges = [];
-  const give = (badge, p, label) => p && badges.push({ badge, name: p.name, label });
-  let b = best('nightMin'); give('Night owl', b, b && `${r1(b.nightMin / 60)} h between 01:00 and 05:00`);
-  b = best('earlyMin'); give('Early bird', b, b && `${r1(b.earlyMin / 60)} h between 05:00 and 09:00`);
-  b = best('longestMin'); give('Marathon', b, b && `${Math.floor(b.longestMin / 60)} h ${Math.round(b.longestMin % 60)} min in one go`);
-  b = best('streak'); give('On a streak', b, b && `${b.streak} days in a row`);
-  b = best('days'); give('Regular', b, b && `online on ${b.days} different days`);
-  b = best('weekendShare', 5); give('Weekend warrior', b, b && `${Math.round(b.weekendShare * 100)}% of their time on Sat and Sun`);
-  b = best('partners'); give('Social butterfly', b, b && `played with ${b.partners} different people`);
-  b = best('soloShare', 5); give('Lone wolf', b, b && `${Math.round(b.soloShare * 100)}% of their time on their own`);
-  b = best('chatPerHour', 3); give('Chatterbox', b, b && `${r1(b.chatPerHour)} messages per hour played`);
+  for (const p of byHours) {
+    LABELS.filter((l) => p.hours >= (l.minHours || 0) && l.score(p) >= 1)
+      .sort((a, b) => b.score(p) - a.score(p))
+      .slice(0, MAX_LABELS)
+      .forEach((l) => badges.push({ badge: l.badge, name: p.name, label: l.label(p) }));
+  }
   for (const p of all) p.badges = badges.filter((x) => x.name === p.name).map((x) => x.badge);
 
   // Server-wide numbers.
