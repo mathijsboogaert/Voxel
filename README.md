@@ -45,7 +45,7 @@ and follows the visitor's light or dark setting.
   pattern fills are named classes too (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in
   the CSS and it changes everywhere.
 - `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
-- `docs/assets/icons/`: Minecraft's own 26.3 textures (from misode/mcmeta): the menu icons (the village marker from maps for Home, the filled map, Steve's face with his hat layer, the diamond, and the book and quill for the editor) and the diamond used for prices. They are 8 or 16 pixels and always shown at a whole multiple so the pixels stay square.
+- `docs/assets/icons/`: the diamond used for prices (Minecraft's own 26.3 texture, from misode/mcmeta). `icons/nav/` holds the menu icons: 8x8 pixel art in the style of the game's village map marker, which is the Home icon itself. The other four (treasure map, Steve, diamond, book and quill for the editor) are drawn by `tools/draw_nav_icons.py`; change a grid there and run it to redraw them. All are shown at a whole multiple so the pixels stay square.
 - `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
 - Player heads are shown square (to keep the pixel grid) with `image-rendering: pixelated`. The guide lists round corners for avatars, but square heads suit Minecraft's grid; change `.face` in `brand.css` if you prefer round.
 

@@ -82,8 +82,8 @@ main > .wrap {
   display: block;
 }
 
-/* The menu is Minecraft textures (assets/icons): village, map, Steve, diamond. They are 8 or 16 pixels,
-   shown at 32px (4x or 2x) so every pixel stays square. The name is there for screen readers and as a tooltip. */
+/* The menu icons (assets/icons/nav) are 8x8 pixel art in the style of the game's village map marker; they are
+   shown at 32px (4x) so every pixel stays square. The name is there for screen readers and as a tooltip. */
 .nav {
   display: flex;
   gap: var(--space-1);
