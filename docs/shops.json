@@ -100,7 +100,7 @@
   {
     "x": -3,
     "z": 187,
-    "label": "Angela's Deepslate and Stuff",
+    "label": "Cheapslate",
     "points": [
       {
         "x": -8,
@@ -121,6 +121,7 @@
     ],
     "owner": "EmrysPendragon",
     "added": "2026-10-18T14:39:16.729Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAB+klEQVQ4EXVTTUsbURQ9T0bMGDV+RIgfwaCjiCFtBaGgq/4B11l14V+QLtofIEgVpBC601/gUl3qwoUb20VpqUXMFI3VOFjQjCmkNs650xvThL7Fu+/deefce857YzKZTBXBKJfLDLBtW+L/9o1nrHg8XgN4nod0Oi37m9IdujraZa0Tc2X/Fna0UyLPW1rJ9309h+2LE0hbJcAEWa5nTLT2/dor1tYWV/XgrctjOJvvUTlyUbnyYIxBS38fDl+/xeydi1QigiOM1SQb9YBE7GZicgr7pQtUCo9VUitvUA1aWdhaxcbOOWKDoUxKMI7jSLck4FATuVZ54703cN/lUC3+hPtqGcP3FBYOk81mhUBNY9RBwyL+Z6QGbOx+uAJyayIn/3IRT/sSIr2FAHVXI4E0KuJ/wovpHgG3do/h++IS7oue8ksUE+uvRr/2/DnBSKId69un6B56EqZ/3Yqp3NB4SrS+ff0S6g4MYYIeDNuXUpng322D/9yS1R8TMvXHIiAafbzjoQA8ElwVwc/m5kWePqjjwwO0jY8KQTKZlIJyC3yNbCmsHAvABQw4z+Vg43RwlhcDmSdGCLRtVt776DWBtd16Mn18YmK9ZrrNB8KhnuiaUd+JksrPlC+cI/+j1FSZROoPozpP/UoqJtp/9SqrfG2YtGVN69kHukcQP1uuMCIAAAAASUVORK5CYII=",
     "products": [
       {
         "item": "cobbled_deepslate",
@@ -251,6 +252,7 @@
     ],
     "owner": "Roefus",
     "added": "2026-10-18T14:43:16.649Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAAjUlEQVQ4EWNgGNTg17uz/0EYnyMZsUni0sQmZIyhHkUAl0Z0S5ANghtArGaYYciGwMQYQIYsnFoC9jOygTA2SA7GhmligjHIpSk2gAWfzYkK/HijEKQXrwE+zRX4zAfLURwLFIcB2AUTNkdj9eu1HcxgZ2p5/MXpFUZCmmE6cRmC1Qswm2GaQTQ2MZA4ALULPNPclZBxAAAAAElFTkSuQmCC",
     "products": [
       {
         "service": "Legal action (lawsuits)"
@@ -531,5 +533,119 @@
         "priceItem": "diamond"
       }
     ]
+  },
+  {
+    "x": -76,
+    "z": 248,
+    "label": "WIP",
+    "points": [
+      {
+        "x": -93,
+        "z": 235
+      },
+      {
+        "x": -93,
+        "z": 261
+      },
+      {
+        "x": -59,
+        "z": 261
+      },
+      {
+        "x": -59,
+        "z": 246
+      },
+      {
+        "x": -60,
+        "z": 246
+      },
+      {
+        "x": -60,
+        "z": 245
+      },
+      {
+        "x": -61,
+        "z": 245
+      },
+      {
+        "x": -61,
+        "z": 244
+      },
+      {
+        "x": -62,
+        "z": 244
+      },
+      {
+        "x": -62,
+        "z": 243
+      },
+      {
+        "x": -63,
+        "z": 243
+      },
+      {
+        "x": -63,
+        "z": 242
+      },
+      {
+        "x": -64,
+        "z": 242
+      },
+      {
+        "x": -64,
+        "z": 241
+      },
+      {
+        "x": -65,
+        "z": 241
+      },
+      {
+        "x": -65,
+        "z": 240
+      },
+      {
+        "x": -66,
+        "z": 240
+      },
+      {
+        "x": -66,
+        "z": 239
+      },
+      {
+        "x": -67,
+        "z": 239
+      },
+      {
+        "x": -67,
+        "z": 238
+      },
+      {
+        "x": -68,
+        "z": 238
+      },
+      {
+        "x": -68,
+        "z": 237
+      },
+      {
+        "x": -69,
+        "z": 237
+      },
+      {
+        "x": -69,
+        "z": 236
+      },
+      {
+        "x": -70,
+        "z": 236
+      },
+      {
+        "x": -70,
+        "z": 235
+      }
+    ],
+    "spoiler": true,
+    "owner": "JayGoGamer",
+    "added": "2026-10-22T10:01:37.141Z"
   }
 ]
