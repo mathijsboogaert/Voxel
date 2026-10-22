@@ -207,14 +207,16 @@ The map shows the real, built world, drawn from the server's region files, not t
 that has been explored is on the map; builds are readable close to where people live.
 
 **It updates itself every night.** The `Update map` GitHub Action (`.github/workflows/map.yml`) runs at
-04:17 Dutch time. Over the same SFTP connection as the stats it lists `world/region/` on the server,
+04:17 Dutch time. Over the same SFTP connection as the stats it lists the Overworld's region files on the
+server, in **`world/dimensions/minecraft/overworld/region/`** (707 regions, about 4.7 GB, in October 2026), and
 downloads only the region files whose size or time changed since the last render
 (`tools/world/sync_world.py`), redraws those, and commits the tiles that changed. A skipped night is caught
 up the next time, because it compares with the last render, not with the clock. The render cache (every
 region's drawing) is kept between runs with GitHub's Actions cache; the first run, or one after the cache
 expired (7 days without a run), downloads and draws the whole world once. Run it by hand from the Actions
 tab; tick "Download and redraw every region" to start over. If fewer than 95% of the regions can be drawn,
-it stops and leaves the map as it was. Set `SFTP_WORLD_DIR` if the world folder isn't called `world`.
+it stops and leaves the map as it was. That folder is set in `map.yml` (`SFTP_REGION_DIR`); if the server
+ever moves the world, change it there or set a secret with the same name, which wins.
 
 To render by hand from a world backup (the `.tar` from the panel) instead:
 

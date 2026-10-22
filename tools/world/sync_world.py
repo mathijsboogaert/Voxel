@@ -3,8 +3,9 @@
 
 Usage:  python3 tools/world/sync_world.py <folder> [--cache DIR] [--all]
 
-It finds the Overworld's region folder on the server (world/region in older versions; it also looks
-under world/dimensions/ and a few levels deeper, skipping the Nether and the End), writes
+The Voxel server keeps them in world/dimensions/minecraft/overworld/region; the map job sets that as
+SFTP_REGION_DIR. Without it, this looks for the Overworld's region folder (world/region in older versions,
+then under world/dimensions/ and a few levels deeper, skipping the Nether and the End). It writes
 <folder>/listing.json with every region's size and modified time, and downloads into <folder>/region/
 only the regions whose size or time differ from what the last render used (the render cache's
 fingerprints.json). Then:

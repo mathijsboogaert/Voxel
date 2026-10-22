@@ -38,8 +38,10 @@ jobs:
       SFTP_KEY: ${{ secrets.SFTP_KEY }}
       SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT }}
       SFTP_WORLD_DIR: ${{ secrets.SFTP_WORLD_DIR }}
-      SFTP_REGION_DIR: ${{ secrets.SFTP_REGION_DIR }}
-      CACHE_DIR: ${{ github.workspace }}/../voxel-world-cache
+      # Where the Overworld's region files are on the server. A secret with the same name wins.
+      SFTP_REGION_DIR: ${{ secrets.SFTP_REGION_DIR || 'world/dimensions/minecraft/overworld/region' }}
+      # Absolute, without '..': actions/cache refuses to save a path with '..' in it.
+      CACHE_DIR: /home/runner/.cache/voxel-world
     steps:
       - name: Check configuration
         id: cfg
