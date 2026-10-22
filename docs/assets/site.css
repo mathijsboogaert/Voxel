@@ -51,7 +51,7 @@ main > .wrap {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2-5);
   color: var(--ink);
   text-decoration: none;
 }
@@ -61,25 +61,8 @@ main > .wrap {
   height: 36px;
 }
 .brand__name {
-  font: 600 24px/1 var(--font-display);
+  font: 600 var(--text-2xl) / 1 var(--font-display);
   letter-spacing: -0.01em;
-}
-.mark--dark {
-  display: none;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .mark--light {
-    display: none;
-  }
-  :root:not([data-theme='light']) .mark--dark {
-    display: block;
-  }
-}
-:root[data-theme='dark'] .mark--light {
-  display: none;
-}
-:root[data-theme='dark'] .mark--dark {
-  display: block;
 }
 
 /* The menu. Its icons (assets/icons/nav) are 8x8 pixel art in the style of the game's village map
@@ -94,7 +77,9 @@ main > .wrap {
   place-items: center;
   width: 48px;
   height: 48px;
-  margin-right: -12px; /* the lines line up with the page edge, the tap area reaches past it */
+  margin-right: calc(
+    -1 * var(--space-2-5)
+  ); /* the lines line up with the page edge, the tap area reaches past it */
   padding: 0;
   color: var(--ink);
   background: none;
@@ -175,12 +160,12 @@ main > .wrap {
   .nav a {
     gap: var(--space-2);
     min-height: 48px;
-    padding-inline: 12px;
+    padding-inline: var(--space-2-5);
     border-bottom: var(--stroke-4) solid transparent;
   }
   /* The last name ends on the page edge, like the logo starts on it; the tap area reaches past. */
   .nav a:last-child {
-    margin-right: -12px;
+    margin-right: calc(-1 * var(--space-2-5));
   }
   .nav a + a {
     border-top: 0;
@@ -212,10 +197,17 @@ main > .wrap {
 .page-head .small {
   margin-top: var(--space-2);
 }
-.back {
+/* Links that stand on their own get the full 44px tap height of a button. */
+.back,
+.card__foot a,
+.scard__foot a,
+.place__links a,
+.news-item__title a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+}
+.back {
   margin-bottom: var(--space-2);
   font-weight: 600;
 }
@@ -224,13 +216,52 @@ main > .wrap {
   color: var(--ink-muted);
 }
 
+/* Placeholders in the shape of what is loading, so a page doesn't open on an empty space. */
+.skel {
+  display: block;
+  background: var(--paper-sunken);
+  border: var(--stroke-2) solid var(--line-soft);
+  animation: skel-pulse 1.6s ease-in-out infinite;
+}
+@keyframes skel-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+  }
+}
+.skel--pcard {
+  height: 88px;
+}
+.skel--pcell {
+  height: 104px;
+}
+.skel--face {
+  flex: none;
+  width: 96px;
+  height: 96px;
+}
+.skel--title {
+  width: min(240px, 50%);
+  height: 40px;
+}
+.skel--tile {
+  height: 112px;
+}
+.skel--card {
+  height: 280px;
+}
+
 /* ==== 2. Shared pieces ================================================================= */
 
 /* A row of buttons. On a phone each takes the full width, from 560px they sit side by side. */
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-2-5);
 }
 .actions .btn {
   flex: 1 1 100%;
@@ -253,10 +284,10 @@ main > .wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   min-height: 44px;
   padding: 0 var(--space-3);
-  font: 600 14px/20px var(--font-sans);
+  font: 600 var(--text-md) / 1.429 var(--font-sans);
   color: var(--ink);
   background: var(--paper);
   border: 0;
@@ -266,16 +297,10 @@ main > .wrap {
 .chip:hover {
   background: var(--paper-sunken);
 }
-.chip[aria-selected='true'] {
+.chip[aria-selected='true'],
+.chip[aria-pressed='true'] {
   color: var(--on-brand);
   background: var(--teal);
-}
-.chip__count {
-  font-weight: 400;
-  color: var(--ink-muted);
-}
-.chip[aria-selected='true'] .chip__count {
-  color: var(--on-brand);
 }
 
 /* Search box and filters above a list. */
@@ -302,7 +327,7 @@ main > .wrap {
   color: var(--ink);
   border: var(--stroke-2) solid var(--line);
   border-radius: 0;
-  font: 400 16px/24px var(--font-sans);
+  font: 400 var(--text-base) / 1.5 var(--font-sans);
 }
 .field::placeholder {
   color: var(--ink-muted);
@@ -362,7 +387,7 @@ main > .wrap {
 }
 .tile .num {
   display: block;
-  font-size: 34px;
+  font-size: var(--text-4xl);
   line-height: 38px;
 }
 .tile .small {
@@ -413,7 +438,7 @@ main > .wrap {
 .price {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   vertical-align: -2px;
 }
 .price__icon {
@@ -434,7 +459,7 @@ main > .wrap {
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: 6px;
+  gap: var(--space-1-5);
 }
 .pcard__top {
   display: flex;
@@ -511,7 +536,7 @@ main > .wrap {
 .lede {
   max-width: 34ch;
   margin-top: var(--space-3);
-  font-size: 18px;
+  font-size: var(--text-lg);
   line-height: 28px;
 }
 .hero .actions {
@@ -536,7 +561,7 @@ main > .wrap {
 }
 .headline {
   margin: 0;
-  font: 600 28px/34px var(--font-display);
+  font: 600 var(--text-3xl) / 1.214 var(--font-display);
   letter-spacing: -0.01em;
 }
 .news-featured__who {
@@ -560,11 +585,11 @@ main > .wrap {
 }
 .countdown .num {
   display: block;
-  font-size: 28px;
+  font-size: var(--text-3xl);
   line-height: 32px;
 }
 .countdown .label {
-  font-size: 11px;
+  font-size: var(--text-2xs);
 }
 .news-item {
   display: flex;
@@ -640,7 +665,7 @@ main > .wrap {
   display: grid;
   grid-template-columns: 24px 40px minmax(0, 1fr) auto;
   column-gap: var(--space-3);
-  row-gap: 6px;
+  row-gap: var(--space-1-5);
   align-items: center;
   padding-block: var(--space-2);
   color: var(--ink);
@@ -681,7 +706,7 @@ main > .wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1-5);
   min-width: 0;
   text-align: center;
   color: var(--ink);
@@ -689,7 +714,7 @@ main > .wrap {
 }
 .pcell__name {
   max-width: 100%;
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 16px;
   font-weight: 600;
   overflow: hidden;
@@ -708,7 +733,7 @@ main > .wrap {
     max-width: 576px;
   }
   .lede {
-    font-size: 20px;
+    font-size: var(--text-xl);
     line-height: 30px;
   }
   .news-grid {
@@ -787,7 +812,7 @@ main > .wrap {
   gap: var(--space-3);
   min-width: 0;
   padding-right: var(--space-3);
-  font: 600 14px/18px var(--font-sans);
+  font: 600 var(--text-md) / 1.286 var(--font-sans);
   background: var(--paper);
   border: var(--stroke-2) solid var(--line);
 }
@@ -822,9 +847,14 @@ main > .wrap {
 .pcol:empty {
   display: none;
 }
+.adv-card {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
 
 .split__caption {
-  margin-block: 6px var(--space-2);
+  margin-block: var(--space-1-5) var(--space-2);
 }
 .brow {
   display: grid;
@@ -857,7 +887,7 @@ main > .wrap {
   margin-top: var(--space-2);
 }
 .adv-head .num {
-  font-size: 34px;
+  font-size: var(--text-4xl);
   line-height: 38px;
 }
 .places {
@@ -932,8 +962,12 @@ main > .wrap {
   .plist {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .pgrid {
+  .pgrid,
+  .adv-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .adv-card .label.mt-4:first-child {
+    margin-top: 0;
   }
   .badges {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1011,7 +1045,7 @@ main > .wrap {
   margin-bottom: 2px;
 }
 .scard__title h2 {
-  font: 600 20px/26px var(--font-display);
+  font: 600 var(--text-xl) / 1.3 var(--font-display);
   overflow-wrap: anywhere;
 }
 .scard__why {
@@ -1060,21 +1094,14 @@ main > .wrap {
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
-.ptable th {
-  padding-bottom: var(--space-1);
-  text-align: left;
-  font: 600 12px/16px var(--font-sans);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
 .ptable td {
-  padding-block: 6px;
+  padding-block: var(--space-1-5);
   vertical-align: top;
   border-top: var(--stroke-1) solid var(--line-soft);
 }
 /* A group of products (Logs, Tuff blocks): one row that opens to list every kind. */
 .pgroup summary {
+  padding-block: var(--space-1-5); /* with the cell's own padding, a 44px tap height */
   cursor: pointer;
   list-style: none;
 }
@@ -1092,8 +1119,7 @@ main > .wrap {
 .pgroup p {
   margin-top: var(--space-1);
 }
-.ptable td:last-child,
-.ptable th:last-child {
+.ptable td:last-child {
   padding-left: var(--space-3);
   text-align: right;
   white-space: nowrap;
@@ -1132,7 +1158,7 @@ main > .wrap {
   overflow: visible;
 }
 .race text {
-  font: 600 11px var(--font-sans);
+  font: 600 var(--text-2xs) var(--font-sans);
   fill: var(--ink-muted);
 }
 .race__grid {
@@ -1240,33 +1266,4 @@ main > .wrap {
 }
 .pad-block-5 {
   padding-block: var(--space-5);
-}
-
-/* Border colours as small dots (map search, editor swatches): the editor's palette. */
-.c-ff4d4f {
-  background: #ff4d4f;
-}
-.c-ffa94d {
-  background: #ffa94d;
-}
-.c-ffd43b {
-  background: #ffd43b;
-}
-.c-69db7c {
-  background: #69db7c;
-}
-.c-38d9a9 {
-  background: #38d9a9;
-}
-.c-4dabf7 {
-  background: #4dabf7;
-}
-.c-748ffc {
-  background: #748ffc;
-}
-.c-e599f7 {
-  background: #e599f7;
-}
-.c-ffffff {
-  background: #ffffff;
 }

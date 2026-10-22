@@ -23,7 +23,9 @@
   --focus: #1b6a61;
 
   --space-1: 4px;
+  --space-1-5: 6px;
   --space-2: 8px;
+  --space-2-5: 12px;
   --space-3: 16px;
   --space-4: 24px;
   --space-5: 40px;
@@ -33,12 +35,25 @@
   --stroke-2: 2px;
   --stroke-4: 4px;
 
+  /* Type sizes in rem, so they follow the reader's own font size setting. */
+  --text-2xs: 0.6875rem; /* 11px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-md: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.75rem; /* 28px */
+  --text-4xl: 2.125rem; /* 34px */
+
   --font-display: 'Fraunces', Georgia, serif;
   --font-sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
+/* Dark mode follows the device setting. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
+  :root {
     color-scheme: dark;
     --paper: #16120f;
     --paper-sunken: #221c17;
@@ -52,20 +67,6 @@
     --on-action: #16120f;
     --focus: #5cc2b4;
   }
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --paper: #16120f;
-  --paper-sunken: #221c17;
-  --ink: #f5ede0;
-  --ink-muted: #b3a796;
-  --line: #f5ede0;
-  --line-soft: #3d342c;
-  --teal-text: #5cc2b4;
-  --rust-text: #ff9f3a;
-  --action: #ff9f3a;
-  --on-action: #16120f;
-  --focus: #5cc2b4;
 }
 
 /* ---- Base ---------------------------------------------------------------- */
@@ -82,7 +83,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font: 400 16px/24px var(--font-sans);
+  font: 400 var(--text-base) / 1.5 var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 img {
@@ -95,6 +96,22 @@ a {
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
+}
+/* "Skip to content": the first thing a keyboard reaches, shown only while it has focus. */
+.skip {
+  position: absolute;
+  z-index: 2000;
+  left: var(--space-3);
+  top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--stroke-2) solid var(--line);
+  transform: translateY(-200%);
+}
+.skip:focus {
+  transform: none;
 }
 .sr-only {
   position: absolute;
@@ -117,33 +134,33 @@ h2 {
   margin: 0;
 }
 .display {
-  font-size: clamp(44px, 13vw, 64px);
+  font-size: clamp(2.75rem, 13vw, 4rem);
   line-height: 1.06;
   letter-spacing: -0.02em;
 }
 h1 {
-  font-size: clamp(32px, 9vw, 40px);
+  font-size: clamp(2rem, 9vw, 2.5rem);
   line-height: 1.15;
   letter-spacing: -0.01em;
 }
 h2 {
-  font-size: 28px;
+  font-size: var(--text-3xl);
   line-height: 34px;
 }
 h3 {
-  font: 600 20px/26px var(--font-sans);
+  font: 600 var(--text-xl) / 1.3 var(--font-sans);
   margin: 0;
 }
 p {
   margin: 0;
 }
 .small {
-  font-size: 14px;
+  font-size: var(--text-md);
   line-height: 20px;
   color: var(--ink-muted);
 }
 .label {
-  font: 600 12px/16px var(--font-sans);
+  font: 600 var(--text-xs) / 1.333 var(--font-sans);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-muted);
@@ -165,8 +182,8 @@ p {
   justify-content: center;
   gap: var(--space-2);
   min-height: 48px;
-  font: 600 16px/24px var(--font-sans);
-  padding: 12px var(--space-4);
+  font: 600 var(--text-base) / 1.5 var(--font-sans);
+  padding: var(--space-2-5) var(--space-4);
   border: var(--stroke-2) solid var(--line);
   border-radius: 0 0 var(--radius-leaf) 0;
   background: var(--paper);
@@ -203,10 +220,10 @@ p {
 /* ---- Tag ------------------------------------------------------------------- */
 .tag {
   display: inline-block;
-  font: 600 12px/16px var(--font-sans);
+  font: 600 var(--text-xs) / 1.333 var(--font-sans);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 4px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border: var(--stroke-2) solid var(--line);
   background: var(--paper);
   color: var(--ink);
@@ -239,7 +256,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 600 18px/1 var(--font-display);
+  font: 600 var(--text-lg) / 1 var(--font-display);
   color: var(--ink-muted);
   text-transform: uppercase;
 }

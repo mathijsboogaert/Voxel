@@ -1,9 +1,9 @@
 // One player's page: face, status, a few numbers, when they play, who they play with,
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
-import { loadStats } from './data.js?v=2048caf9';
-import { raceBlock } from './race.js?v=811a9c3b';
-import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b52c5647';
-import { statTile, hourChart } from './widgets.js?v=5044ce61';
+import { loadStats } from './data.js?v=f15302e2';
+import { raceBlock } from './race.js?v=c045db3d';
+import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=c31c3fa6';
+import { statTile, hourChart } from './widgets.js?v=f256c111';
 import {
   el,
   svgEl,
@@ -18,7 +18,7 @@ import {
   hourLabel,
   bar,
   lastSeen,
-} from './ui.js?v=28a5c906';
+} from './ui.js?v=4d932c1e';
 
 const name = new URLSearchParams(location.search).get('name') || '';
 
@@ -199,8 +199,8 @@ function playsWith(p) {
 }
 
 /** Advancements: the points, the rarest one, the race against the leaders and the latest few. */
-function advancements(st, p, recent) {
-  const count = `points from ${p.adv.length} ${p.adv.length === 1 ? 'advancement' : 'advancements'}`;
+function advancements(st, p) {
+  const count = `points from ${p.advCount} ${p.advCount === 1 ? 'advancement' : 'advancements'}`;
   const latest = (a) =>
     el(
       'li',
@@ -213,20 +213,25 @@ function advancements(st, p, recent) {
       ),
       el('span', { class: 'small' }, `+${a.points} · ${relTime(a.at)}`),
     );
+  // Full width under the other cards: the numbers and latest on one side, the race chart on the other.
   return el(
     'div',
-    { class: 'card' },
-    el('p', { class: 'label' }, 'Advancements'),
+    { class: 'card adv-card' },
     el(
       'div',
-      { class: 'adv-head' },
-      el('span', { class: 'num' }, fmtInt(p.advPoints)),
-      el('span', { class: 'small' }, count),
+      {},
+      el('p', { class: 'label' }, 'Advancements'),
+      el(
+        'div',
+        { class: 'adv-head' },
+        el('span', { class: 'num' }, fmtInt(p.advPoints)),
+        el('span', { class: 'small' }, count),
+      ),
+      p.rarest ? el('p', { class: 'small mt-1' }, `Rarest: ${p.rarest}`) : null,
+      el('p', { class: 'label mt-4' }, 'Latest'),
+      el('ul', { class: 'arows mt-1' }, p.latestAdv.map(latest)),
     ),
-    p.rarest ? el('p', { class: 'small mt-1' }, `Rarest: ${p.rarest.name}`) : null,
-    ...raceBlock(st, { focus: p.name, heading: 'Compared with the leaders' }),
-    el('p', { class: 'label mt-4' }, 'Latest'),
-    el('ul', { class: 'arows mt-1' }, recent.map(latest)),
+    el('div', {}, ...raceBlock(st, { focus: p.name, heading: 'Compared with the leaders' })),
   );
 }
 
@@ -240,11 +245,12 @@ function render(st, places) {
   const tiles = el(
     'div',
     { class: 'tiles tiles--2' },
-    statTile(fmtHours(p.hours), 'played', `#${p.rank} of ${Object.keys(st.players).length}`),
+    statTile(fmtHours(p.minutes / 60), 'played', `#${p.rank} of ${Object.keys(st.players).length}`),
     statTile(fmtInt(p.deaths), p.deaths === 1 ? 'death' : 'deaths', cause),
   );
 
-  // Two columns on a wide screen, one below the other on a phone.
+  // Two columns on a wide screen, one below the other on a phone; advancements across the full width below.
+  // Plays with is the tallest card, so it gets a column to itself; without it, places takes that column.
   const left = [];
   const right = [];
   if (p.favHour != null) {
@@ -257,15 +263,14 @@ function render(st, places) {
     );
   }
   if (p.loggedMin > 0) left.push(timeOnline(p));
-  if (places.length) left.push(placesCard(places));
   if (p.buddies.length) right.push(playsWith(p));
-  const recent = [...p.adv].sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 5);
-  if (recent.length) right.push(advancements(st, p, recent));
+  if (places.length) (right.length ? left : right).push(placesCard(places));
 
   page.replaceChildren(
     hero(st, p),
     tiles,
     el('div', { class: 'pgrid' }, el('div', { class: 'pcol' }, left), el('div', { class: 'pcol' }, right)),
+    p.latestAdv.length ? advancements(st, p) : null,
   );
 }
 

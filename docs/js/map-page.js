@@ -3,62 +3,45 @@
 import {
   createWorldMap,
   wireMapButtons,
-  loadBiomeLookup,
   worldToLatLng,
   latLngToWorld,
-  blocksPerPixel,
   DETAIL_ZOOM,
   DEFAULT_ZOOM,
-} from './map-core.js?v=556333c2';
-import { el, byId, faceEl, playerHref, colorClass, getJSON, SPAWN } from './ui.js?v=28a5c906';
-import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=b52c5647';
-import { mapSearch } from './map-search.js?v=277ac403';
+} from './map-core.js?v=00506aba';
+import { el, byId, faceEl, playerHref, colorDot, getJSON, SPAWN } from './ui.js?v=4d932c1e';
+import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=c31c3fa6';
+import { mapSearch } from './map-search.js?v=d6d0b003';
 
 const params = new URLSearchParams(location.search);
 const center =
   params.has('x') && params.has('z') ? { x: Number(params.get('x')), z: Number(params.get('z')) } : SPAWN;
-const { map, borders, shops } = await createWorldMap(byId('map'), {
+const { map, tiles, borders, shops } = await createWorldMap(byId('map'), {
   center,
   zoom: Number(params.get('zoom')) || DEFAULT_ZOOM,
 });
 wireMapButtons(map);
+const mapFailed = !tiles;
 
 /* ---- Position readout ------------------------------------------------------------- */
 
+// The position under the cursor on a desktop, or of the centre of the map on a phone.
 const info = byId('mapinfo');
-let biomeAt = () => null;
 const coord = (n) => String(Math.round(n)).replace('-', '−');
-
-function showInfo(x, z, prefix) {
-  const biome = biomeAt(x, z);
-  info.replaceChildren(
-    biome ? `${biome} ` : '',
-    el('span', {}, `${prefix}X ${coord(x)}, Z ${coord(z)}`),
-    el('span', {}, `  ${blocksPerPixel(map.getZoom()).toFixed(2)} blocks/px`),
-  );
-}
-const showCenter = () => {
-  const c = latLngToWorld(map.getCenter());
-  showInfo(c.x, c.z, 'centre ');
-};
+const showInfo = ({ x, z }) =>
+  (info.textContent = mapFailed
+    ? "The map couldn't load. Try again in a moment."
+    : `X ${coord(x)}, Z ${coord(z)}`);
+const showCenter = () => showInfo(latLngToWorld(map.getCenter()));
 let hoverFrame = 0;
 map.on('mousemove', (e) => {
   if (hoverFrame) return;
   hoverFrame = requestAnimationFrame(() => {
     hoverFrame = 0;
-    const w = latLngToWorld(e.latlng);
-    showInfo(w.x, w.z, '');
+    showInfo(latLngToWorld(e.latlng));
   });
 });
 map.on('moveend zoomend mouseout', showCenter);
 showCenter();
-
-loadBiomeLookup()
-  .then((lookup) => {
-    biomeAt = lookup;
-    showCenter();
-  })
-  .catch((e) => console.warn('Biome lookup unavailable', e));
 
 /* ---- Search ------------------------------------------------------------------------- */
 
@@ -95,7 +78,7 @@ function search(q) {
 }
 
 function row(r) {
-  if (r.type === 'border') return [el('i', { class: colorClass(r.ref.color) }), r.label, 'Border'];
+  if (r.type === 'border') return [colorDot(r.ref.color), r.label, 'Border'];
   if (r.type === 'shop') return [shopIconEl(r.ref), r.label, r.sub || 'Shop'];
   return [faceEl(r.label, 'sm'), r.label, 'Player'];
 }
@@ -112,12 +95,15 @@ function choose(r) {
   }
 }
 
-const searchBox = mapSearch({ search, row, choose });
-loadItems().then((db) => {
-  items = db;
-  searchBox.render();
-});
-getJSON('data/players.json', []).then((list) => (roster = list));
+// The item list and the roster are only needed once someone searches, so they load when the search first opens.
+let searchData = null;
+const loadSearchData = () =>
+  (searchData ||= Promise.all([loadItems(), getJSON('data/players.json', [])]).then(([db, list]) => {
+    items = db;
+    roster = list;
+    searchBox.render();
+  }));
+const searchBox = mapSearch({ search, row, choose, onOpen: loadSearchData });
 
 /* ---- Deep link: ?find=Name ------------------------------------------------------------ */
 

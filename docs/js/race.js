@@ -1,9 +1,7 @@
 // The advancement race: running advancement points over time, a step at every advancement.
 // Used on the homepage (the top five) and on player pages (this player highlighted against the leaders).
 // Lines differ in colour and in pattern so they don't rely on hue alone.
-import { el, svgEl as sv, faceEl, fmtInt } from './ui.js?v=28a5c906';
-
-const DAY = 864e5;
+import { el, svgEl as sv, faceEl, fmtInt, DAY } from './ui.js?v=4d932c1e';
 const dayLabel = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
   month: 'short',
@@ -43,19 +41,17 @@ function niceStep(max) {
 function raceChart(st, series) {
   const { start, end } = st.race;
   const top = Math.max(...series.map((s) => s.total));
-  const W = 320,
-    H = 200,
-    L = 34,
-    R = 8,
-    T = 10,
-    B = 26;
-  const pw = W - L - R,
-    ph = H - T - B;
+  // The chart's size and its margins (left for the numbers, bottom for the dates).
+  const W = 320;
+  const H = 200;
+  const PAD = { left: 34, right: 8, top: 10, bottom: 26 };
+  const pw = W - PAD.left - PAD.right;
+  const ph = H - PAD.top - PAD.bottom;
   const span = Math.max(end - start, DAY);
   const step = niceStep(top),
     yMax = Math.ceil(top / step) * step;
-  const x = (t) => (L + ((Math.min(t, end) - start) / span) * pw).toFixed(1);
-  const y = (v) => (T + ph - (v / yMax) * ph).toFixed(1);
+  const x = (t) => (PAD.left + ((Math.min(t, end) - start) / span) * pw).toFixed(1);
+  const y = (v) => (PAD.top + ph - (v / yMax) * ph).toFixed(1);
 
   const svg = sv('svg', {
     viewBox: `0 0 ${W} ${H}`,
@@ -64,8 +60,8 @@ function raceChart(st, series) {
     'aria-label': `Advancement points over time. ${series.map((s) => `${s.name} ${s.total}`).join(', ')}.`,
   });
   for (let v = 0; v <= yMax; v += step) {
-    svg.append(sv('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'race__grid' }));
-    svg.append(sv('text', { x: L - 6, y: Number(y(v)) + 4, 'text-anchor': 'end' }, v));
+    svg.append(sv('line', { x1: PAD.left, x2: W - PAD.right, y1: y(v), y2: y(v), class: 'race__grid' }));
+    svg.append(sv('text', { x: PAD.left - 6, y: Number(y(v)) + 4, 'text-anchor': 'end' }, v));
   }
   const every = (span > 12 * DAY ? 7 : 2) * DAY;
   for (let t = start; t <= end; t += every) {
@@ -76,7 +72,7 @@ function raceChart(st, series) {
   // First series is the one that matters (the leader, or the player in focus), so it is drawn last, on top.
   [...series].reverse().forEach((s) => {
     let d = `M${x(start)} ${y(0)}`;
-    for (const p of s.steps) d += ` H${x(p.t)} V${y(p.v)}`;
+    for (const [t, v] of s.steps) d += ` H${x(t)} V${y(v)}`;
     d += ` H${x(end)}`;
     svg.append(sv('path', { d, class: `race-line race-line--${s.style}` }));
   });

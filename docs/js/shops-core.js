@@ -1,7 +1,7 @@
 // Shops and the items they sell: the item list (docs/data/items.json, built by tools/build_items.py from the
 // game's own 26.3 data), each shop's icon, product lines, and the item search that also finds shops selling
 // the parts of what you want (looking for planks finds the shop with logs).
-import { url, el } from './ui.js?v=28a5c906';
+import { url, el } from './ui.js?v=4d932c1e';
 
 let itemsPromise = null;
 
@@ -31,7 +31,7 @@ export function shopIconEl(shop) {
   const own = !!(shop && shop.icon);
   return el('img', {
     class: own ? 'shop-icon' : 'shop-icon shop-icon--default',
-    src: own ? shop.icon : url('assets/shop-icon.png?v=e30686ab'),
+    src: own ? shop.icon : url('assets/shop-icon.png?v=00997138'),
     alt: '',
     width: 16,
     height: 16,
@@ -148,46 +148,88 @@ export function matchItems(db, query, limit = 60) {
 
 const slotItems = (db, s) => (typeof s === 'string' ? db.tags[s.slice(1)] || [] : [s]);
 
+/** The items a shop sells: item index -> its product line. */
+function itemsSold(db, shop) {
+  const sold = new Map();
+  for (const p of shop.products || []) {
+    const it = db && db.byId.get(p.item);
+    if (it) sold.set(it.i, p);
+  }
+  return sold;
+}
+
+/** A shop that sells something in one of target's recipes: [score, reason]s. More of the recipe covered scores higher. */
+function partMatches(db, items, target) {
+  const found = [];
+  for (const [kind, , slots] of db.recipes.get(target.i) || []) {
+    let covered = 0;
+    let part = null;
+    for (const slot of slots) {
+      const got = slotItems(db, slot).find((a) => a !== target.i && items.has(a));
+      if (got != null) {
+        covered++;
+        part ??= got;
+      }
+    }
+    if (part != null) {
+      const reason = `Sells ${db.items[part].name}, which ${VERB[kind] || 'makes'} ${target.name}`;
+      found.push([3 + covered / slots.length / 2, reason]);
+    }
+  }
+  return found;
+}
+
+/** A shop that sells a part of a part (logs -> planks -> sticks): reasons, all scoring 2. */
+function partOfPartMatches(db, items, target) {
+  const found = [];
+  const smallSlots = (recipes) =>
+    recipes.flatMap(([kind, , slots]) =>
+      slots.map((slot) => [kind, slotItems(db, slot)]).filter(([, alts]) => alts.length <= BIG_SLOT),
+    );
+  for (const [, alts] of smallSlots(db.recipes.get(target.i) || [])) {
+    for (const mid of alts) {
+      if (mid === target.i) continue;
+      for (const [kind, alts2] of smallSlots(db.recipes.get(mid) || [])) {
+        const got = alts2.find((a) => a !== target.i && a !== mid && items.has(a));
+        if (got != null) {
+          const [part, step] = [db.items[got].name, db.items[mid].name];
+          found.push(`Sells ${part}, which ${VERB[kind] || 'makes'} ${step}, for ${target.name}`);
+        }
+      }
+    }
+  }
+  return found;
+}
+
 /**
  * findShops(db, shops, query) -> [{shop, score, reason, direct}] best first.
  *   score 5: the shop's name matches     score 4: sells the item itself
  *   score 3: sells a part of it          score 2: sells a part of a part
- * Each shop appears once, with its best reason.
+ * Each shop appears once, with its best reason. Reasons are lists of text and nodes (prices show the diamond icon).
  */
 export function findShops(db, shops, query) {
   const q = query.trim().toLowerCase();
   if (!q) return [];
+  const words = q.split(/\s+/).filter(Boolean);
   const targets = matchItems(db, q);
-  const best = new Map();
-  const offer = (shop, score, reason, direct = null) => {
-    const cur = best.get(shop);
-    if (!cur || score > cur.score) best.set(shop, { shop, score, reason, direct });
-  };
-
-  // What each shop sells, by item index.
-  const sells = new Map();
-  for (const s of shops) {
-    const set = new Map();
-    for (const p of s.products || []) {
-      const it = db && db.byId.get(p.item);
-      if (it) set.set(it.i, p);
-    }
-    sells.set(s, set);
-  }
-  const name = (i) => db.items[i].name;
-
   // When the query names an item exactly ("chest"), only that item's parts count, not those of
   // everything with the word in it ("iron chestplate").
   const singular = q.replace(/s$/, '');
   const exact = targets.filter((t) => t.lower === q || t.lower === singular);
   const partTargets = exact.length ? exact : targets;
-  // Reasons are lists of text and nodes (prices show the diamond icon); el() takes them as children.
+
   const lineText = (p) => {
     const price = priceEl(db, p);
     return [offerText(db, p), p.free ? ', free' : price ? [' for ', price] : ''].flat();
   };
   const joinLines = (lines) => lines.flatMap((p, i) => (i ? [', ', ...lineText(p)] : lineText(p)));
-  const words = q.split(/\s+/).filter(Boolean);
+
+  const best = new Map();
+  const offer = (shop, score, reason, direct = null) => {
+    const cur = best.get(shop);
+    if (!cur || score > cur.score) best.set(shop, { shop, score, reason, direct });
+  };
+  const scoreOf = (shop) => (best.get(shop) || {}).score;
 
   for (const s of shops) {
     // A service or another product matches on its own words ("ghast" finds "Ghast storage" and "Happy Ghast").
@@ -199,63 +241,25 @@ export function findShops(db, shops, query) {
     const offered = texts.filter((p) => p.service);
     if (sold.length) offer(s, 4.5, ['Sells ', ...joinLines(sold.slice(0, 2))], sold[0]);
     if (offered.length) offer(s, 4.5, ['Offers ', ...joinLines(offered.slice(0, 2))], offered[0]);
-    if (offersServices(s) && words.every((w) => 'service'.startsWith(w) || 'services'.startsWith(w)))
-      offer(s, 3, 'Offers services');
-    const items = sells.get(s);
+    if (offersServices(s) && words.every((w) => 'services'.startsWith(w))) offer(s, 3, 'Offers services');
+
     // Sells it outright (all the matching lines, a couple named).
+    const items = itemsSold(db, s);
     const direct = targets.filter((t) => items.has(t.i)).map((t) => items.get(t.i));
     const more = direct.length > 2 ? `, and ${direct.length - 2} more` : '';
     const directText = direct.length ? ['Sells ', ...joinLines(direct.slice(0, 2)), more] : '';
-    if (s.label && s.label.toLowerCase().includes(q))
+    if (s.label && s.label.toLowerCase().includes(q)) {
       offer(s, 5, directText || (best.get(s) || {}).reason || '', direct[0] || null);
-    if (direct.length) offer(s, 4 + (exact.some((t) => items.has(t.i)) ? 0.5 : 0), directText, direct[0]);
-    if (!items.size || !targets.length || (best.get(s) || {}).score >= 4) continue;
+    }
+    if (direct.length) offer(s, exact.some((t) => items.has(t.i)) ? 4.5 : 4, directText, direct[0]);
+    if (!items.size || !targets.length || scoreOf(s) >= 4) continue;
 
+    // Sells what it is made from.
     for (const t of partTargets) {
       if (items.has(t.i)) continue;
-      // Sells a part: something in one of its recipes. The more of the recipe the shop covers, the better.
-      for (const [kind, , slots] of db.recipes.get(t.i) || []) {
-        let covered = 0,
-          part = null;
-        for (const sl of slots) {
-          const alts = slotItems(db, sl).filter((a) => a !== t.i);
-          const got = alts.find((a) => items.has(a));
-          if (got != null) {
-            covered++;
-            part = part ?? got;
-          }
-        }
-        if (part != null)
-          offer(
-            s,
-            3 + covered / slots.length / 2,
-            `Sells ${name(part)}, which ${VERB[kind] || 'makes'} ${t.name}`,
-          );
-      }
-      if ((best.get(s) || {}).score >= 3) continue;
-      // A part of a part (logs -> planks -> sticks).
-      for (const [, , slots] of db.recipes.get(t.i) || []) {
-        for (const sl of slots) {
-          const alts = slotItems(db, sl);
-          if (alts.length > BIG_SLOT) continue;
-          for (const mid of alts) {
-            if (mid === t.i) continue;
-            for (const [kind2, , slots2] of db.recipes.get(mid) || []) {
-              for (const sl2 of slots2) {
-                const alts2 = slotItems(db, sl2);
-                if (alts2.length > BIG_SLOT) continue;
-                const got = alts2.find((a) => a !== t.i && a !== mid && items.has(a));
-                if (got != null)
-                  offer(
-                    s,
-                    2,
-                    `Sells ${name(got)}, which ${VERB[kind2] || 'makes'} ${name(mid)}, for ${t.name}`,
-                  );
-              }
-            }
-          }
-        }
-      }
+      for (const [score, reason] of partMatches(db, items, t)) offer(s, score, reason);
+      if (scoreOf(s) >= 3) continue;
+      for (const reason of partOfPartMatches(db, items, t)) offer(s, 2, reason);
     }
   }
   return [...best.values()].sort((a, b) => b.score - a.score || a.shop.label.localeCompare(b.shop.label));

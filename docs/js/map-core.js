@@ -2,8 +2,8 @@
 // Leaflet showing the explored world from pre-rendered tiles (tools/world/render_world.py),
 // plus the borders, shops and spawn marker from the site's JSON files.
 // Leaflet itself is loaded by the page as a global (window.L).
-import { url, el, svgEl, getJSON, byId, SEED, SPAWN } from './ui.js?v=28a5c906';
-import { shopHref, shopIconEl, isOpen } from './shops-core.js?v=b52c5647';
+import { url, el, svgEl, getJSON, byId, SPAWN, DEFAULT_BORDER_COLOR } from './ui.js?v=4d932c1e';
+import { shopHref, shopIconEl, isOpen } from './shops-core.js?v=c31c3fa6';
 
 // 1 map unit = 4096 blocks. At NATIVE_ZOOM that is exactly one pixel per block; every
 // zoom level out doubles blocks per pixel. Latitude is -Z so north stays up.
@@ -28,7 +28,7 @@ export const DETAIL_ZOOM = 13;
  * requested; where a detailed tile is missing, the nearest coarser tile is cropped and scaled up,
  * so the whole explored area shows at every zoom.
  */
-export async function exploredLayer() {
+async function exploredLayer() {
   const manifest = await getJSON('tiles/manifest.json', null);
   if (!manifest) return null;
 
@@ -202,31 +202,6 @@ export function showWhenClose(map, getLayers) {
   return sync;
 }
 
-/**
- * The biome lookup (cubiomes compiled to WASM), loaded after the map so it never delays the first tiles.
- * Resolves to biomeAt(x, z) -> "plains" or null.
- */
-export async function loadBiomeLookup() {
-  await new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = url('wasm/cubiomes.js');
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.append(script);
-  });
-  const cubiomes = await createCubiomesModule();
-  cubiomes.ccall('seed_init', null, ['string'], [SEED]);
-  return (x, z) => {
-    const name = cubiomes.ccall(
-      'get_biome_name_at',
-      'string',
-      ['number', 'number'],
-      [Math.round(x), Math.round(z)],
-    );
-    return name ? name.replaceAll('_', ' ') : null;
-  };
-}
-
 /* ---- The world map: base map plus borders and shops ----------------------------------- */
 
 /** A shop's popup: its icon over the full height on the left; its name, and a link to what it sells, beside it. */
@@ -258,7 +233,7 @@ export async function createWorldMap(element, opts = {}) {
   const [borderData, shopData] = await Promise.all([getJSON('borders.json', []), getJSON('shops.json', [])]);
 
   const borders = borderData.map((b) => {
-    const color = b.color || '#ffa94d';
+    const color = b.color || DEFAULT_BORDER_COLOR;
     const hideLabel = !!b.hideLabel;
     const latlngs = b.points.map((p) => worldToLatLng(p.x, p.z));
     const layer = L.polygon(latlngs, { color, weight: interactive ? 3 : 2, fill: false, interactive }).addTo(
@@ -280,7 +255,7 @@ export async function createWorldMap(element, opts = {}) {
   });
 
   const icon = L.icon({
-    iconUrl: url('assets/shop-icon.png?v=e30686ab'),
+    iconUrl: url('assets/shop-icon.png?v=00997138'),
     className: 'shop-marker-icon',
     iconSize: [shopSize, shopSize],
     iconAnchor: [shopSize / 2, shopSize / 2],

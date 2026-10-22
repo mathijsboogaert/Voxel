@@ -17,8 +17,10 @@ import re
 
 DOCS = pathlib.Path(__file__).resolve().parent.parent / 'docs'
 
-# A link in a page: href="..." or src="..." to a local .css, .js, .png or .svg.
-HTML_LINK = re.compile(r'''((?:href|src)=")((?!https?:|//|#)[^"?]+\.(?:css|js|png|svg))(?:\?v=[0-9a-f]{8})?(")''')
+# A link in a page: href="...", src="..." or srcset="..." to a local .css, .js, .png or .svg.
+HTML_LINK = re.compile(
+    r'''((?:href|src|srcset)=")((?!https?:|//|#)[^"?]+\.(?:css|js|png|svg))(?:\?v=[0-9a-f]{8})?(")'''
+)
 # An import between scripts: from './x.js' or import('./x.js').
 JS_IMPORT = re.compile(r'''((?:from\s+|import\()\s*')(\./[\w-]+\.js)(?:\?v=[0-9a-f]{8})?(')''')
 # A fixed image path in a script: url('assets/....png').
@@ -68,8 +70,6 @@ def main():
             done.append(name)
 
     for page in DOCS.rglob('*.html'):
-        if page.name == 'viewer_template.html':
-            continue  # filled in by tools/build_viewer.py
         text = stamp(page.read_text(), HTML_LINK, lambda link, page=page: (page.parent / link).resolve())
         write_if_changed(page, text)
 

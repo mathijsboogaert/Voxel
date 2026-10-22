@@ -1,7 +1,8 @@
 // Homepage: news, map preview, stats overview and player faces.
-import { loadStats } from './data.js?v=2048caf9';
+import { loadStats } from './data.js?v=f15302e2';
 import {
   el,
+  byId,
   url,
   faceEl,
   playerHref,
@@ -12,20 +13,23 @@ import {
   hourLabel,
   bar,
   getJSON,
-} from './ui.js?v=28a5c906';
-import { pattern } from './pattern.js?v=b453333a';
-import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=b52c5647';
-import { raceBlock } from './race.js?v=811a9c3b';
-import { statTile, hourChart } from './widgets.js?v=5044ce61';
+  loadLeaflet,
+  barLength,
+  findOnMapHref,
+  DAY,
+} from './ui.js?v=4d932c1e';
+import { pattern } from './pattern.js?v=9f404389';
+import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=c31c3fa6';
+import { raceBlock } from './race.js?v=c045db3d';
+import { statTile, hourChart, chipRow } from './widgets.js?v=f256c111';
 
-const $ = (sel) => document.querySelector(sel);
-const DAY = 864e5;
-
-$('[data-frieze]').append(pattern(['square', 'disc', 'leaf', 'square', 'cut@90', 'disc@180']));
+document
+  .querySelector('[data-frieze]')
+  .append(pattern(['square', 'disc', 'leaf', 'square', 'cut@90', 'disc@180']));
 
 function renderUpdated(st) {
   const generated = st.meta && st.meta.generated_at;
-  $('#updated').textContent = generated
+  byId('updated').textContent = generated
     ? `Updated ${relTime(generated)}. Numbers refresh from the server every 15 minutes or so.`
     : '';
 }
@@ -38,6 +42,9 @@ const KINDS = {
   event: { label: 'Event', cls: 'tag--amber' },
   note: { label: 'News', cls: '' },
 };
+// How long things stay news.
+const ADVANCEMENT_NEWS_DAYS = 30;
+const SHOP_NEWS_DAYS = 21;
 
 /** Everything that could be news: hand-written items (news.json), big advancements and new shops. */
 async function buildNews(st) {
@@ -61,7 +68,7 @@ async function buildNews(st) {
 
   for (const a of st.big.slice(0, 6)) {
     const at = Date.parse(a.at);
-    if (now - at > 30 * DAY) continue;
+    if (now - at > ADVANCEMENT_NEWS_DAYS * DAY) continue;
     items.push({
       kind: 'achievement',
       title: a.name,
@@ -74,7 +81,8 @@ async function buildNews(st) {
 
   for (const s of shops.filter(isOpen)) {
     const at = Date.parse(s.added || '');
-    if (at && now - at < 21 * DAY) items.push({ kind: 'shop', title: s.label, at, player: s.owner, shop: s });
+    if (at && now - at < SHOP_NEWS_DAYS * DAY)
+      items.push({ kind: 'shop', title: s.label, at, player: s.owner, shop: s });
   }
   return items;
 }
@@ -121,7 +129,6 @@ const whenFormat = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'Europe/Amsterdam',
 });
 const whenText = (at) => `${whenFormat.format(at)} (Dutch time)`;
-const findHref = (label) => url('map/') + '?find=' + encodeURIComponent(label);
 
 /** Buttons under a news item, side by side; the first is the main one. */
 const actions = (...links) =>
@@ -167,7 +174,7 @@ function featuredCard(it) {
         el('p', {}, it.player ? [el('strong', {}, it.player), ' opened a shop.'] : 'A new shop is open.'),
       ),
       actions(hasProducts && [shopHref(it.shop), 'What it sells'], [
-        findHref(it.title),
+        findOnMapHref(it.title),
         'Find it on the map',
       ]),
     );
@@ -211,10 +218,10 @@ async function renderNews(st) {
   const items = await buildNews(st);
   if (!items.length) return;
   const { featured, rest } = pickNews(items);
-  const body = $('#news-body');
+  const body = byId('news-body');
   body.replaceChildren(featuredCard(featured));
   if (rest.length) body.append(el('ul', { class: 'news-list' }, rest.map(listItem)));
-  $('#news').hidden = false;
+  byId('news').hidden = false;
 }
 
 /* ---- Stats overview ----------------------------------------------------------------- */
@@ -242,7 +249,7 @@ function boardRow(board, row, rank, max) {
       faceEl(row.name),
       el('span', { class: 'row__name' }, row.name),
       el('span', { class: 'row__value' }, board.show(row.value)),
-      el('span', { class: 'row__bar', 'aria-hidden': 'true' }, bar(Math.max(3, (row.value / max) * 100))),
+      el('span', { class: 'row__bar', 'aria-hidden': 'true' }, bar(barLength(row.value, max))),
     ),
   );
 }
@@ -251,27 +258,23 @@ function renderBoard(st, holder) {
   const board = BOARDS[boardKey];
   const rows = st.boards[boardKey].slice(0, 5);
   const max = rows[0] ? rows[0].value : 1;
-  const tabs = Object.entries(BOARDS).map(([key, b]) =>
-    el(
-      'button',
-      {
-        class: 'chip',
-        role: 'tab',
-        'aria-selected': String(key === boardKey),
-        onclick: () => {
-          boardKey = key;
-          renderBoard(st, holder);
-        },
-      },
-      b.label,
-    ),
-  );
+  const tabs = chipRow({
+    options: Object.entries(BOARDS).map(([key, b]) => [key, b.label]),
+    value: boardKey,
+    label: 'Leaderboard',
+    panel: 'board-panel',
+    onPick: (key) => {
+      boardKey = key;
+      renderBoard(st, holder);
+      holder.querySelector('[aria-selected="true"]').focus();
+    },
+  });
   holder.replaceChildren(
-    el('div', { class: 'chips chips--4', role: 'tablist', 'aria-label': 'Leaderboard' }, tabs),
+    tabs,
     el('p', { class: 'label' }, board.caption),
     el(
       'ul',
-      { class: 'rows', role: 'tabpanel' },
+      { class: 'rows', id: 'board-panel', role: 'tabpanel', 'aria-label': board.label },
       rows.map((r, i) => boardRow(board, r, i + 1, max)),
     ),
     ...(boardKey === 'advancements' ? raceBlock(st) : []),
@@ -306,44 +309,48 @@ function renderStats(st) {
     caption: `Dutch time. Most online at once: ${peak}.`,
   });
 
-  $('#stats-body').replaceChildren(tiles, el('div', { class: 'stats-grid' }, boardCard, hours));
+  byId('stats-body').replaceChildren(tiles, el('div', { class: 'stats-grid' }, boardCard, hours));
 }
 
 /* ---- Players ---------------------------------------------------------------------- */
 
 function renderPlayers(st) {
-  const list = st.roster_sorted;
-  const cells = list
+  const cells = st.recent
     .slice(0, 12)
-    .map((p) =>
+    .map((name) =>
       el(
         'li',
         {},
         el(
           'a',
-          { class: 'pcell', href: playerHref(p.name) },
-          el('span', { class: 'pface' }, faceEl(p.name, 'lg')),
-          el('span', { class: 'pcell__name' }, p.name),
+          { class: 'pcell', href: playerHref(name) },
+          el('span', { class: 'pface' }, faceEl(name, 'lg')),
+          el('span', { class: 'pcell__name' }, name),
         ),
       ),
     );
-  $('#players-grid').replaceChildren(...cells);
-  $('#players-all').textContent = `All ${list.length} players`;
+  byId('players-grid').replaceChildren(...cells);
+  byId('players-all').textContent = `All ${st.recent.length} players`;
 }
 
 /* ---- Map preview ------------------------------------------------------------------- */
 
+// The preview starts loading this far before it scrolls into view, and stops waiting for slow tiles after a while.
+const PREVIEW_MARGIN_PX = 300;
+const PREVIEW_WAIT_MS = 8000;
+
 /** The map preview loads only once it scrolls near the screen, so it never slows the top of the page. */
 function initPreview() {
-  const holder = $('#preview-map');
-  const loading = $('#preview-loading');
+  const holder = byId('preview-map');
+  const loading = byId('preview-loading');
   let started = false;
 
   const start = async () => {
     if (started) return;
     started = true;
     try {
-      const { createWorldMap } = await import('./map-core.js?v=556333c2');
+      await loadLeaflet();
+      const { createWorldMap } = await import('./map-core.js?v=00506aba');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,
@@ -351,10 +358,11 @@ function initPreview() {
         zoom: 10.5,
         shopSize: 24,
       });
+      if (!tiles) throw new Error('tiles/manifest.json did not load');
       // The tiles may have finished before this point, so check before waiting for them.
       if (tiles && tiles.isLoading()) tiles.once('load', () => (loading.hidden = true));
       else loading.hidden = true;
-      setTimeout(() => (loading.hidden = true), 8000);
+      setTimeout(() => (loading.hidden = true), PREVIEW_WAIT_MS); // don't wait forever on a slow tile
       new ResizeObserver(() => map.invalidateSize()).observe(holder);
     } catch (e) {
       console.error(e);
@@ -369,13 +377,13 @@ function initPreview() {
       observer.disconnect();
       start();
     },
-    { rootMargin: '300px' },
+    { rootMargin: `${PREVIEW_MARGIN_PX}px` },
   );
   observer.observe(holder);
   // Observers only report once the page paints; if the preview is already close, don't wait for that.
   setTimeout(() => {
     const r = holder.getBoundingClientRect();
-    if (r.top < innerHeight + 300 && r.bottom > -300) start();
+    if (r.top < innerHeight + PREVIEW_MARGIN_PX && r.bottom > -PREVIEW_MARGIN_PX) start();
   }, 1200);
 }
 
@@ -393,7 +401,7 @@ loadStats()
   .then(render)
   .catch((e) => {
     console.error(e);
-    $('#stats-body').replaceChildren(el('p', {}, "The numbers couldn't load. Try again in a moment."));
+    byId('stats-body').replaceChildren(el('p', {}, "The numbers couldn't load. Try again in a moment."));
   });
 
 // Keep an open tab fresh: the data every 5 minutes, the "updated" line every minute.

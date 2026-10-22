@@ -13,27 +13,27 @@
       href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../assets/brand.css?v=ed552aa7" />
-    <link rel="stylesheet" href="../assets/site.css?v=09dd2d51" />
+    <link rel="stylesheet" href="../assets/brand.css?v=f4ed1d87" />
+    <link rel="stylesheet" href="../assets/site.css?v=24adbb0c" />
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href="../" aria-label="Voxel, home">
-          <img
-            class="brand__mark mark--light"
-            src="../assets/logo-mark.png?v=5ef92691"
-            alt=""
-            width="36"
-            height="36"
-          />
-          <img
-            class="brand__mark mark--dark"
-            src="../assets/logo-mark-reversed.png?v=11f13e0e"
-            alt=""
-            width="36"
-            height="36"
-          />
+          <picture>
+            <source
+              srcset="../assets/logo-mark-reversed-small.png?v=c3c00a88"
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="brand__mark"
+              src="../assets/logo-mark-small.png?v=800d40a4"
+              alt=""
+              width="36"
+              height="36"
+            />
+          </picture>
           <span class="brand__name">Voxel</span>
         </a>
         <button
@@ -93,13 +93,27 @@
       </div>
     </header>
 
-    <main>
+    <main id="main">
       <div class="wrap" id="page">
-        <p class="small pad-block-5">Loading the player</p>
+        <p class="sr-only">Loading the player</p>
+        <div class="page-head" aria-hidden="true">
+          <div class="phero">
+            <span class="skel skel--face"></span>
+            <span class="skel skel--title"></span>
+          </div>
+        </div>
+        <div class="tiles tiles--2" aria-hidden="true">
+          <div class="skel skel--tile"></div>
+          <div class="skel skel--tile"></div>
+        </div>
+        <div class="pgrid" aria-hidden="true">
+          <div class="skel skel--card"></div>
+          <div class="skel skel--card"></div>
+        </div>
       </div>
     </main>
 
     <script type="module" src="../js/nav.js?v=0aa91664"></script>
-    <script type="module" src="../js/player.js?v=21966ec2"></script>
+    <script type="module" src="../js/player.js?v=246c4f5f"></script>
   </body>
 </html>

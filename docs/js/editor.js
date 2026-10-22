@@ -4,29 +4,30 @@
 import {
   createBaseMap,
   wireMapButtons,
-  loadBiomeLookup,
   showWhenClose,
   worldToLatLng,
   latLngToWorld,
-  blocksPerPixel,
   DETAIL_ZOOM,
-} from './map-core.js?v=556333c2';
-import { el, byId, url, getJSON, colorClass, SEED } from './ui.js?v=28a5c906';
-import { loadItems, shopIconEl, lineKind } from './shops-core.js?v=b52c5647';
-import { mapSearch } from './map-search.js?v=277ac403';
+} from './map-core.js?v=00506aba';
+import {
+  el,
+  byId,
+  url,
+  getJSON,
+  colorDot,
+  SEED,
+  BORDER_COLORS,
+  DEFAULT_BORDER_COLOR,
+} from './ui.js?v=4d932c1e';
+import { loadItems, shopIconEl, lineKind } from './shops-core.js?v=c31c3fa6';
+import { mapSearch } from './map-search.js?v=d6d0b003';
 
 const { map } = await createBaseMap(byId('map'));
 wireMapButtons(map);
 
 /* ---- Position readout --------------------------------------------------------------- */
 
-const hoverEl = byId('footerHover');
-const zoomEl = byId('zoomBpp');
-let biomeAt = () => null;
-
-const showZoom = () => (zoomEl.textContent = `  ${blocksPerPixel(map.getZoom()).toFixed(2)} blocks/px`);
-map.on('zoom', showZoom);
-showZoom();
+const hoverEl = byId('mapinfo');
 
 let hoverFrame = 0;
 map.on('mousemove', (e) => {
@@ -36,27 +37,13 @@ map.on('mousemove', (e) => {
     const w = latLngToWorld(e.latlng);
     const x = Math.round(w.x);
     const z = Math.round(w.z);
-    hoverEl.textContent = `${biomeAt(x, z) || 'unknown'} X ${x}, Z ${z}`;
+    hoverEl.textContent = `X ${x}, Z ${z}`;
   });
 });
 map.on('mouseout', () => (hoverEl.textContent = ''));
-loadBiomeLookup()
-  .then((lookup) => (biomeAt = lookup))
-  .catch((e) => console.warn('Biome lookup unavailable', e));
 
 /* ---- Shared helpers ---------------------------------------------------------------- */
 
-const PALETTE = [
-  '#ff4d4f',
-  '#ffa94d',
-  '#ffd43b',
-  '#69db7c',
-  '#38d9a9',
-  '#4dabf7',
-  '#748ffc',
-  '#e599f7',
-  '#ffffff',
-];
 const BORDER_KEY = `voxel-map-borders:${SEED}`;
 const SHOP_KEY = `voxel-map-shops:${SEED}`;
 
@@ -221,7 +208,7 @@ function finishDraft() {
       const border = addBorder({
         points,
         label: `Border ${borders.length + 1}`,
-        color: PALETTE[borders.length % PALETTE.length],
+        color: BORDER_COLORS[borders.length % BORDER_COLORS.length],
       });
       saveBorders();
       openBorderEditor(border);
@@ -322,7 +309,7 @@ function updateBorderLabel(border) {
   border.tooltip.on('click', () => openBorderEditor(border));
 }
 
-function addBorder({ points, label = '', color = PALETTE[0], hideLabel = false, owners = [] }) {
+function addBorder({ points, label = '', color = DEFAULT_BORDER_COLOR, hideLabel = false, owners = [] }) {
   // Outline only, like the public map: a fill would hide the builds underneath.
   const layer = L.polygon(toLatLngs(points), {
     color,
@@ -400,17 +387,21 @@ function addOwnerFromInput() {
 
 function renderSwatches() {
   swatches.replaceChildren(
-    ...PALETTE.map((color) =>
-      el('button', {
-        type: 'button',
-        class: `swatch-btn ${colorClass(color)}${color === editingColor ? ' selected' : ''}`,
-        'aria-label': `Colour ${color}`,
-        'aria-pressed': String(color === editingColor),
-        onclick: () => {
-          editingColor = color;
-          renderSwatches();
+    ...BORDER_COLORS.map((color) =>
+      el(
+        'button',
+        {
+          type: 'button',
+          class: 'swatch-btn',
+          'aria-label': `Colour ${color}`,
+          'aria-pressed': String(color === editingColor),
+          onclick: () => {
+            editingColor = color;
+            renderSwatches();
+          },
         },
-      }),
+        colorDot(color),
+      ),
     ),
   );
 }
@@ -477,7 +468,7 @@ let shops = []; // {x, z, points, label, owner, added, spoiler, icon, products, 
 
 const outlineClass = (spoiler) => `shop-outline border-line${spoiler ? ' shop-outline--spoiler' : ''}`;
 const pointIcon = L.icon({
-  iconUrl: url('assets/shop-icon.png?v=e30686ab'),
+  iconUrl: url('assets/shop-icon.png?v=00997138'),
   className: 'shop-marker-icon',
   iconSize: [28, 28],
   iconAnchor: [14, 14],
@@ -642,7 +633,8 @@ const PLACEHOLDER = {
 const checkItem = (input) =>
   input.classList.toggle('efield--bad', !!input.value.trim() && !!itemDb && !itemByName(input.value));
 
-function productRow(p, kind = lineKind(p)) {
+/** The inputs of a product line of this kind, empty. */
+function lineFields(kind) {
   const field = (cls, attrs) =>
     el('input', {
       class: `efield efield--sm ${cls}`,
@@ -687,6 +679,11 @@ function productRow(p, kind = lineKind(p)) {
       'aria-label': 'Paid in',
     }),
   };
+  return fields;
+}
+
+/** Fills a line's inputs from a product (and checks the item names). */
+function fillLine(fields, p, kind) {
   fields.name.value = p.service || (p.item ? nameOf(p.item) : p.name || '');
   fields.name.dataset.id = p.item || '';
   fields.group.value = p.group || '';
@@ -697,6 +694,12 @@ function productRow(p, kind = lineKind(p)) {
     input.addEventListener('input', () => checkItem(input));
     checkItem(input);
   }
+}
+
+/** One product line in a shop's editor: its kind, name, group, amount and price, and a remove button. */
+function productRow(p, kind = lineKind(p)) {
+  const fields = lineFields(kind);
+  fillLine(fields, p, kind);
 
   const line = el('li', { class: `pline pline--${kind}` });
   line.fields = fields;
@@ -871,7 +874,7 @@ mapSearch({
     ].slice(0, 8),
   row: (r) =>
     r.type === 'border'
-      ? [el('i', { class: colorClass(r.ref.color) }), r.ref.label, 'Border']
+      ? [colorDot(r.ref.color), r.ref.label, 'Border']
       : [shopIconEl(r.ref), r.ref.label, 'Shop'],
   choose: (r) => {
     if (r.type === 'border') {
@@ -886,5 +889,5 @@ mapSearch({
 /* ---- Load ---------------------------------------------------------------------------------- */
 
 for (const b of await loadSaved('borders.json', BORDER_KEY))
-  addBorder({ ...b, color: b.color || PALETTE[0] });
+  addBorder({ ...b, color: b.color || DEFAULT_BORDER_COLOR });
 for (const s of await loadSaved('shops.json', SHOP_KEY)) addShop(s);

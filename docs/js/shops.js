@@ -1,7 +1,7 @@
 // Shops page: every shop with its icon, owner, place and what it sells for how much.
 // The search box takes an item or a shop name and also finds shops that sell the parts of an item
 // (see findShops in shops-core.js). Deep link: shops/#shop-slug scrolls to one shop, shops/?q=... searches.
-import { el, byId, url, getJSON, faceEl, playerHref } from './ui.js?v=28a5c906';
+import { el, byId, getJSON, faceEl, playerHref, findOnMapHref } from './ui.js?v=4d932c1e';
 import {
   loadItems,
   findShops,
@@ -17,9 +17,8 @@ import {
   lineName,
   isOpen,
   productRows,
-} from './shops-core.js?v=b52c5647';
-
-const mapHref = (s) => url('map/') + '?find=' + encodeURIComponent(s.label);
+} from './shops-core.js?v=c31c3fa6';
+import { chipRow } from './widgets.js?v=f256c111';
 
 /** What a row offers: one item or service, or a group that opens to show every kind in it. */
 function offerCell(db, { lines, group }) {
@@ -86,41 +85,29 @@ function card(db, s, reason) {
       reason ? el('p', { class: 'scard__why' }, reason) : null,
       productTable(db, s),
     ),
-    el('div', { class: 'scard__foot' }, owner, el('a', { href: mapHref(s) }, 'On the map')),
+    el('div', { class: 'scard__foot' }, owner, el('a', { href: findOnMapHref(s.label) }, 'On the map')),
   );
 }
 
 // Which shops to show: all, the ones that sell things, or the ones that offer services.
 // A shop that does both shows under both.
-const KINDS = { all: 'All', items: 'Items', services: 'Services' };
+const KINDS = [
+  ['all', 'All'],
+  ['goods', 'Shops'],
+  ['services', 'Services'],
+];
 let kind = 'all';
 const ofKind = (s) => kind === 'all' || (kind === 'services' ? offersServices(s) : sellsGoods(s));
 
-/** The filter: one button per kind, with how many shops it shows. */
 function renderChips(db, shops) {
-  const count = {
-    all: shops.length,
-    items: shops.filter(sellsGoods).length,
-    services: shops.filter(offersServices).length,
+  const pick = (key) => {
+    kind = key;
+    renderChips(db, shops);
+    render(db, shops, byId('filter').value);
   };
-  const chips = Object.entries(KINDS).map(([key, label]) =>
-    el(
-      'button',
-      {
-        class: 'chip',
-        role: 'tab',
-        'aria-selected': String(key === kind),
-        onclick: () => {
-          kind = key;
-          renderChips(db, shops);
-          render(db, shops, byId('filter').value);
-        },
-      },
-      label,
-      el('span', { class: 'chip__count' }, count[key]),
-    ),
+  byId('kinds').replaceWith(
+    Object.assign(chipRow({ options: KINDS, value: kind, onPick: pick, label: 'Show' }), { id: 'kinds' }),
   );
-  byId('kinds').replaceChildren(...chips);
 }
 
 function render(db, all, query) {
@@ -141,8 +128,9 @@ function render(db, all, query) {
     : 'No shop or item by that name.';
 }
 
-Promise.all([loadItems(), getJSON('shops.json', [])])
+Promise.all([loadItems(), getJSON('shops.json', null)])
   .then(([db, data]) => {
+    if (!data) throw new Error('shops.json did not load');
     const shops = data.filter((s) => s.label && isOpen(s)).sort((a, b) => a.label.localeCompare(b.label));
     const input = byId('filter');
     const q = new URLSearchParams(location.search).get('q');

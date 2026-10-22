@@ -2,22 +2,21 @@
 
 The website for the Voxel Minecraft server (Paper 26.3, seed `2344567094`): a homepage with news, a map
 preview and live stats, the full world map, and a page for every player. It is a static site served by
-GitHub Pages from `docs/`, with no backend. The map is drawn in the browser from the world seed using
-[xpple/cubiomes](https://github.com/xpple/cubiomes) (vendored in `vendor/cubiomes`, compiled to WebAssembly), and
+GitHub Pages from `docs/`, with no backend. The map is drawn from the server's own world files every night, and
 the stats come from the server's own logs.
 
 ## The pages
 
-| Page | File | What it is |
-| --- | --- | --- |
-| Home | `docs/index.html` | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who is around |
-| Map | `docs/map/index.html` | The full pannable, zoomable world map with borders, shops and search. Read-only |
-| Players | `docs/players/index.html` | Everyone, with face, playtime and when they were last on |
-| Shops | `docs/shops/index.html` | Every shop with its own icon, owner and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`) |
-| Player | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements |
-| Editor | `docs/editor.html` | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site |
+| Page    | File                               | What it is                                                                                                                                                     |
+| ------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home    | `docs/index.html`                  | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who is around |
+| Map     | `docs/map/index.html`              | The full pannable, zoomable world map with borders, shops and search. Read-only                                                                                |
+| Players | `docs/players/index.html`          | Everyone, with face, playtime and when they were last on                                                                                                       |
+| Shops   | `docs/shops/index.html`            | Every shop with its own icon, owner and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                       |
+| Player  | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements                                                                |
+| Editor  | `docs/editor.html`                 | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site                                                            |
 
-`generate.sh` (further down) is the original one-off PNG renderer, kept for reference.
+`generate.sh` (further down) is the original one-off PNG renderer of the seed, kept for reference.
 
 ## Run it locally
 
@@ -26,7 +25,7 @@ the stats come from the server's own logs.
 ```
 
 Open http://localhost:8000/ for the site and http://localhost:8000/editor.html for the editor. It has to be served
-over `http://`: the pages `fetch()` the data files and the `.wasm`, which a `file://` page cannot do.
+over `http://`: the pages `fetch()` their data files, which a `file://` page cannot do.
 
 ## Look and feel
 
@@ -44,7 +43,7 @@ and follows the visitor's light or dark setting.
   are drawn by `bar()` and `columns()` in `docs/js/ui.js`, and their colours are classes (`bar__fill`, `tbar__seg--afk`). Chart lines and
   pattern fills are named classes too (`race-line--0`, `pat-fill--teal`, and so on). To change how something looks, change its class in
   the CSS and it changes everywhere.
-- `docs/assets/logo-mark.png` and `logo-mark-reversed.png`: the mark cropped to its outline. The page swaps them for dark mode. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
+- `docs/assets/logo-mark-small.png` and `logo-mark-reversed-small.png`: the mark cropped to its outline, at 88px for the header (a browser downloads only the one that fits its light or dark mode). `logo-mark.png` (256px) is the image for link previews. The guide says never to put the mark on a brand fill, so it only ever sits on paper.
 - `docs/assets/icons/`: the diamond used for prices (Minecraft's own 26.3 texture, from misode/mcmeta). `icons/nav/` holds the menu icons: 8x8 pixel art in the style of the game's village map marker, which is the Home icon itself. The other four (the filled map, Steve, a diamond, the book and quill for the editor) are drawn by `tools/draw_nav_icons.py`; change a grid there and run it to redraw them. All are shown at a whole multiple so the pixels stay square.
 - `docs/js/pattern.js` draws the hero frieze from the four building blocks (square, quarter disc, leaf, corner cut).
 - Player heads are shown square (to keep the pixel grid) with `image-rendering: pixelated`. The guide lists round corners for avatars, but square heads suit Minecraft's grid; change `.face` in `brand.css` if you prefer round.
@@ -53,17 +52,23 @@ and follows the visitor's light or dark setting.
 
 Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet is the only library (from a CDN).
 
-| File | Job |
-| --- | --- |
-| `docs/js/ui.js` | Site paths (works from any base URL), DOM and SVG helpers, `getJSON`, bars, player faces, number and time formatting |
-| `docs/js/widgets.js` | Pieces the homepage and player page share: the stat tile and the hour chart |
-| `docs/js/data.js` | Loads the CSVs and computes every number the site shows (a port of the original stats dashboard, so the numbers match) |
-| `docs/js/map-core.js` | The world map: the explored-world tiles, spawn pin, map buttons and biome lookup (`createBaseMap`), plus borders and shops (`createWorldMap`). Shared by the home preview, the Map page and the editor |
-| `docs/js/nav.js` | The menu: on a phone it folds out from the menu button, one row per page with its icon and name; from 768px the menu sits in the header, icons with names |
-| `docs/js/map-search.js` | The search box over a full-screen map, used by the Map page and the editor |
-| `docs/js/shops-core.js` | Items, prices and the item search behind the Shops page and map search |
-| `docs/js/race.js`, `pattern.js` | The advancement race chart and the brand pattern |
-| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js`, `shops.js`, `editor.js` | One per page |
+| File                                                                                 | Job                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/js/ui.js`                                                                      | Site paths (works from any base URL), DOM and SVG helpers, `getJSON`, bars, player faces, number and time formatting                                                                     |
+| `docs/js/widgets.js`                                                                 | Pieces the pages share: the row of chips (tabs or a filter), the stat tile and the hour chart                                                                                            |
+| `docs/js/data.js`                                                                    | Loads `data/stats.json`, the stats summary (see Data files)                                                                                                                              |
+| `docs/js/map-core.js`                                                                | The world map: the explored-world tiles, spawn pin and map buttons (`createBaseMap`), plus borders and shops (`createWorldMap`). Shared by the home preview, the Map page and the editor |
+| `docs/js/nav.js`                                                                     | The menu: on a phone it folds out from the menu button, one row per page with its icon and name; from 768px the menu sits in the header, icons with names                                |
+| `docs/js/map-search.js`                                                              | The search box over a full-screen map, used by the Map page and the editor                                                                                                               |
+| `docs/js/shops-core.js`                                                              | Items, prices and the item search behind the Shops page and map search                                                                                                                   |
+| `docs/js/race.js`, `pattern.js`                                                      | The advancement race chart and the brand pattern                                                                                                                                         |
+| `docs/js/home.js`, `map-page.js`, `players.js`, `player.js`, `shops.js`, `editor.js` | One per page                                                                                                                                                                             |
+
+**The header** (skip link, logo and menu) is the same on every page and is written in one place,
+`tools/sync_header.py`. Change the menu there and run it; it rewrites the header in every page.
+
+**Tokens.** Colours, spacing (`--space-*`) and type sizes (`--text-*`, in rem so they follow the reader's font size) are
+custom properties at the top of `docs/assets/brand.css`; the other stylesheets use those instead of raw values.
 
 Code style: `.prettierrc.json` (JavaScript, CSS, HTML), `ruff.toml` (Python) and `.editorconfig`. Run `npx prettier --write docs` and
 `ruff format tools && ruff check tools` before committing.
@@ -71,20 +76,21 @@ Code style: `.prettierrc.json` (JavaScript, CSS, HTML), `ruff.toml` (Python) and
 **Versions in links.** Every link to a stylesheet, script or image carries a version (`site.css?v=1a2b3c4d`), a hash of the
 file. GitHub Pages lets browsers keep files for 10 minutes; without versions a browser can mix a new page with an old
 stylesheet or icon. After changing anything in `docs/` (and after formatting), run `python3 tools/stamp_versions.py`.
-It only touches links whose file changed, and running it twice changes nothing.
+It only touches links whose file changed. Run prettier and the stamp twice: a version can make a line long enough for prettier to wrap it.
 
 ## Data files
 
-| File | Written by | Holds |
-| --- | --- | --- |
-| `docs/data/voxel-sessions.csv`, `voxel-hourly.csv`, `voxel-events.csv` | `tools/build_stats.py` | Play sessions, minutes per hour, and deaths, advancements and chat counts (never message text) |
-| `docs/data/meta.json` | `tools/build_stats.py` | When the data was last built, shown as "Updated X ago" |
-| `docs/data/players.json` and `docs/faces/*.png` | `tools/fetch_faces.py` | The roster (name and UUID) and each player's head |
-| `docs/data/adjust.json` | by hand | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time |
-| `docs/borders.json` | the editor | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names) |
-| `docs/shops.json` | the editor | Shops: `x`, `z`, `points`, `label`, `owner`, `added` (when it was placed), `icon` (a 16x16 PNG as a `data:` URL) and `products` |
-| `docs/data/items.json` | `tools/build_items.py` | Every Minecraft 26.3 item with its English name and recipes, for the item pickers and item search |
-| `docs/news.json` | by hand | Extra news items, mainly events with a countdown (below) |
+| File                                                                   | Written by                | Holds                                                                                                                                                                                         |
+| ---------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/data/voxel-sessions.csv`, `voxel-hourly.csv`, `voxel-events.csv` | `tools/build_stats.py`    | Play sessions, minutes per hour, and deaths, advancements and chat counts (never message text)                                                                                                |
+| `docs/data/meta.json`                                                  | `tools/build_stats.py`    | When the data was last built, shown as "Updated X ago"                                                                                                                                        |
+| `docs/data/stats.json`                                                 | `tools/compute_stats.mjs` | Every number the site shows, worked out from the CSVs above (about 30 KB). The site only downloads this file, never the CSVs. After editing `adjust.json`, run `node tools/compute_stats.mjs` |
+| `docs/data/players.json` and `docs/faces/*.png`                        | `tools/fetch_faces.py`    | The roster (name and UUID) and each player's head                                                                                                                                             |
+| `docs/data/adjust.json`                                                | by hand                   | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time                |
+| `docs/borders.json`                                                    | the editor                | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names)                                                                                                              |
+| `docs/shops.json`                                                      | the editor                | Shops: `x`, `z`, `points`, `label`, `owner`, `added` (when it was placed), `icon` (a 16x16 PNG as a `data:` URL) and `products`                                                               |
+| `docs/data/items.json`                                                 | `tools/build_items.py`    | Every Minecraft 26.3 item with its English name and recipes, for the item pickers and item search                                                                                             |
+| `docs/news.json`                                                       | by hand                   | Extra news items, mainly events with a countdown (below)                                                                                                                                      |
 
 ## Shops, products and item search
 
@@ -100,6 +106,7 @@ what it is paid in, Diamond unless you pick another item). In `shops.json` a lin
 **Groups.** A product line can have a `group` (the editor's Group field, like "Logs"). Lines in the same group with the same amount and price show on the Shops page as one row, "32× Logs · 10 kinds", which opens to list every kind. Search still finds each kind on its own.
 
 **Kinds of lines.** Each line in a shop is one of three kinds, picked per line in the editor:
+
 - **Item**: a Minecraft item, `{ "item": "oak_log", "amount": 32, "price": 1, "priceItem": "diamond" }`.
 - **Other**: something for sale that isn't an item, like a Happy Ghast, `{ "name": "Happy Ghast", "amount": 1, "price": 4 }`.
 - **Service**: free text, like `{ "service": "Delivery" }`.
@@ -125,7 +132,7 @@ python3 tools/build_items.py 26.4
 Advancements are scored the way the server's advancement datapack scores them, by kind: a task is worth 1 point, a goal 3, a challenge 5,
 and "How Did We Get Here?" 10. Each advancement counts once per player. The log says which kind each one is, and the site adds the
 points up for the homepage leaderboard (the Advancements tab) and the Advancements card on each player page. The numbers live in one place,
-`ADV_POINTS` and `POINTS_BY_NAME` at the top of `docs/js/data.js`; add a name to `POINTS_BY_NAME` to give any single advancement its own value.
+`ADV_POINTS` and `POINTS_BY_NAME` at the top of `tools/compute_stats.mjs`; add a name to `POINTS_BY_NAME` to give any single advancement its own value.
 
 With the Advancements tab open, the homepage also draws the **advancement race**: each of the top five players' running point total, one step per advancement, from launch to the latest data. The five lines differ in colour and pattern, with a legend underneath. Each player page has the same graph in its Advancements card: that player's line is the bold rust one, drawn against the four leaders (the chart code is `docs/js/race.js`).
 
@@ -173,8 +180,8 @@ Things worth knowing:
 - Keep the server's old `logs/*.log.gz` files. The script rebuilds from the whole history every run, so deleted logs would drop out of the stats.
 - Raw logs are never committed (they contain chat). Only the derived CSVs are.
 - It makes roughly 24 small commits a day, because `meta.json` changes every run.
-- Days before `2026-10-01` were testing and are ignored (`LAUNCH` in `docs/js/data.js`). Mathi_Craft's time counts in full, as it did on the original dashboard.
-- You can always run it by hand: `python3 tools/build_stats.py path/to/logs docs/data && python3 tools/fetch_faces.py docs/data docs/faces`, then commit.
+- Days before `2026-10-01` were testing and are ignored (`LAUNCH` in `tools/compute_stats.mjs`). Mathi_Craft's time counts in full, as it did on the original dashboard.
+- You can always run it by hand: `python3 tools/build_stats.py path/to/logs docs/data && node tools/compute_stats.mjs && python3 tools/fetch_faces.py docs/data docs/faces`, then commit.
 
 ## AFK time
 
@@ -191,7 +198,7 @@ config is elsewhere; only that block is touched, and the old file is kept as `co
 ## Player labels
 
 Labels like Night owl or Marathon are earned by clearing a bar, so any number of players can hold the same one. The bars and the cap on how many labels one player can show
-(`MAX_LABELS`, currently 3, the ones they clear by the widest margin) are in `LABELS` near the top of the labels section of `docs/js/data.js`. Each label's icon is
+(`MAX_LABELS`, currently 3, the ones they clear by the widest margin) are in `LABELS` near the top of `tools/compute_stats.mjs`. Each label's icon is
 `docs/assets/badges/<name>.svg`.
 
 ## Players, faces and places
@@ -239,13 +246,13 @@ tiles and push. Only changed regions are redone; the cache lives in `~/.cache/vo
 ## The map
 
 Drag, scroll, pinch or double-tap to zoom smoothly (`zoomSnap: 0`). The Map page has search, a spawn button, zoom buttons and a readout of the
-biome and position (under the cursor on a desktop, at the centre on a phone). Search finds borders, shops and players. Deep links:
+position (under the cursor on a desktop, at the centre on a phone). The item list and roster behind search load when the search first opens. Search finds borders, shops and players. Deep links:
 `map/?find=Shopping%20District` jumps to a border or shop, and `map/?x=-700&z=38&zoom=12` centres on a point (the player pages use this).
 
 Shop icons only appear once you have zoomed in past `SHOP_MAX_BPP = 3` blocks per pixel (`docs/js/map-core.js`); zoomed further out they would
-only be fixed-size clutter on top of much larger biomes. A border with **Show label on map** turned off keeps its name (still searchable) but
+only be fixed-size clutter on top of much larger areas. A border with **Show label on map** turned off keeps its name (still searchable) but
 drops both the label and the fill, leaving just the outline, so it can mark an area without covering what is inside it, like the Shopping
-District around its shops. The seed is fixed in `docs/js/ui.js` (`SEED`, and `SPAWN`, which is what cubiomes reports for it).
+District around its shops. The seed and spawn point are in `docs/js/ui.js` (`SEED`, `SPAWN`).
 
 ### The editor
 
@@ -259,25 +266,8 @@ them; an outline is stored as `points`, with `x`, `z` set to its middle. The two
 A shop's editor also holds its icon and products (see Shops, products and item search).
 
 While you work, the editor autosaves to your browser's `localStorage` as a backup; that never reaches the site. The real files are
-`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json** (the two download buttons, B and S), replace the file in `docs/` with the download,
+`docs/borders.json` and `docs/shops.json`: press **Export borders.json** or **Export shops.json** (the border and shop icons with a download arrow), replace the file in `docs/` with the download,
 and commit. There is no backend, so a visitor who finds `editor.html` can draw in their own browser but cannot change what anyone else sees.
-
-If you change `wasm/seedmap_wasm.c` (or re-vendor cubiomes), rebuild with:
-
-```bash
-./build_wasm.sh
-```
-
-This needs [emsdk](https://emscripten.org/docs/getting_started/downloads.html)
-(the Emscripten SDK) at `~/emsdk` — Homebrew's own `emscripten` formula was
-version-skewed against Homebrew's `llvm` on this machine when this was set
-up (needed LLVM 24, only 23.x was available), so the build script uses a
-self-contained emsdk checkout instead:
-
-```bash
-git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
-cd ~/emsdk && ./emsdk install latest && ./emsdk activate latest
-```
 
 ## Static image (`generate.sh`)
 
@@ -288,109 +278,22 @@ cd ~/emsdk && ./emsdk install latest && ./emsdk activate latest
 Builds the `seedmap` C tool (first run only), generates a biome map centered
 on the world spawn, converts it to PNG, and writes a self-contained HTML
 viewer to `output/seed_<seed>.html`. Open that file directly in a browser —
-drag to pan, scroll to zoom *within the generated image*, and the
+drag to pan, scroll to zoom _within the generated image_, and the
 legend/spawn marker are baked in from the generation run. Re-running for a
 different seed or radius doesn't touch any other seed's output.
 
 ## Notes / limitations
 
-- **Minecraft version**: generates with `MC_NEWEST`, which this vendored
+- **Minecraft version** (`generate.sh`): generates with `MC_NEWEST`, which this vendored
   fork defines as `MC_26_3` (Java Edition 26.3, "Wilderness Bound", released
   2026-09-15) — includes the new Dappled Forest biome. If a future Minecraft
   version changes biome generation again, re-vendor a newer `xpple/cubiomes`
   checkout the same way (see below) to stay current.
-- **Real terrain height, not a fixed sea-level slice**: `render_tile` in
-  `wasm/seedmap_wasm.c` calls `samplePreliminarySurfaceLevel()` — the same
-  density-function surface estimate vanilla terrain generation itself uses
-  internally (added to this fork's `terrainnoise.c`) — per pixel, then
-  samples the biome *at that real height* (`biomeAtHeight()`) rather than
-  at a fixed y. Earlier versions of this tool sampled at a fixed sea-level
-  plane (y≈60), which is simpler but means mountain-only biomes (jagged
-  peaks, snowy slopes) never showed up, and cave biomes (dripstone caves,
-  lush caves, deep dark) bled into the visible surface wherever the
-  climate parameters happened to match underground — both were artifacts
-  of ignoring real elevation, not something cubiomes gets "wrong".
-- **Hillshading**: each pixel samples all four neighbors (not just
-  east/south) at a one-cell border around the tile, two cells apart, and
-  combines two cues: a directional component (classic NW-lit hillshade,
-  from the width-2 west/east and north/south differences) and a
-  curvature component (how far this point sits above/below the *average*
-  of its four neighbors). The directional term alone went flat on broad,
-  gently-domed hills — their apex has ~zero local slope in any one
-  direction despite clearly being a raised point, which rendered as a
-  flat, uniformly-lit patch with a shading ring only at the steep edges
-  (reported: looked like an unexplained blob in the middle of an
-  island). Curvature catches exactly that case, since the apex of a dome
-  is still measurably convex relative to its surroundings even where its
-  slope is zero. `(tileWidth+2)×(tileHeight+2)` heights get computed per
-  tile for this (one border cell on every side, not just east/south).
-- **Small islands now actually show as islands**: biome classification is
-  climate-based (continentalness/erosion/etc.), which only roughly
-  correlates with height — small-scale terrain noise can push a column
-  above sea level even where the surrounding area's climate reads as
-  "ocean" (a real little rocky island in-game). Coloring strictly by
-  biome ID painted those the same flat ocean blue as the water around
-  them, so they never read as land. `resolveVisibleBiome()` in
-  `wasm/seedmap_wasm.c` checks real height against sea level (63) via
-  cubiomes' own `isOceanic()` helper and substitutes `stony_shore`'s
-  color whenever an "oceanic" column has actually emerged, rather than
-  trying to guess what land biome it "should" be.
-- **Known limitation: narrow straits/channels can render as one
-  landmass instead of two separate islands.** `surfaceHeightAt()`
-  (`samplePreliminarySurfaceLevel`) is a fast spline-fit approximation —
-  it's literally what vanilla generation uses for an initial guess, not
-  the final word — and it can be off by a few blocks exactly at a
-  boundary, which is exactly where a 1-2 block-wide channel between two
-  bits of land lives. This fork's `generateColumn`/`sampleNoiseColumn`
-  compute the *exact* generated height (`exactSurfaceHeightAt()`,
-  used by `get_biome_name_at()` for hover, where a single point is
-  cheap) and would fix this, but profiled at ~0.7ms per point, a full
-  256x256 tile (257×257 height samples for hillshading) would cost
-  ~47 seconds — nowhere near viable, even restricted to the native-
-  resolution zoom tier alone (tried; reverted). A properly batched
-  version using this fork's `generateRegion()` (which memoizes shared
-  corner noise columns across a whole chunk grid instead of recomputing
-  all four per point, the way `exactSurfaceHeightAt` does) could likely
-  get there, but that's a meaningfully bigger rewrite than swapping the
-  height function, and hasn't been attempted yet.
-- **Spawn point**: computed with cubiomes' `getSpawn()`, which follows the
-  same grass-block heuristic the game itself uses.
-- **Performance**: direct per-pixel sampling (what both of the above use)
-  sidesteps a cubiomes quirk the previous fixed-height, `Range`/
-  `genBiomes()`-based renderer had to special-case around: its generic
-  sampler hard-codes assumptions about `Range.scale` that silently
-  misplace samples for some scale values, and uses a documented fast/
-  imprecise mode for others. Direct sampling is also meaningfully faster
-  at zoomed-out levels where that renderer had to supersample 3×3 per
-  pixel to avoid visible aliasing (profiled: ~1.1s/tile before, ~280ms/
-  tile now) — real height varies more smoothly across neighboring pixels
-  than the old fixed-height biome field did, so a single sample per pixel
-  holds up without supersampling. Native-resolution tiles are somewhat
-  slower than before (~230ms vs ~150ms) since real height estimation
-  costs more than the old flat sample, which is a reasonable trade given
-  it all runs off the main thread in the worker pool regardless.
-- **Tile rendering runs in a pool of Web Workers** (`docs/wasm/tile-worker.js`,
-  sized to `navigator.hardwareConcurrency`, capped 2–6), not the main
-  thread. A single tile call into `render_tile()` genuinely costs
-  something — profiled at ~150ms for a native-resolution tile and over 1s
-  for a supersampled zoomed-out one — so doing it synchronously on the
-  main thread would freeze panning/hover/drawing for as long as visible
-  tiles take to compute. Each worker loads its own cubiomes module
-  instance and calls `seed_init()` independently; `docs/js/map-core.js`'s
-  `TilePool.request()` round-robins render requests across the pool and
-  resolves a promise when a worker posts the pixel buffer back
-  (transferred, not copied). Leaflet's `GridLayer` already only requests
-  tiles for what's in the viewport — it was never rendering the whole map
-  at once — the slowness was purely per-tile compute cost blocking the
-  main thread.
-- The live map has no legend — hover a spot to see that biome's name. The
-  static image still shows a legend with exact percentages for its fixed
-  region.
 - **Borders and shops have no real backend yet**: `docs/borders.json` and
   `docs/shops.json` are static files that ship with the site, so anyone who
-  opens it can *see* them, but nobody (including you, once hosted) can edit
+  opens it can _see_ them, but nobody (including you, once hosted) can edit
   them live — publishing a change means re-exporting and committing. Making
-  it "everyone can see, only I can edit" *live* needs a real backend that holds a secret
+  it "everyone can see, only I can edit" _live_ needs a real backend that holds a secret
   server-side (a password or token checked before accepting writes) —
   putting that secret in this page's JavaScript wouldn't work, since a
   static site's source is fully visible to anyone who opens dev tools.
@@ -411,10 +314,9 @@ cp -r *.c *.h tables features loot ~/path/to/seed-viewer/vendor/cubiomes/
 rm -f ~/path/to/seed-viewer/vendor/cubiomes/tests.c
 cd ~/path/to/seed-viewer
 make clean && make   # native CLI tool
-./build_wasm.sh       # live map
 ```
 
-Both build scripts pick up every `.c` file under `vendor/cubiomes`
+The build picks up every `.c` file under `vendor/cubiomes`
 automatically (they build the fork's structure/loot code too, since that's
 how its source tree is wired together, even though this tool only calls the
 biome/spawn functions).

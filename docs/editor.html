@@ -15,29 +15,29 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="assets/brand.css?v=ed552aa7" />
-    <link rel="stylesheet" href="assets/site.css?v=09dd2d51" />
-    <link rel="stylesheet" href="assets/map.css?v=dfbab8c6" />
-    <link rel="stylesheet" href="assets/editor.css?v=618ed3cf" />
+    <link rel="stylesheet" href="assets/brand.css?v=f4ed1d87" />
+    <link rel="stylesheet" href="assets/site.css?v=24adbb0c" />
+    <link rel="stylesheet" href="assets/map.css?v=fe2ab4a0" />
+    <link rel="stylesheet" href="assets/editor.css?v=28d9732a" />
   </head>
   <body class="map-page">
+    <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href="./" aria-label="Voxel, home">
-          <img
-            class="brand__mark mark--light"
-            src="assets/logo-mark.png?v=5ef92691"
-            alt=""
-            width="36"
-            height="36"
-          />
-          <img
-            class="brand__mark mark--dark"
-            src="assets/logo-mark-reversed.png?v=11f13e0e"
-            alt=""
-            width="36"
-            height="36"
-          />
+          <picture>
+            <source
+              srcset="assets/logo-mark-reversed-small.png?v=c3c00a88"
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="brand__mark"
+              src="assets/logo-mark-small.png?v=800d40a4"
+              alt=""
+              width="36"
+              height="36"
+            />
+          </picture>
           <span class="brand__name">Voxel</span>
         </a>
         <button
@@ -101,7 +101,7 @@
       </div>
     </header>
 
-    <main class="map-main">
+    <main id="main" class="map-main">
       <h1 class="sr-only">Voxel map editor</h1>
       <div id="map" role="application" aria-label="Map editor"></div>
 
@@ -129,7 +129,7 @@
         </button>
       </div>
 
-      <p class="mapinfo" id="mapinfo"><strong id="footerHover"></strong><span id="zoomBpp"></span></p>
+      <p class="mapinfo" id="mapinfo"></p>
 
       <div class="msearch" id="msearch" role="search">
         <div class="msearch__bar">
@@ -223,8 +223,10 @@
           aria-label="Export borders.json"
           data-tip="Export borders.json"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4" /></svg
-          ><b class="ibtn__tag">B</b>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 3h9v5h4v5H3Z" />
+            <path d="M19 12v9M15.5 17.5L19 21l3.5-3.5" />
+          </svg>
         </button>
         <button
           class="ibtn ibtn--primary"
@@ -232,8 +234,12 @@
           aria-label="Export shops.json"
           data-tip="Export shops.json"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M7 9l5 5 5-5M4 17v4h16v-4" /></svg
-          ><b class="ibtn__tag">S</b>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 7v8h11V7" />
+            <path d="M2 3h13l1 4H1Z" />
+            <path d="M7 15v-4h3v4" />
+            <path d="M19 12v9M15.5 17.5L19 21l3.5-3.5" />
+          </svg>
         </button>
         <div class="tool-divider"></div>
         <button
@@ -338,6 +344,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script type="module" src="js/nav.js?v=0aa91664"></script>
-    <script type="module" src="js/editor.js?v=eeacc43a"></script>
+    <script type="module" src="js/editor.js?v=da9bcd67"></script>
   </body>
 </html>

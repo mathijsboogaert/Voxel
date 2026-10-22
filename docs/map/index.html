@@ -15,28 +15,28 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="../assets/brand.css?v=ed552aa7" />
-    <link rel="stylesheet" href="../assets/site.css?v=09dd2d51" />
-    <link rel="stylesheet" href="../assets/map.css?v=dfbab8c6" />
+    <link rel="stylesheet" href="../assets/brand.css?v=f4ed1d87" />
+    <link rel="stylesheet" href="../assets/site.css?v=24adbb0c" />
+    <link rel="stylesheet" href="../assets/map.css?v=fe2ab4a0" />
   </head>
   <body class="map-page">
+    <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="wrap">
         <a class="brand" href="../" aria-label="Voxel, home">
-          <img
-            class="brand__mark mark--light"
-            src="../assets/logo-mark.png?v=5ef92691"
-            alt=""
-            width="36"
-            height="36"
-          />
-          <img
-            class="brand__mark mark--dark"
-            src="../assets/logo-mark-reversed.png?v=11f13e0e"
-            alt=""
-            width="36"
-            height="36"
-          />
+          <picture>
+            <source
+              srcset="../assets/logo-mark-reversed-small.png?v=c3c00a88"
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="brand__mark"
+              src="../assets/logo-mark-small.png?v=800d40a4"
+              alt=""
+              width="36"
+              height="36"
+            />
+          </picture>
           <span class="brand__name">Voxel</span>
         </a>
         <button
@@ -62,7 +62,7 @@
             />
             <span class="nav__label">Home</span>
           </a>
-          <a href="./" aria-current="page">
+          <a href="../map/" aria-current="page">
             <img
               class="nav__icon"
               src="../assets/icons/nav/map.png?v=b6a9cf2e"
@@ -96,7 +96,7 @@
       </div>
     </header>
 
-    <main class="map-main">
+    <main id="main" class="map-main">
       <h1 class="sr-only">Voxel world map</h1>
       <div id="map" role="application" aria-label="Interactive world map"></div>
 
@@ -149,6 +149,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script type="module" src="../js/nav.js?v=0aa91664"></script>
-    <script type="module" src="../js/map-page.js?v=8cdc505d"></script>
+    <script type="module" src="../js/map-page.js?v=6aa2a7bb"></script>
   </body>
 </html>

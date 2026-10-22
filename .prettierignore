@@ -1,5 +1,5 @@
 # Filled in by tools/build_viewer.py; formatting could break the placeholders.
-docs/viewer_template.html
+tools/viewer_template.html
 # Generated data.
 docs/data/
 docs/tiles/

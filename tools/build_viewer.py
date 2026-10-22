@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fill docs/viewer_template.html with a seed's JSON metadata + PNG filename."""
+"""Fill tools/viewer_template.html with a seed's JSON metadata + PNG filename."""
 
 import json
 import os
@@ -21,7 +21,7 @@ def main():
     with open(json_path) as f:
         data = json.load(f)
 
-    with open(os.path.join(ROOT, "docs", "viewer_template.html")) as f:
+    with open(os.path.join(ROOT, "tools", "viewer_template.html")) as f:
         template = f.read()
 
     html = template

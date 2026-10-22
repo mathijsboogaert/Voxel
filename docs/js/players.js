@@ -1,11 +1,11 @@
 // Players list: everyone with a face, playtime and when they were last on, most playtime first.
-import { loadStats } from './data.js?v=2048caf9';
-import { el, byId as $, faceEl, playerHref, fmtHours, bar, lastSeen } from './ui.js?v=28a5c906';
+import { loadStats } from './data.js?v=f15302e2';
+import { el, byId as $, faceEl, playerHref, fmtHours, bar, barLength, lastSeen } from './ui.js?v=4d932c1e';
 
 let query = '';
 
 function render(st) {
-  const all = Object.values(st.players).sort((a, b) => b.minutes - a.minutes);
+  const all = Object.values(st.players); // already ranked, most playtime first
   const max = all[0] ? all[0].minutes : 1;
   $('count').textContent =
     `${all.length} players since launch, most playtime first. Tap a face for their page.`;
@@ -31,7 +31,7 @@ function render(st) {
               el('span', { class: 'pcard__name' }, `${p.rank}. ${p.name}`),
               el('span', { class: 'pcard__value' }, fmtHours(p.minutes / 60)),
             ),
-            el('span', { class: 'pbar', 'aria-hidden': 'true' }, bar(Math.max(3, (p.minutes / max) * 100))),
+            el('span', { class: 'pbar', 'aria-hidden': 'true' }, bar(barLength(p.minutes, max))),
             el('span', { class: 'small' }, `Last seen ${lastSeen(p.lastEnd)}`),
           ),
         ),

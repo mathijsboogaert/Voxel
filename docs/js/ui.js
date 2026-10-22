@@ -5,10 +5,11 @@
 export const ROOT = new URL('../', import.meta.url);
 export const url = (path) => new URL(path, ROOT).href;
 
-// One place for the world facts. The spawn is what cubiomes reports for this seed.
+export const DAY = 864e5;
+
+// The world's seed (the editor keys its saved work by it) and spawn point.
 export const SEED = '2344567094';
 export const SPAWN = { x: 32, z: -4 };
-export const MC_VERSION = '26.3';
 
 /** el('div', {class: 'x', onclick: fn}, 'text', childNode, ...) builds DOM without innerHTML. */
 export function el(tag, attrs, ...kids) {
@@ -42,14 +43,47 @@ export function svgEl(tag, attrs, ...kids) {
 /** An element by its id. */
 export const byId = (id) => document.getElementById(id);
 
-/** A JSON file from the site, or the fallback when it is missing or broken. */
-export async function getJSON(path, fallback) {
-  try {
-    const res = await fetch(url(path), { cache: 'no-cache' });
-    return res.ok ? await res.json() : fallback;
-  } catch {
-    return fallback;
+const jsonCache = new Map();
+/**
+ * A JSON file from the site, or the fallback when it is missing or broken. Each file is fetched once per page
+ * and shared by everyone who asks; fresh: true always asks the server again (for data that keeps changing).
+ */
+export function getJSON(path, fallback, { fresh = false } = {}) {
+  if (fresh || !jsonCache.has(path)) {
+    const load = fetch(url(path), fresh ? { cache: 'no-cache' } : {})
+      .then((res) => {
+        if (!res.ok) throw new Error(`${res.status}`);
+        return res.json();
+      })
+      .catch((e) => {
+        console.warn(`Could not load ${path} (${e.message})`);
+        return undefined;
+      });
+    jsonCache.set(path, load);
   }
+  return jsonCache.get(path).then((data) => data ?? fallback);
+}
+
+const LEAFLET = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min';
+let leafletPromise = null;
+/** Leaflet (window.L) for pages that only need a map further down: added on first call, once. */
+export function loadLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+  const add = (node, place) =>
+    new Promise((resolve, reject) => {
+      node.addEventListener('load', resolve);
+      node.addEventListener('error', reject);
+      place(node);
+    });
+  // Leaflet's stylesheet goes before the site's own, so map.css can still override it.
+  const firstSheet = document.querySelector('link[rel="stylesheet"]');
+  leafletPromise ||= Promise.all([
+    add(el('link', { rel: 'stylesheet', href: `${LEAFLET}.css` }), (n) =>
+      firstSheet ? firstSheet.before(n) : document.head.append(n),
+    ),
+    add(el('script', { src: `${LEAFLET}.js` }), (n) => document.head.append(n)),
+  ]).then(() => window.L);
+  return leafletPromise;
 }
 
 /** A player's head. Falls back to a letter tile if the PNG is missing (brand new player). */
@@ -79,20 +113,17 @@ export function faceEl(name, size = '') {
 }
 
 export const playerHref = (name) => url('player/') + '?name=' + encodeURIComponent(name);
+/** The map, zoomed to a border or shop by its name. */
+export const findOnMapHref = (label) => url('map/') + '?find=' + encodeURIComponent(label);
 
 const nf = new Intl.NumberFormat('en', { maximumFractionDigits: 1 });
-export const fmt = (n) => nf.format(n);
+const fmt = (n) => nf.format(n);
 export const fmtInt = (n) => new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(n);
 
 /** 69.4 -> "69 h", 0.5 -> "30 min". */
 export function fmtHours(h) {
   if (h < 1) return Math.round(h * 60) + ' min';
   return (h >= 100 ? fmtInt(h) : fmt(h)) + ' h';
-}
-export function fmtMinutes(m) {
-  const h = Math.floor(m / 60),
-    r = Math.round(m % 60);
-  return h ? (r ? `${h} h ${r} min` : `${h} h`) : `${r} min`;
 }
 
 /** "just now", "12 min ago", "3 h ago", "yesterday", "5 days ago". */
@@ -118,44 +149,10 @@ export function fmtDay(iso) {
 
 export const hourLabel = (h) => String(h).padStart(2, '0') + ':00';
 
-/** Parses a /data CSV into an array of row objects. Handles quoted fields. */
-export function parseCSV(text) {
-  const rows = [];
-  let row = [],
-    field = '',
-    q = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (q) {
-      if (c === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i++;
-        } else q = false;
-      } else field += c;
-    } else if (c === '"') q = true;
-    else if (c === ',') {
-      row.push(field);
-      field = '';
-    } else if (c === '\n' || c === '\r') {
-      if (c === '\r' && text[i + 1] === '\n') i++;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = '';
-    } else field += c;
-  }
-  if (field || row.length) {
-    row.push(field);
-    rows.push(row);
-  }
-  const head = rows.shift() || [];
-  return rows
-    .filter((r) => r.length > 1 || r[0])
-    .map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ''])));
-}
-
 const clampPct = (n) => Math.max(0, Math.min(100, Number(n) || 0));
+
+/** A share of the biggest value as a bar length in %, never so short that the bar disappears. */
+export const barLength = (value, max) => Math.max(3, (value / (max || 1)) * 100);
 
 /**
  * A bar filled from the left, drawn as SVG so the sizes are attributes rather than inline styles.
@@ -190,12 +187,27 @@ export function columns(values, classFor = () => 'bar__fill') {
     rects,
   );
 }
-/** A border's colour as a class, for the small colour dots in search (the editor palette is in site.css). */
-export const colorClass = (hex) =>
-  'c-' +
-  String(hex || '')
-    .replace('#', '')
-    .toLowerCase();
+/** The border colours the editor offers. A border without a colour is drawn in DEFAULT_BORDER_COLOR. */
+export const BORDER_COLORS = [
+  '#ff4d4f',
+  '#ffa94d',
+  '#ffd43b',
+  '#69db7c',
+  '#38d9a9',
+  '#4dabf7',
+  '#748ffc',
+  '#e599f7',
+  '#ffffff',
+];
+export const DEFAULT_BORDER_COLOR = '#ffa94d';
+
+/** A small square in a border's colour (map search, editor swatches). The colour is an SVG attribute, not a style. */
+export const colorDot = (hex) =>
+  svgEl(
+    'svg',
+    { class: 'dot', viewBox: '0 0 1 1', 'aria-hidden': 'true' },
+    svgEl('rect', { width: 1, height: 1, fill: hex || DEFAULT_BORDER_COLOR }),
+  );
 
 const NL = { timeZone: 'Europe/Amsterdam' };
 const dayParts = new Intl.DateTimeFormat('en-CA', {
@@ -208,7 +220,7 @@ const dayParts = new Intl.DateTimeFormat('en-CA', {
 });
 const localDay = (t) => {
   const p = Object.fromEntries(dayParts.formatToParts(t).map((x) => [x.type, x.value]));
-  return { day: Date.UTC(+p.year, +p.month - 1, +p.day) / 864e5, hour: +p.hour };
+  return { day: Date.UTC(+p.year, +p.month - 1, +p.day) / DAY, hour: +p.hour };
 };
 const partOfDay = (h) => (h < 5 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening');
 
