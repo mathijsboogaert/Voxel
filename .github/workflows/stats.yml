@@ -28,7 +28,8 @@ jobs:
       SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
       SFTP_KEY: ${{ secrets.SFTP_KEY }}
       SFTP_LOG_DIR: ${{ secrets.SFTP_LOG_DIR }}
-      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT }}
+      # The server's host key, so the job refuses to talk to anything else. A secret with the same name wins.
+      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT || 'SHA256:5beRzNs0fQlLpxHtBYcYEEzlBF4ZQABeEi+4d0xaHI0' }}
     steps:
       - name: Check configuration
         id: cfg

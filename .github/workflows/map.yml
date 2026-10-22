@@ -36,7 +36,8 @@ jobs:
       SFTP_USER: ${{ secrets.SFTP_USER }}
       SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
       SFTP_KEY: ${{ secrets.SFTP_KEY }}
-      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT }}
+      # The server's host key, so the job refuses to talk to anything else. A secret with the same name wins.
+      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT || 'SHA256:5beRzNs0fQlLpxHtBYcYEEzlBF4ZQABeEi+4d0xaHI0' }}
       SFTP_WORLD_DIR: ${{ secrets.SFTP_WORLD_DIR }}
       # Where the Overworld's region files are on the server. A secret with the same name wins.
       SFTP_REGION_DIR: ${{ secrets.SFTP_REGION_DIR || 'world/dimensions/minecraft/overworld/region' }}

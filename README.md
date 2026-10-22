@@ -165,7 +165,7 @@ nearest upcoming event, otherwise the newest item. An event disappears a day aft
 Set it up once:
 
 1. In the Logic Servers panel open your server, then **Settings, SFTP Details**. Note the address, port and username. For least privilege, create a **subuser** on the server who can only read files, and use that account's password.
-2. In the GitHub repo open **Settings, Secrets and variables, Actions** and add these repository secrets: `SFTP_HOST`, `SFTP_USER`, `SFTP_PASSWORD`. Optional: `SFTP_PORT` (default 2022), `SFTP_LOG_DIR` (default `logs`), `SFTP_KEY` (a private key, instead of the password), and `SFTP_HOST_FINGERPRINT` (the first run prints the value to pin).
+2. In the GitHub repo open **Settings, Secrets and variables, Actions** and add these repository secrets: `SFTP_HOST`, `SFTP_USER`, `SFTP_PASSWORD`. Optional: `SFTP_PORT` (default 2022), `SFTP_LOG_DIR` (default `logs`), `SFTP_KEY` (a private key, instead of the password), and `SFTP_HOST_FINGERPRINT`. The server's host key is already pinned in the workflows; if the server ever gets a new key, the job stops with "Host key mismatch" and prints the new value, which you then put in the workflows or in that secret.
 3. Open the **Actions** tab, choose **Update stats**, and press **Run workflow**. Until the secrets exist the job does nothing and says so.
 
 Things worth knowing:
