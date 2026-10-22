@@ -38,6 +38,7 @@ jobs:
       SFTP_KEY: ${{ secrets.SFTP_KEY }}
       SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT }}
       SFTP_WORLD_DIR: ${{ secrets.SFTP_WORLD_DIR }}
+      SFTP_REGION_DIR: ${{ secrets.SFTP_REGION_DIR }}
       CACHE_DIR: ${{ github.workspace }}/../voxel-world-cache
     steps:
       - name: Check configuration

@@ -3,9 +3,11 @@
 
 Usage:  python3 tools/world/sync_world.py <folder> [--cache DIR] [--all]
 
-It lists world/region/ on the server, writes <folder>/listing.json with every region's size and
-modified time, and downloads into <folder>/region/ only the regions whose size or time differ from
-what the last render used (the render cache's fingerprints.json). Then:
+It finds the Overworld's region folder on the server (world/region in older versions; it also looks
+under world/dimensions/ and a few levels deeper, skipping the Nether and the End), writes
+<folder>/listing.json with every region's size and modified time, and downloads into <folder>/region/
+only the regions whose size or time differ from what the last render used (the render cache's
+fingerprints.json). Then:
 
   python3 tools/world/render_world.py <folder> --listing <folder>/listing.json
 
@@ -14,7 +16,8 @@ the next time, because the comparison is with the last render, not with the cloc
 (the first run, or after it expired) every region is downloaded.
 
 Uses the same settings as tools/sync_logs.py (SFTP_HOST, SFTP_USER, SFTP_PASSWORD or SFTP_KEY,
-SFTP_PORT, SFTP_HOST_FINGERPRINT), plus SFTP_WORLD_DIR (default "world").
+SFTP_PORT, SFTP_HOST_FINGERPRINT), plus SFTP_WORLD_DIR (default "world"), or SFTP_REGION_DIR to name
+the region folder exactly.
 """
 
 import argparse
@@ -29,6 +32,43 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from sync_logs import connect  # noqa: E402
 
 REGION_NAME = re.compile(r'^r\.(-?\d+)\.(-?\d+)\.mca$')
+
+
+NOT_OVERWORLD = re.compile(r'nether|the_end|DIM-?1', re.I)
+
+
+def find_region_dir(sftp, world):
+    """The Overworld's region folder: the known places first, then a search a few levels down."""
+
+    def is_dir(path):
+        try:
+            return stat.S_ISDIR(sftp.stat(path).st_mode)
+        except OSError:
+            return False
+
+    for path in (f'{world}/region', f'{world}/dimensions/minecraft/overworld/region'):
+        if is_dir(path):
+            return path
+    queue = [(world, 0)]
+    while queue:
+        path, depth = queue.pop(0)
+        try:
+            entries = sftp.listdir_attr(path)
+        except OSError:
+            continue
+        for e in entries:
+            child = f'{path}/{e.filename}'
+            if not stat.S_ISDIR(e.st_mode) or NOT_OVERWORLD.search(child[len(world) :]):
+                continue
+            if e.filename == 'region':
+                return child
+            if depth < 4:
+                queue.append((child, depth + 1))
+    try:
+        found = ', '.join(sorted(e.filename for e in sftp.listdir_attr(world)))
+    except OSError as err:
+        found = f'(could not list it: {err})'
+    sys.exit(f'No region folder found under {world}/. It holds: {found}. Set SFTP_REGION_DIR to the right folder.')
 
 
 def plan(remote, cached, everything=False):
@@ -54,9 +94,15 @@ def main():
 
     transport, sftp = connect()
     try:
-        remote_dir = (os.environ.get('SFTP_WORLD_DIR') or 'world').rstrip('/') + '/region'
+        world = (os.environ.get('SFTP_WORLD_DIR') or 'world').strip('/')
+        remote_dir = (os.environ.get('SFTP_REGION_DIR') or '').strip('/') or find_region_dir(sftp, world)
+        print(f'Region files: {remote_dir}/')
         remote = {}
-        for entry in sftp.listdir_attr(remote_dir):
+        try:
+            entries = sftp.listdir_attr(remote_dir)
+        except OSError as err:
+            sys.exit(f'Could not list {remote_dir} on the server ({err}). Set SFTP_REGION_DIR to the right folder.')
+        for entry in entries:
             m = REGION_NAME.match(entry.filename)
             if m and stat.S_ISREG(entry.st_mode) and entry.st_size:
                 remote[f'{m[1]},{m[2]}'] = (entry.st_size, int(entry.st_mtime))
