@@ -1,0 +1,103 @@
+name: Update map
+
+# Once a night: fetches the Overworld region files that changed since the last render over SFTP
+# (tools/world/sync_world.py), redraws only those (tools/world/render_world.py, which keeps every
+# other region in its cache), and commits the map tiles that changed. Also runs on demand from the
+# Actions tab. Uses the same SFTP secrets as the stats job; without them it does nothing.
+#
+# The render cache is kept between runs with actions/cache. The first run, or a run after the cache
+# expired (7 days unused), downloads and draws the whole world once, which takes longer.
+
+on:
+  schedule:
+    - cron: '17 2 * * *' # 04:17 Dutch summer time, 03:17 in winter
+  workflow_dispatch:
+    inputs:
+      all:
+        description: 'Download and redraw every region (ignore the cache)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: map
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      SFTP_HOST: ${{ secrets.SFTP_HOST }}
+      SFTP_PORT: ${{ secrets.SFTP_PORT }}
+      SFTP_USER: ${{ secrets.SFTP_USER }}
+      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      SFTP_KEY: ${{ secrets.SFTP_KEY }}
+      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT }}
+      SFTP_WORLD_DIR: ${{ secrets.SFTP_WORLD_DIR }}
+      CACHE_DIR: ${{ github.workspace }}/../voxel-world-cache
+    steps:
+      - name: Check configuration
+        id: cfg
+        run: |
+          if [ -n "$SFTP_HOST" ] && [ -n "$SFTP_USER" ] && { [ -n "$SFTP_PASSWORD" ] || [ -n "$SFTP_KEY" ]; }; then
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::SFTP secrets are not set, so there is nothing to update. See README, 'Live stats'."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.cfg.outputs.ready == 'yes'
+
+      - uses: actions/setup-python@v5
+        if: steps.cfg.outputs.ready == 'yes'
+        with:
+          python-version: '3.12'
+
+      # Each run saves the cache under a new key and starts from the newest one.
+      - name: Restore the render cache
+        if: steps.cfg.outputs.ready == 'yes'
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CACHE_DIR }}
+          key: voxel-world-${{ github.run_id }}
+          restore-keys: voxel-world-
+
+      - name: Download the regions that changed
+        if: steps.cfg.outputs.ready == 'yes'
+        run: |
+          pip install --quiet paramiko pillow
+          python3 tools/world/sync_world.py "$RUNNER_TEMP/world" --cache "$CACHE_DIR" ${{ inputs.all && '--all' || '' }}
+
+      - name: Draw the map
+        if: steps.cfg.outputs.ready == 'yes'
+        run: python3 tools/world/render_world.py "$RUNNER_TEMP/world" --listing "$RUNNER_TEMP/world/listing.json" --cache "$CACHE_DIR"
+
+      - name: Commit
+        id: commit
+        if: steps.cfg.outputs.ready == 'yes'
+        run: |
+          git config user.name "voxel-map"
+          git config user.email "voxel-map@users.noreply.github.com"
+          git add docs/tiles
+          if git diff --cached --quiet; then
+            echo "Nothing changed on the map."
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Update map ($(date -u +'%Y-%m-%d') UTC)"
+            git pull --rebase --autostash
+            git push
+            echo "pushed=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pushes made with the built-in token don't always start a Pages build by themselves.
+      - name: Ask Pages to rebuild
+        if: steps.commit.outputs.pushed == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

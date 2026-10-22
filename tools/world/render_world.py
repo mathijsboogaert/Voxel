@@ -25,6 +25,9 @@ Options:
   --workers N     processes (default: all cores)
   --force         ignore the cache
   --only rx,rz[;rx,rz]   render just these regions (for testing)
+  --listing FILE  every region on the server, as JSON {"rx,rz": [size, mtime]} (tools/world/sync_world.py
+                  writes it). The source folder then holds only the regions that changed; the rest come
+                  from the cache. This is how the daily map job works.
 
 Standard library plus Pillow. Reading the format: Anvil .mca files, chunks written by Minecraft 26.x.
 """
@@ -85,6 +88,18 @@ class Source:
                     m = pat.search(mem.name)
                     if m and mem.isfile():
                         self.entries[(int(m[1]), int(m[2]))] = (mem.offset_data, mem.size, int(mem.mtime))
+
+    def add_listing(self, path):
+        """Takes the full list of regions from a listing; regions that weren't downloaded are read from the cache."""
+        with open(path) as f:
+            listing = json.load(f)
+        for name, (size, mtime) in listing.items():
+            key = tuple(int(v) for v in name.split(','))
+            offset = self.entries[key][0] if key in self.entries else 'missing'
+            self.entries[key] = (offset, size, int(mtime))
+
+    def has_file(self, key):
+        return self.entries[key][0] != 'missing'
 
     def fingerprint(self, key):
         _, size, mtime = self.entries[key]
@@ -585,8 +600,19 @@ def build_tiles(region_pngs, detail, out_dir, box, source_label):
         source=source_label,
         tiles={str(z): sorted([x, y] for (x, y) in tiles) for z, tiles in pyramid.items()},
     )
-    with open(os.path.join(out_dir, 'manifest.json'), 'w') as f:
-        json.dump(manifest, f, separators=(',', ':'))
+    # Only rewrite the manifest when the tiles changed, so a night without changes makes no commit.
+    path = os.path.join(out_dir, 'manifest.json')
+    try:
+        with open(path) as f:
+            old = json.load(f)
+    except (OSError, ValueError):
+        old = {}
+    same = {k: v for k, v in old.items() if k not in ('generated', 'source')} == {
+        k: v for k, v in manifest.items() if k not in ('generated', 'source')
+    }
+    if not same:
+        with open(path, 'w') as f:
+            json.dump(manifest, f, separators=(',', ':'))
     return sum(len(v) for v in pyramid.values()), size, time.time() - t0, pyramid
 
 
@@ -602,12 +628,15 @@ def main():
     ap.add_argument('--force', action='store_true')
     ap.add_argument('--only')
     ap.add_argument('--preview', help='also write one overview picture here')
+    ap.add_argument('--listing', help='JSON list of every region on the server; see the notes at the top')
     a = ap.parse_args()
 
     out_dir = os.path.abspath(a.out)
     docs = os.path.dirname(out_dir)
     os.makedirs(a.cache, exist_ok=True)
     src = Source(a.source)
+    if a.listing:
+        src.add_listing(a.listing)
     if not src.entries:
         sys.exit('No r.X.Z.mca region files found in ' + a.source)
 
@@ -640,7 +669,7 @@ def main():
     def recfile(k):
         return os.path.join(a.cache, f'r.{k[0]}.{k[1]}.rec')
 
-    stale = []
+    stale, missing = [], []
     for k in todo:
         fp = src.fingerprint(k)
         f = recfile(k)
@@ -650,8 +679,14 @@ def main():
                 ok = load_record(f)['fp'] == fp
             except Exception:
                 ok = False
-        if not ok:
+        if ok:
+            continue
+        if src.has_file(k):
             stale.append((k, src.path, f, fp))
+        else:
+            missing.append(k)  # changed on the server but not downloaded: keep what the cache has, if anything
+    if missing:
+        print(f'note: {len(missing)} changed regions were not downloaded; the cached picture stays where there is one')
     print(
         f'Phase 1: reading {len(stale)} changed regions ({len(todo) - len(stale)} unchanged, from cache)',
         f'with {a.workers} workers',
@@ -674,10 +709,13 @@ def main():
         redo = [
             k
             for k in todo
-            if k in changed
-            or (k[0] - 1, k[1]) in changed
-            or (k[0], k[1] - 1) in changed
-            or not os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))
+            if os.path.exists(recfile(k))  # a region with nothing cached and nothing downloaded can't be drawn
+            and (
+                k in changed
+                or (k[0] - 1, k[1]) in changed
+                or (k[0], k[1] - 1) in changed
+                or not os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))
+            )
         ]
         print(f'Phase 2: colouring and shading {len(redo)} regions')
         jobs = [(k, a.cache, os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png')) for k in redo]
@@ -685,11 +723,22 @@ def main():
             if i % 50 == 0 or i == len(jobs):
                 print(f'  [{i}/{len(jobs)}]', flush=True)
 
+    # What the cache now holds, so tools/world/sync_world.py downloads only what differs next time.
+    rendered = {k: src.fingerprint(k) for k in todo if k not in missing and os.path.exists(recfile(k))}
+    with open(os.path.join(a.cache, 'fingerprints.json'), 'w') as f:
+        json.dump({f'{x},{z}': fp for (x, z), fp in sorted(rendered.items())}, f)
+
     pngs = {
         k: os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png')
         for k in todo
         if os.path.exists(os.path.join(a.cache, f'r.{k[0]}.{k[1]}.png'))
     }
+    # A failed download or a lost cache must not replace the map with a partial one: stop and keep the old tiles.
+    if len(pngs) < len(todo) * 0.95:
+        sys.exit(
+            f'Only {len(pngs)} of {len(todo)} regions could be drawn, so the tiles are left as they are. '
+            'Run tools/world/sync_world.py with --all (or render from a full backup) to fill the cache.'
+        )
     print(f'Phase 3: building tiles for {len(pngs)} regions')
     count, size, secs, pyramid = build_tiles(pngs, detail, out_dir, box, os.path.basename(a.source))
     per_zoom = ', '.join(f'z{z}: {len(t)}' for z, t in sorted(pyramid.items(), reverse=True))

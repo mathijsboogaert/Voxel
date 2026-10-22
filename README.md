@@ -206,7 +206,17 @@ update, with a letter tile until their head has been fetched.
 The map shows the real, built world, drawn from the server's region files, not the seed. Everything
 that has been explored is on the map; builds are readable close to where people live.
 
-To update it, download a new world backup (the `.tar` from the panel) and run:
+**It updates itself every night.** The `Update map` GitHub Action (`.github/workflows/map.yml`) runs at
+04:17 Dutch time. Over the same SFTP connection as the stats it lists `world/region/` on the server,
+downloads only the region files whose size or time changed since the last render
+(`tools/world/sync_world.py`), redraws those, and commits the tiles that changed. A skipped night is caught
+up the next time, because it compares with the last render, not with the clock. The render cache (every
+region's drawing) is kept between runs with GitHub's Actions cache; the first run, or one after the cache
+expired (7 days without a run), downloads and draws the whole world once. Run it by hand from the Actions
+tab; tick "Download and redraw every region" to start over. If fewer than 95% of the regions can be drawn,
+it stops and leaves the map as it was. Set `SFTP_WORLD_DIR` if the world folder isn't called `world`.
+
+To render by hand from a world backup (the `.tar` from the panel) instead:
 
 ```
 python3 tools/world/render_world.py ~/Downloads/archive-….tar
@@ -222,7 +232,7 @@ tiles and push. Only changed regions are redone; the cache lives in `~/.cache/vo
   detail (about six times the size, roughly 125 MB).
 - Block colours are in `tools/world/colors.json` (see `tools/world/NOTICE.md` for where they come from).
   Blocks it doesn't know are drawn grey and listed at the end of the run.
-- Each update rewrites the tiles that changed, which grows the repo history, so don't render every day.
+- Each update commits only the tiles that changed (a night without building makes no commit), but tiles that do change add to the repo's history over time.
 
 ## The map
 
