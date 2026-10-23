@@ -206,7 +206,9 @@
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaElEQVR42rWTUQ4AMQREjfvfefplI0J1a7efqHlDQEQog6ddAclZgxGBqe8oWgIAdwQkn88ASop/ZuDVvZWMQt+sLKvTE/UdxbczMOXKisU9oVbJ2KTKwx9T5r+LIV5jVM4G5xties4LRgZGB4iS6oIAAAAASUVORK5CYII=",
     "products": [
       {
-        "service": "Kills"
+        "service": "Kills",
+        "price": 8,
+        "priceItem": "diamond"
       }
     ]
   },
@@ -380,7 +382,9 @@
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApUlEQVR42mNkUE77z0ABYCKk4NPKL5QZ8PPKEfINeD11B0FXEHSBaLMHXlcw4bNdNNsDbgguV+B2wQviwoIJp+3NHhheweYKFANe1+7AajuuwMV0gQTEEHTbYYAvnAdhCVYDXkAMITslijZ7MDC8QHUihhclGOCxg2IATBMuQ2BOh2mG8RmRMxM2/2MVQ0ojjOi5ET2QRJs9EK55geRVKGCkNDsDAI/FUi0fNecSAAAAAElFTkSuQmCC",
     "products": [
       {
-        "service": "Bailiff (deurwaarder)"
+        "service": "Bailiff (deurwaarder)",
+        "price": 16,
+        "priceItem": "diamond"
       }
     ]
   },
