@@ -1063,6 +1063,10 @@ main > .wrap {
   padding-top: var(--space-3);
   border-top: var(--stroke-1) solid var(--line-soft);
 }
+.scard__owners {
+  display: grid;
+  min-width: 0;
+}
 .scard__owner {
   display: inline-flex;
   align-items: center;

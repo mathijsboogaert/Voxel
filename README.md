@@ -12,7 +12,7 @@ the stats come from the server's own logs.
 | Home    | `docs/index.html`                  | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who is around |
 | Map     | `docs/map/index.html`              | The full pannable, zoomable world map with borders, shops and search. Read-only                                                                                |
 | Players | `docs/players/index.html`          | Everyone, with face, playtime and when they were last on                                                                                                       |
-| Shops   | `docs/shops/index.html`            | Every shop with its own icon, owner and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                       |
+| Shops   | `docs/shops/index.html`            | Every shop with its own icon, owners and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                      |
 | Player  | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements                                                                |
 | Editor  | `docs/editor.html`                 | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site                                                            |
 
@@ -80,17 +80,17 @@ It only touches links whose file changed. Run prettier and the stamp twice: a ve
 
 ## Data files
 
-| File                                                                   | Written by                | Holds                                                                                                                                                                                         |
-| ---------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `docs/data/voxel-sessions.csv`, `voxel-hourly.csv`, `voxel-events.csv` | `tools/build_stats.py`    | Play sessions, minutes per hour, and deaths, advancements and chat counts (never message text)                                                                                                |
-| `docs/data/meta.json`                                                  | `tools/build_stats.py`    | When the data was last built, shown as "Updated X ago"                                                                                                                                        |
-| `docs/data/stats.json`                                                 | `tools/compute_stats.mjs` | Every number the site shows, worked out from the CSVs above (about 30 KB). The site only downloads this file, never the CSVs. After editing `adjust.json`, run `node tools/compute_stats.mjs` |
-| `docs/data/players.json` and `docs/faces/*.png`                        | `tools/fetch_faces.py`    | The roster (name and UUID) and each player's head                                                                                                                                             |
-| `docs/data/adjust.json`                                                | by hand                   | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time                |
-| `docs/borders.json`                                                    | the editor                | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names)                                                                                                              |
-| `docs/shops.json`                                                      | the editor                | Shops: `x`, `z`, `points`, `label`, `owner`, `added` (when it was placed), `icon` (a 16x16 PNG as a `data:` URL) and `products`                                                               |
-| `docs/data/items.json`                                                 | `tools/build_items.py`    | Every Minecraft 26.3 item with its English name and recipes, for the item pickers and item search                                                                                             |
-| `docs/news.json`                                                       | by hand                   | Extra news items, mainly events with a countdown (below)                                                                                                                                      |
+| File                                                                   | Written by                | Holds                                                                                                                                                                                               |
+| ---------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/data/voxel-sessions.csv`, `voxel-hourly.csv`, `voxel-events.csv` | `tools/build_stats.py`    | Play sessions, minutes per hour, and deaths, advancements and chat counts (never message text)                                                                                                      |
+| `docs/data/meta.json`                                                  | `tools/build_stats.py`    | When the data was last built, shown as "Updated X ago"                                                                                                                                              |
+| `docs/data/stats.json`                                                 | `tools/compute_stats.mjs` | Every number the site shows, worked out from the CSVs above (about 30 KB). The site only downloads this file, never the CSVs. After editing `adjust.json`, run `node tools/compute_stats.mjs`       |
+| `docs/data/players.json` and `docs/faces/*.png`                        | `tools/fetch_faces.py`    | The roster (name and UUID) and each player's head                                                                                                                                                   |
+| `docs/data/adjust.json`                                                | by hand                   | Minutes taken off a player's played time: `afkMinutes` (light teal) and `adminMinutes` (yellow). Only the player's own page shows the split; elsewhere the time is active time                      |
+| `docs/borders.json`                                                    | the editor                | Borders: `points`, `label`, `color`, `hideLabel`, and `owners` (Minecraft names)                                                                                                                    |
+| `docs/shops.json`                                                      | the editor                | Shops: `x`, `z`, `points`, `label`, `owners` (Minecraft names; older files have one `owner`, which still works), `added` (when it was placed), `icon` (a 16x16 PNG as a `data:` URL) and `products` |
+| `docs/data/items.json`                                                 | `tools/build_items.py`    | Every Minecraft 26.3 item with its English name and recipes, and every enchantment, for the item pickers and item search                                                                            |
+| `docs/news.json`                                                       | by hand                   | Extra news items, mainly events with a countdown (below)                                                                                                                                            |
 
 ## Shops, products and item search
 
@@ -107,12 +107,16 @@ what it is paid in, Diamond unless you pick another item). In `shops.json` a lin
 
 **Kinds of lines.** Each line in a shop is one of three kinds, picked per line in the editor:
 
-- **Item**: a Minecraft item, `{ "item": "oak_log", "amount": 32, "price": 1, "priceItem": "diamond" }`.
+- **Item**: a Minecraft item, `{ "item": "oak_log", "amount": 32, "price": 1, "priceItem": "diamond" }`. An enchanted book
+  names its enchantment, and optionally the level: `{ "item": "enchanted_book", "enchant": "mending", "price": 5 }` shows as
+  "Enchanted Book: Mending". In the editor, type the enchantment ("Mending", "Efficiency V" or "Efficiency 5") or pick
+  "Enchanted Book: …" from the list. The enchantments and their highest levels come from the game's data (`enchants` in
+  `docs/data/items.json`). Search finds a book by its enchantment ("mending").
 - **Other**: something for sale that isn't an item, like a Happy Ghast, `{ "name": "Happy Ghast", "amount": 1, "price": 4 }`.
 - **Service**: free text, like `{ "service": "Delivery" }`.
 
 What a shop is follows from its lines: only items or other products makes it a **Shop**, only services a **Service**, and both a
-**Shop & service** (The Flying Dutchman). The Shops page filter shows a mixed shop under both Items and Services, and search
+**Shop & service** (The Flying Dutchman). The Shops page filter shows a mixed shop under both Shops and Services, and search
 matches the text of other products and services.
 
 **Search** (Map page and Shops page) finds shops by name and by what they sell, and it knows recipes: someone looking for
@@ -260,7 +264,7 @@ District around its shops. The seed and spawn point are in `docs/js/ui.js` (`SEE
 horizontal and vertical lines only (each corner keeps the previous corner's x or z; the shape is closed with one extra corner if needed). Double-click,
 Enter, clicking the first corner or **Finish shape** ends it; Escape or **Undo point** steps back). Finishing a border opens a small editor for its name, colour, label
 visibility and owners; clicking a border later reopens it. **Draw shop outline** works the same way, over the shop's building: the outline (orange with a dark edge) leaves the build visible
-underneath, and finishing it asks for a name and owner. Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Such a shop counts as still being built: it stays on the map and on its owner's page, but is left off the Shops page and the homepage news until the wall comes down. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
+underneath, and finishing it asks for a name and owners (a shop can have several, like a border). Ticking **Spoiler wall** in a shop's editor fills its outline solid black (`"spoiler": true`), so what is behind it can't be seen. Such a shop counts as still being built: it stays on the map and on its owners' pages, but is left off the Shops page and the homepage news until the wall comes down. Shops in `shops.json` that are only a point (`x`, `z`) keep their small icon until you redraw
 them; an outline is stored as `points`, with `x`, `z` set to its middle. The two drawing tools switch each other off. The tools are a strip of icon buttons on the left (hover one for its name, or press **?**);
 **Clear all borders** (the bin) needs a second click within three seconds to confirm. There is no "clear all shops": delete shops one by one.
 A shop's editor also holds its icon and products (see Shops, products and item search).

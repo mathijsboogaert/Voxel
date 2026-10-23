@@ -18,6 +18,7 @@ Output shape (kept small, everything by index):
   recipes       {item index: [[kind, count, slots], ...]}
                 kind: c craft, f furnace (also blast furnace, smoker, campfire), s stonecutter, m smithing, t transmute
                 slots: one entry per distinct ingredient: an item index, or "#tag"
+  enchants      [[id, name, max level], ...]          for enchanted books ("Enchanted Book: Mending")
 """
 
 import json
@@ -60,15 +61,19 @@ def main():
         subprocess.run(['git', 'init', '-q', repo], check=True)
         subprocess.run(['git', '-C', repo, 'remote', 'add', 'origin', REPO], check=True)
         summary = archive(repo, f'{version}-summary', 'registries/data.min.json')
-        registry = json.load(summary.extractfile('registries/data.min.json'))['item']
+        registries = json.load(summary.extractfile('registries/data.min.json'))
+        registry = registries['item']
         lang = json.load(
             archive(repo, f'{version}-assets-json', 'assets/minecraft/lang/en_us.json').extractfile(
                 'assets/minecraft/lang/en_us.json'
             )
         )
-        data = archive(repo, f'{version}-data', 'data/minecraft/recipe', 'data/minecraft/tags/item')
+        data = archive(
+            repo, f'{version}-data', 'data/minecraft/recipe', 'data/minecraft/tags/item', 'data/minecraft/enchantment'
+        )
         recipes = dict(members(data, 'data/minecraft/recipe/'))
         raw_tags = dict(members(data, 'data/minecraft/tags/item/'))
+        enchantments = dict(members(data, 'data/minecraft/enchantment/'))
 
     items = [i for i in registry if i != 'air']
     index = {i: n for n, i in enumerate(items)}
@@ -181,12 +186,18 @@ def main():
         'items': [[i, name(i)] for i in items],
         'tags': tags,
         'recipes': {str(k): v for k, v in sorted(out_recipes.items())},
+        'enchants': [
+            [e, lang.get(f'enchantment.minecraft.{e}', e.replace('_', ' ').title()), enchantments[e]['max_level']]
+            for e in sorted(registries['enchantment'], key=lambda e: lang.get(f'enchantment.minecraft.{e}', e))
+            if e in enchantments
+        ],
     }
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     with open(out, 'w') as f:
         json.dump(doc, f, separators=(',', ':'), ensure_ascii=False)
     print(
-        f'{len(items)} items, {sum(map(len, out_recipes.values()))} recipes, {len(tags)} tags',
+        f'{len(items)} items, {sum(map(len, out_recipes.values()))} recipes, {len(tags)} tags,',
+        f'{len(doc["enchants"])} enchantments',
         f'-> {out} ({os.path.getsize(out) // 1024} KB)',
     )
 

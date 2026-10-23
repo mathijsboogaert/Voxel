@@ -16,7 +16,7 @@
     />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="assets/brand.css?v=f4ed1d87" />
-    <link rel="stylesheet" href="assets/site.css?v=24adbb0c" />
+    <link rel="stylesheet" href="assets/site.css?v=4c9d6bd5" />
     <link rel="stylesheet" href="assets/map.css?v=fe2ab4a0" />
     <link rel="stylesheet" href="assets/editor.css?v=28d9732a" />
   </head>
@@ -296,13 +296,14 @@
       <div id="shopEditor" class="epanel">
         <h2>Shop</h2>
         <input class="efield" id="shopLabelInput" type="text" placeholder="Shop name" maxlength="40" />
-        <span class="field-label">Owner</span>
+        <span class="field-label">Owners</span>
+        <div id="shopOwnerChips" class="owner-chips"></div>
         <input
           class="efield"
           id="shopOwnerInput"
           list="rosterList"
           type="text"
-          placeholder="Player name"
+          placeholder="Add a player"
           autocomplete="off"
         />
         <datalist id="rosterList"></datalist>
@@ -329,6 +330,7 @@
         <ul class="plines" id="shopProducts"></ul>
         <button type="button" class="ebtn ebtn--sm" id="shopAddProduct">+ Add line</button>
         <datalist id="itemList"></datalist>
+        <datalist id="lineItemList"></datalist>
 
         <label class="toggle-row" id="shopSpoilerRow">
           <input type="checkbox" id="shopSpoilerInput" />
@@ -344,6 +346,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script type="module" src="js/nav.js?v=0aa91664"></script>
-    <script type="module" src="js/editor.js?v=da9bcd67"></script>
+    <script type="module" src="js/editor.js?v=afaf12ad"></script>
   </body>
 </html>

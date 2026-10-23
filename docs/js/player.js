@@ -2,7 +2,7 @@
 // where their base and shop are, and what they achieved lately. Opened as player/?name=Name.
 import { loadStats } from './data.js?v=f15302e2';
 import { raceBlock } from './race.js?v=c045db3d';
-import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=c31c3fa6';
+import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=541d6721';
 import { statTile, hourChart } from './widgets.js?v=f256c111';
 import {
   el,
@@ -283,7 +283,8 @@ async function placesFor(player) {
     }
   }
   for (const s of shops) {
-    if (s.owner === player) out.push({ kind: 'shop', label: s.label || 'Shop', x: s.x, z: s.z, shop: s });
+    if (ownersOf(s).includes(player))
+      out.push({ kind: 'shop', label: s.label || 'Shop', x: s.x, z: s.z, shop: s });
   }
   for (const o of out) o.href = mapHref(o.x, o.z);
   return out;

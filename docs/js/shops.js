@@ -1,4 +1,4 @@
-// Shops page: every shop with its icon, owner, place and what it sells for how much.
+// Shops page: every shop with its icon, owners, place and what it sells for how much.
 // The search box takes an item or a shop name and also finds shops that sell the parts of an item
 // (see findShops in shops-core.js). Deep link: shops/#shop-slug scrolls to one shop, shops/?q=... searches.
 import { el, byId, getJSON, faceEl, playerHref, findOnMapHref } from './ui.js?v=4d932c1e';
@@ -17,7 +17,8 @@ import {
   lineName,
   isOpen,
   productRows,
-} from './shops-core.js?v=c31c3fa6';
+  ownersOf,
+} from './shops-core.js?v=541d6721';
 import { chipRow } from './widgets.js?v=f256c111';
 
 /** What a row offers: one item or service, or a group that opens to show every kind in it. */
@@ -54,17 +55,16 @@ function productTable(db, s) {
 
 /**
  * One shop: its icon, kind (Shop, Service, or Shop & service) and name on top, what it offers in the middle,
- * and its owner and the way to it on the map at the bottom.
+ * and its owners and the way to it on the map at the bottom.
  */
 function card(db, s, reason) {
-  const owner = s.owner
-    ? el(
-        'a',
-        { class: 'scard__owner', href: playerHref(s.owner) },
-        faceEl(s.owner, 'sm'),
-        el('span', {}, s.owner),
-      )
-    : el('span');
+  const owners = el(
+    'div',
+    { class: 'scard__owners' },
+    ownersOf(s).map((name) =>
+      el('a', { class: 'scard__owner', href: playerHref(name) }, faceEl(name, 'sm'), el('span', {}, name)),
+    ),
+  );
   return el(
     'li',
     { class: 'scard', id: shopSlug(s) },
@@ -85,7 +85,7 @@ function card(db, s, reason) {
       reason ? el('p', { class: 'scard__why' }, reason) : null,
       productTable(db, s),
     ),
-    el('div', { class: 'scard__foot' }, owner, el('a', { href: findOnMapHref(s.label) }, 'On the map')),
+    el('div', { class: 'scard__foot' }, owners, el('a', { href: findOnMapHref(s.label) }, 'On the map')),
   );
 }
 

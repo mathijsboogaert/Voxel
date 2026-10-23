@@ -8,7 +8,7 @@ import {
   worldToLatLng,
   latLngToWorld,
   DETAIL_ZOOM,
-} from './map-core.js?v=00506aba';
+} from './map-core.js?v=741e673b';
 import {
   el,
   byId,
@@ -19,7 +19,14 @@ import {
   BORDER_COLORS,
   DEFAULT_BORDER_COLOR,
 } from './ui.js?v=4d932c1e';
-import { loadItems, shopIconEl, lineKind } from './shops-core.js?v=c31c3fa6';
+import {
+  loadItems,
+  shopIconEl,
+  lineKind,
+  ownersOf,
+  parseItem,
+  lineItemName,
+} from './shops-core.js?v=541d6721';
 import { mapSearch } from './map-search.js?v=d6d0b003';
 
 const { map } = await createBaseMap(byId('map'));
@@ -48,7 +55,6 @@ const BORDER_KEY = `voxel-map-borders:${SEED}`;
 const SHOP_KEY = `voxel-map-shops:${SEED}`;
 
 const toLatLngs = (points) => points.map((p) => worldToLatLng(p.x, p.z));
-const keepKeysToSelf = (input) => input.addEventListener('keydown', (e) => e.stopPropagation());
 
 /** The shipped file from docs/, or what this browser kept if that is missing or empty. */
 async function loadSaved(file, storageKey) {
@@ -108,6 +114,58 @@ getJSON('data/players.json', []).then((list) => {
   byId('rosterList').replaceChildren(...rosterNames.map((n) => el('option', { value: n })));
 });
 const matchPlayer = (typed) => rosterNames.find((n) => n.toLowerCase() === typed.trim().toLowerCase()) || '';
+
+/**
+ * Owners as removable chips, plus a text box that adds a player (picked from the roster, or typed: a new player
+ * isn't in the roster until the next stats update). Returns {set(names), get()}; get() also takes what is typed.
+ */
+function ownerPicker(chipsEl, input) {
+  let names = [];
+  const render = () =>
+    chipsEl.replaceChildren(
+      ...names.map((name) =>
+        el(
+          'button',
+          {
+            type: 'button',
+            class: 'owner-chip',
+            title: 'Remove',
+            onclick: () => {
+              names = names.filter((n) => n !== name);
+              render();
+            },
+          },
+          `${name}  ×`,
+        ),
+      ),
+    );
+  const addTyped = () => {
+    const name = matchPlayer(input.value) || input.value.trim();
+    if (name && !names.includes(name)) {
+      names.push(name);
+      render();
+    }
+    input.value = '';
+  };
+  input.addEventListener('change', () => matchPlayer(input.value) && addTyped());
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    addTyped();
+  });
+  return {
+    set(list) {
+      names = [...list];
+      input.value = '';
+      render();
+    },
+    get() {
+      addTyped();
+      return [...names];
+    },
+  };
+}
 
 /* ---- Drawing -------------------------------------------------------------------------------- */
 // Every point snaps to a whole block, and every line runs straight horizontally or vertically:
@@ -347,43 +405,12 @@ function clearAllBorders() {
 const borderPanel = byId('borderEditor');
 const borderLabelInput = byId('borderLabelInput');
 const borderShowLabelInput = byId('borderShowLabelInput');
-const ownerChips = byId('ownerChips');
-const ownerInput = byId('ownerInput');
+const borderOwners = ownerPicker(byId('ownerChips'), byId('ownerInput'));
 const swatches = byId('colorSwatches');
 const borderSaveBtn = byId('borderSave');
 
 let editingBorder = null;
-let editingOwners = [];
 let editingColor = null;
-
-function renderOwnerChips() {
-  ownerChips.replaceChildren(
-    ...editingOwners.map((name) =>
-      el(
-        'button',
-        {
-          type: 'button',
-          class: 'owner-chip',
-          title: 'Remove',
-          onclick: () => {
-            editingOwners = editingOwners.filter((n) => n !== name);
-            renderOwnerChips();
-          },
-        },
-        `${name}  ×`,
-      ),
-    ),
-  );
-}
-
-function addOwnerFromInput() {
-  const name = matchPlayer(ownerInput.value);
-  if (name && !editingOwners.includes(name)) {
-    editingOwners.push(name);
-    renderOwnerChips();
-  }
-  if (name || !ownerInput.value.trim()) ownerInput.value = '';
-}
 
 function renderSwatches() {
   swatches.replaceChildren(
@@ -410,11 +437,9 @@ function openBorderEditor(border) {
   closeShopEditor();
   editingBorder = border;
   editingColor = border.color;
-  editingOwners = [...border.owners];
+  borderOwners.set(border.owners);
   borderLabelInput.value = border.label;
   borderShowLabelInput.checked = !border.hideLabel;
-  ownerInput.value = '';
-  renderOwnerChips();
   renderSwatches();
   borderPanel.classList.add('open');
   borderLabelInput.focus();
@@ -428,11 +453,10 @@ function closeBorderEditor() {
 
 borderSaveBtn.addEventListener('click', () => {
   if (!editingBorder) return;
-  addOwnerFromInput();
   Object.assign(editingBorder, {
     label: borderLabelInput.value.trim(),
     hideLabel: !borderShowLabelInput.checked,
-    owners: [...editingOwners],
+    owners: borderOwners.get(),
     color: editingColor,
   });
   editingBorder.layer.setStyle({ color: editingColor });
@@ -452,19 +476,12 @@ borderLabelInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') borderSaveBtn.click();
   else if (e.key === 'Escape') closeBorderEditor();
 });
-ownerInput.addEventListener('change', addOwnerFromInput);
-ownerInput.addEventListener('keydown', (e) => {
-  e.stopPropagation();
-  if (e.key !== 'Enter') return;
-  e.preventDefault();
-  addOwnerFromInput();
-});
 
 /* ---- Shops ---------------------------------------------------------------------------------- */
 // A shop is an outline over its building (drawn with the same tool as borders), so the build stays
 // visible. Older shops that are only a point keep a marker icon until they are redrawn.
 
-let shops = []; // {x, z, points, label, owner, added, spoiler, icon, products, marker, shape}
+let shops = []; // {x, z, points, label, owners, added, spoiler, icon, products, marker, shape}
 
 const outlineClass = (spoiler) => `shop-outline border-line${spoiler ? ' shop-outline--spoiler' : ''}`;
 const pointIcon = L.icon({
@@ -481,7 +498,7 @@ const serializeShop = (s) => ({
   label: s.label,
   ...(s.points ? { points: s.points } : {}),
   ...(s.spoiler ? { spoiler: true } : {}),
-  ...(s.owner ? { owner: s.owner } : {}),
+  ...(s.owners.length ? { owners: s.owners } : {}),
   ...(s.added ? { added: s.added } : {}),
   ...(s.icon ? { icon: s.icon } : {}),
   ...(s.products.length ? { products: s.products } : {}),
@@ -495,7 +512,7 @@ function addShop(data) {
     z: data.z,
     points,
     label: data.label || '',
-    owner: data.owner || '', // the player's Minecraft name
+    owners: ownersOf(data), // Minecraft names; older files have a single `owner`
     added: data.added || '', // when it was placed; drives "new shop" news on the homepage
     spoiler: !!data.spoiler && !!points,
     icon: data.icon || '',
@@ -534,7 +551,7 @@ const syncShops = showWhenClose(map, () => shops.map((s) => s.marker));
 
 const shopPanel = byId('shopEditor');
 const shopLabelInput = byId('shopLabelInput');
-const shopOwnerInput = byId('shopOwnerInput');
+const shopOwners = ownerPicker(byId('shopOwnerChips'), byId('shopOwnerInput'));
 const shopSpoilerInput = byId('shopSpoilerInput');
 const shopSaveBtn = byId('shopSave');
 const shopCancelBtn = byId('shopCancel');
@@ -607,10 +624,13 @@ iconDrop.addEventListener('drop', (e) => {
   readIcon(e.dataTransfer.files[0]);
 });
 
-// Each line is a Minecraft item (docs/data/items.json), another product that isn't an item (a Happy Ghast),
-// or a service (Delivery). A shop can mix them; what it is (Shop, Service or both) follows from its lines.
+// Each line is a Minecraft item (docs/data/items.json), an enchanted book ("Mending", "Efficiency V"), another
+// product that isn't an item (a Happy Ghast), or a service (Delivery). A shop can mix them; what it is
+// (Shop, Service or both) follows from its lines.
 let itemDb = null;
 const itemByName = (text) => itemDb && itemDb.byName.get(text.trim().toLowerCase());
+/** What a line's name box holds: an item or a book ({item, enchant?, level?}), or null. */
+const lineItem = (text) => parseItem(itemDb, text);
 const nameOf = (id) =>
   itemDb && itemDb.byId.get(id) ? itemDb.byId.get(id).name : (id || '').replaceAll('_', ' ');
 
@@ -619,6 +639,12 @@ loadItems().then((db) => {
   itemDb = db;
   if (!db) return;
   byId('itemList').replaceChildren(...db.items.map((it) => el('option', { value: it.name })));
+  byId('lineItemList').replaceChildren(
+    ...db.items.map((it) => el('option', { value: it.name })),
+    ...db.enchants.map((e) =>
+      el('option', { value: lineItemName(db, { item: 'enchanted_book', enchant: e.id }) }),
+    ),
+  );
   if (typed) renderProducts(typed);
 });
 
@@ -629,9 +655,12 @@ const PLACEHOLDER = {
   service: 'Service, like Delivery',
 };
 
-/** Flags a typed item name that isn't a Minecraft item. */
-const checkItem = (input) =>
-  input.classList.toggle('efield--bad', !!input.value.trim() && !!itemDb && !itemByName(input.value));
+/** A typed name that isn't a Minecraft item (or, in a line's name box, an enchanted book). */
+const isUnknown = (input) =>
+  !!input.value.trim() &&
+  !!itemDb &&
+  !(input.dataset.books ? lineItem(input.value) : itemByName(input.value));
+const checkItem = (input) => input.classList.toggle('efield--bad', isUnknown(input));
 
 /** The inputs of a product line of this kind, empty. */
 function lineFields(kind) {
@@ -648,7 +677,7 @@ function lineFields(kind) {
       placeholder: PLACEHOLDER[kind],
       'aria-label': LINE_KINDS[kind],
       maxlength: 60,
-      ...(kind === 'item' ? { list: 'itemList' } : {}),
+      ...(kind === 'item' ? { list: 'lineItemList', 'data-books': 'yes' } : {}),
     }),
     // Lines with the same group and price show as one row on the Shops page ("32× Logs · 10 kinds").
     group: field('pline__group', {
@@ -684,8 +713,9 @@ function lineFields(kind) {
 
 /** Fills a line's inputs from a product (and checks the item names). */
 function fillLine(fields, p, kind) {
-  fields.name.value = p.service || (p.item ? nameOf(p.item) : p.name || '');
-  fields.name.dataset.id = p.item || '';
+  fields.name.value = p.service || (p.item ? lineItemName(itemDb, p) : p.name || '');
+  // Before the item list loads the name can't be read back, so keep what the line was.
+  if (p.item) fields.name.dataset.was = JSON.stringify({ item: p.item, enchant: p.enchant, level: p.level });
   fields.group.value = p.group || '';
   fields.amount.value = p.amount || '';
   fields.price.value = p.free ? 0 : p.price || '';
@@ -746,12 +776,12 @@ function productRow(p, kind = lineKind(p)) {
 
 /** A line as another kind, keeping its name, amount, price and group. */
 function asKind(p, kind) {
-  const text = p.service || p.name || (p.item ? nameOf(p.item) : '');
-  const { service, name, item, ...rest } = p; // eslint-disable-line no-unused-vars
+  const text = p.service || p.name || (p.item ? lineItemName(itemDb, p) : '');
+  const { service, name, item, enchant, level, ...rest } = p; // eslint-disable-line no-unused-vars
   if (kind === 'service') return { ...rest, service: text };
   if (kind === 'other') return { ...rest, name: text };
-  const found = text && itemByName(text);
-  return { ...rest, ...(found ? { item: found.id } : { name: text }) }; // an unknown name stays typed, flagged red
+  const found = text && lineItem(text);
+  return { ...rest, ...(found || { name: text }) }; // an unknown name stays typed, flagged red
 }
 
 /**
@@ -771,9 +801,8 @@ function readLine(line, keep = false) {
 
   if (line.kind === 'service') return text ? { service: text, ...out } : null;
   if (line.kind === 'other') return text ? { name: text, amount, ...out } : null;
-  const found = itemByName(f.name.value);
-  const id = found ? found.id : !itemDb ? f.name.dataset.id : ''; // before the item list loads, keep what was there
-  if (id) return { item: id, amount, ...out };
+  const found = itemDb ? lineItem(text) : f.name.dataset.was && JSON.parse(f.name.dataset.was);
+  if (found) return { ...found, amount, ...out };
   return keep && text ? { name: text, amount, ...out } : null;
 }
 
@@ -791,7 +820,7 @@ function openShopEditor(shop) {
   editingShop = shop;
   editingIcon = shop.icon;
   shopLabelInput.value = shop.label;
-  shopOwnerInput.value = shop.owner;
+  shopOwners.set(shop.owners);
   shopSpoilerInput.checked = shop.spoiler;
   byId('shopSpoilerRow').hidden = !shop.points; // only outlines can be filled
   showIcon();
@@ -809,9 +838,7 @@ function closeShopEditor() {
 shopSaveBtn.addEventListener('click', () => {
   if (!editingShop) return;
   // An item that isn't a Minecraft item would be dropped on save, so point at it instead.
-  const bad = [...productsEl.querySelectorAll('input[list]')].find(
-    (input) => input.value.trim() && itemDb && !itemByName(input.value),
-  );
+  const bad = [...productsEl.querySelectorAll('input[list]')].find(isUnknown);
   if (bad) {
     bad.classList.add('efield--bad');
     bad.focus();
@@ -820,7 +847,7 @@ shopSaveBtn.addEventListener('click', () => {
   }
   Object.assign(editingShop, {
     label: shopLabelInput.value.trim(),
-    owner: matchPlayer(shopOwnerInput.value) || shopOwnerInput.value.trim(),
+    owners: shopOwners.get(),
     spoiler: !!editingShop.points && shopSpoilerInput.checked,
     icon: editingIcon,
     products: readProducts(),
@@ -848,7 +875,6 @@ shopLabelInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') shopSaveBtn.click();
   else if (e.key === 'Escape') shopCancelBtn.click();
 });
-keepKeysToSelf(shopOwnerInput);
 
 /* ---- Toolbar ---------------------------------------------------------------------------------- */
 

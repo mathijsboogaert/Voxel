@@ -21,7 +21,9 @@
         "z": 221
       }
     ],
-    "owner": "Mathi_Craft",
+    "owners": [
+      "Mathi_Craft"
+    ],
     "added": "2026-10-18T14:38:57.830Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHUlEQVR42r1Sr2vDUBD+rgwmExnVVYQwEjq5UlfVp/onTNQGIgv7EwqTg9qKmqmZqFTVhVbUDMIWtcbNpX/BmxgXLj9eqdpn3nHcfd93d49epncaALK8hO/ZaMYAsNieCAb0OPA9G1letuIsL8EiXaD5wNKfQwtu4ODh+NNyIgXeb/943MDBZnkgAOitv881e7I5jBR8z0YYqYrMDRwAwNPzo66NIBW5eZfsMVEj7JI9wkjh/uOMzfJArN4ikCSymV+JagSZbI5jwnjW1+NZX3c6YJKm+kSNqpo0Loh3QcwoFwQAN29ftT2sXhPwteQYJG1JJ2lc0HxgaelM1qRxcdW414N/m/x1l3LGM3YVmXJGgsX2RM2GrpyR4F/xCwoDkGVUD2uOAAAAAElFTkSuQmCC",
     "products": [
@@ -119,7 +121,9 @@
         "z": 182
       }
     ],
-    "owner": "EmrysPendragon",
+    "owners": [
+      "EmrysPendragon"
+    ],
     "added": "2026-10-18T14:39:16.729Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAB+klEQVQ4EXVTTUsbURQ9T0bMGDV+RIgfwaCjiCFtBaGgq/4B11l14V+QLtofIEgVpBC601/gUl3qwoUb20VpqUXMFI3VOFjQjCmkNs650xvThL7Fu+/deefce857YzKZTBXBKJfLDLBtW+L/9o1nrHg8XgN4nod0Oi37m9IdujraZa0Tc2X/Fna0UyLPW1rJ9309h+2LE0hbJcAEWa5nTLT2/dor1tYWV/XgrctjOJvvUTlyUbnyYIxBS38fDl+/xeydi1QigiOM1SQb9YBE7GZicgr7pQtUCo9VUitvUA1aWdhaxcbOOWKDoUxKMI7jSLck4FATuVZ54703cN/lUC3+hPtqGcP3FBYOk81mhUBNY9RBwyL+Z6QGbOx+uAJyayIn/3IRT/sSIr2FAHVXI4E0KuJ/wovpHgG3do/h++IS7oue8ksUE+uvRr/2/DnBSKId69un6B56EqZ/3Yqp3NB4SrS+ff0S6g4MYYIeDNuXUpng322D/9yS1R8TMvXHIiAafbzjoQA8ElwVwc/m5kWePqjjwwO0jY8KQTKZlIJyC3yNbCmsHAvABQw4z+Vg43RwlhcDmSdGCLRtVt776DWBtd16Mn18YmK9ZrrNB8KhnuiaUd+JksrPlC+cI/+j1FSZROoPozpP/UoqJtp/9SqrfG2YtGVN69kHukcQP1uuMCIAAAAASUVORK5CYII=",
     "products": [
@@ -153,7 +157,9 @@
         "z": 189
       }
     ],
-    "owner": "EmrysPendragon",
+    "owners": [
+      "EmrysPendragon"
+    ],
     "added": "2026-10-18T14:40:30.797Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATklEQVR42mNk8Fv4n4ECwMRAIWBB5vzfGEdQA6P/IspcgG4JCzE24XMZUS5AdzZVA5GJHH8TFQbExAhZXkAPDxZyAo7+gUhTAxgHPDcCAE8YEwPb8Xt7AAAAAElFTkSuQmCC",
     "products": [
@@ -193,7 +199,9 @@
         "z": 205
       }
     ],
-    "owner": "EchoinSilence",
+    "owners": [
+      "EchoinSilence"
+    ],
     "added": "2026-10-18T14:41:00.914Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAaElEQVR42rWTUQ4AMQREjfvfefplI0J1a7efqHlDQEQog6ddAclZgxGBqe8oWgIAdwQkn88ASop/ZuDVvZWMQt+sLKvTE/UdxbczMOXKisU9oVbJ2KTKwx9T5r+LIV5jVM4G5xties4LRgZGB4iS6oIAAAAASUVORK5CYII=",
     "products": [
@@ -224,8 +232,9 @@
         "z": 168
       }
     ],
-    "spoiler": true,
-    "owner": "EchoinSilence",
+    "owners": [
+      "EchoinSilence"
+    ],
     "added": "2026-10-18T14:42:33.748Z"
   },
   {
@@ -250,7 +259,9 @@
         "z": 317
       }
     ],
-    "owner": "Roefus",
+    "owners": [
+      "Roefus"
+    ],
     "added": "2026-10-18T14:43:16.649Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAAjUlEQVQ4EWNgGNTg17uz/0EYnyMZsUni0sQmZIyhHkUAl0Z0S5ANghtArGaYYciGwMQYQIYsnFoC9jOygTA2SA7GhmligjHIpSk2gAWfzYkK/HijEKQXrwE+zRX4zAfLURwLFIcB2AUTNkdj9eu1HcxgZ2p5/MXpFUZCmmE6cRmC1Qswm2GaQTQ2MZA4ALULPNPclZBxAAAAAElFTkSuQmCC",
     "products": [
@@ -297,8 +308,11 @@
         "z": 215
       }
     ],
-    "owner": "Detective_Mikey",
+    "owners": [
+      "Detective_Mikey"
+    ],
     "added": "2026-10-19T21:20:42.131Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAABjUlEQVQ4EdVRTUsCYRCeNTMjzIMFQWTQQeqQxzqEePBUXfsHnaK6CXXoUH+g6F90rEs3EREPnQIDCSHBNbNMV3Z1cXcjtndmnc2FPg6deg87OzPP87wzzwvw1xMKh+3vNLD3Ux95EgO6qipt7+3b8YUI6R2dnHl0se8pDBI/FxeX43YhlxNpkkqz0XmKdbnKkC+jK7CWdIiM+o3IOBLA8dot2W6/PlM9n7mhcXm9w/Qu9E2LvBrxSaBoOpTKd5C5zkt+3p0VLy+u3F0P0jtQberw8NKFUZ8NEwGnVW82wDItotAEaFyx0mYNiuenx3TjfSkLc9EYdAwNbFEZD06C2e9BYCxAOJ+HNUjwNbi+tbkONbkMmqpAV1PgsVYGwzS8E1hv74BTZFsyIFn4AUVWEDEyPQPoD4r1dGd0taeD8ApohcLtJxzJeDBGpqIUqSA+SK4IP4YPCaBxidSqOzYD8NbY0gqlOH5DUaGjPAkfQtA3HCHXcSYNx9RGwka3A0FhmJBn59lAfMZh/D/9/wAnKLDwBtvdUQAAAABJRU5ErkJggg==",
     "products": [
       {
         "item": "tuff",
@@ -359,7 +373,9 @@
         "z": 233
       }
     ],
-    "owner": "EchoinSilence",
+    "owners": [
+      "EchoinSilence"
+    ],
     "added": "2026-10-19T21:21:54.081Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApUlEQVR42mNkUE77z0ABYCKk4NPKL5QZ8PPKEfINeD11B0FXEHSBaLMHXlcw4bNdNNsDbgguV+B2wQviwoIJp+3NHhheweYKFANe1+7AajuuwMV0gQTEEHTbYYAvnAdhCVYDXkAMITslijZ7MDC8QHUihhclGOCxg2IATBMuQ2BOh2mG8RmRMxM2/2MVQ0ojjOi5ET2QRJs9EK55geRVKGCkNDsDAI/FUi0fNecSAAAAAElFTkSuQmCC",
     "products": [
@@ -390,7 +406,9 @@
         "z": 245
       }
     ],
-    "owner": "_Farren",
+    "owners": [
+      "_Farren"
+    ],
     "added": "2026-10-21T07:11:31.285Z",
     "products": [
       {
@@ -519,7 +537,9 @@
         "z": 243
       }
     ],
-    "owner": "EmrysPendragon",
+    "owners": [
+      "EmrysPendragon"
+    ],
     "added": "2026-10-21T07:16:20.983Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA5UlEQVR42q1RIRLCMBDcy/AEanCVnalBgwqyD8CA6cNAtIYHVCYKNKYMjrga+ENQlwltGmBgTe/29rZ7LfAj6C6lBYBEa2KyqSsLALM0HV2cL5YEAIKJu5SWzb6BmCqFqVKjgs4YdMYMasaEC2dC9CLwzwidJFblA6vyEY3pJ+jDJYiZzNIUnTHhBHqfkN4n9O5jjf0RlyBkEoo8SBAii82W+K1jdRRNXdnz6Whj9d/g7i4PjQWA3bqgTxZZL7iReQaZZ27gC5nzn6yn+nJzC7q9QuYZQn1/xtxEt1dH+OJ+3zfm+RNqjn0N8MtuTwAAAABJRU5ErkJggg==",
     "products": [
@@ -535,117 +555,273 @@
     ]
   },
   {
-    "x": -76,
-    "z": 248,
-    "label": "WIP",
+    "x": 8,
+    "z": 239,
+    "label": "Amazon",
     "points": [
       {
-        "x": -93,
+        "x": 1,
+        "z": 233
+      },
+      {
+        "x": -1,
+        "z": 233
+      },
+      {
+        "x": -1,
+        "z": 232
+      },
+      {
+        "x": 12,
+        "z": 232
+      },
+      {
+        "x": 12,
+        "z": 233
+      },
+      {
+        "x": 13,
+        "z": 233
+      },
+      {
+        "x": 13,
+        "z": 234
+      },
+      {
+        "x": 16,
+        "z": 234
+      },
+      {
+        "x": 16,
         "z": 235
       },
       {
-        "x": -93,
-        "z": 261
-      },
-      {
-        "x": -59,
-        "z": 261
-      },
-      {
-        "x": -59,
-        "z": 246
-      },
-      {
-        "x": -60,
-        "z": 246
-      },
-      {
-        "x": -60,
-        "z": 245
-      },
-      {
-        "x": -61,
-        "z": 245
-      },
-      {
-        "x": -61,
-        "z": 244
-      },
-      {
-        "x": -62,
-        "z": 244
-      },
-      {
-        "x": -62,
-        "z": 243
-      },
-      {
-        "x": -63,
-        "z": 243
-      },
-      {
-        "x": -63,
-        "z": 242
-      },
-      {
-        "x": -64,
-        "z": 242
-      },
-      {
-        "x": -64,
-        "z": 241
-      },
-      {
-        "x": -65,
-        "z": 241
-      },
-      {
-        "x": -65,
-        "z": 240
-      },
-      {
-        "x": -66,
-        "z": 240
-      },
-      {
-        "x": -66,
-        "z": 239
-      },
-      {
-        "x": -67,
-        "z": 239
-      },
-      {
-        "x": -67,
-        "z": 238
-      },
-      {
-        "x": -68,
-        "z": 238
-      },
-      {
-        "x": -68,
-        "z": 237
-      },
-      {
-        "x": -69,
-        "z": 237
-      },
-      {
-        "x": -69,
-        "z": 236
-      },
-      {
-        "x": -70,
-        "z": 236
-      },
-      {
-        "x": -70,
+        "x": 17,
         "z": 235
+      },
+      {
+        "x": 17,
+        "z": 242
+      },
+      {
+        "x": 15,
+        "z": 242
+      },
+      {
+        "x": 15,
+        "z": 244
+      },
+      {
+        "x": 13,
+        "z": 244
+      },
+      {
+        "x": 13,
+        "z": 245
+      },
+      {
+        "x": 12,
+        "z": 245
+      },
+      {
+        "x": 12,
+        "z": 246
+      },
+      {
+        "x": -1,
+        "z": 246
+      },
+      {
+        "x": -1,
+        "z": 245
+      },
+      {
+        "x": 1,
+        "z": 245
       }
     ],
-    "spoiler": true,
-    "owner": "JayGoGamer",
-    "added": "2026-10-22T10:01:37.141Z"
+    "owners": [
+      "EchoinSilence"
+    ],
+    "added": "2026-10-23T05:53:53.318Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAAnElEQVQ4EaVSyw2AIAwF4xyO481VnMCjE7iKN8dxEc0zKXmWtiHKBXnfQkzp58qef9j2i7lznkytCWqzBHkhwj87zFaAhcHQvdwfDuYVJEe3WlfoRcy7NjKnv6sANnMj4xzivkGLGUHVG3hN0srBwKoJtAAiYBYOrpoAYLSOJZU/dFxTLhMwEQXA5PIIiYKYF52ZJqRuCtu1uPV8A6lVPOScajBJAAAAAElFTkSuQmCC",
+    "products": [
+      {
+        "item": "sand",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "white_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "orange_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "magenta_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "light_blue_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "yellow_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "lime_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "pink_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "gray_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "light_gray_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "cyan_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "purple_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "blue_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "brown_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "green_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "red_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "black_wool",
+        "amount": 128,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Wool"
+      },
+      {
+        "item": "packed_ice",
+        "amount": 64,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "copper_block",
+        "amount": 64,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "name": "Mob drops",
+        "amount": 64,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "name": "Nether blocks (assorted)",
+        "amount": 64,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "enchanted_book",
+        "enchant": "efficiency",
+        "amount": 1,
+        "price": 3,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "enchanted_book",
+        "enchant": "protection",
+        "amount": 1,
+        "price": 3,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "enchanted_book",
+        "enchant": "mending",
+        "amount": 1,
+        "price": 5,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "enchanted_book",
+        "enchant": "unbreaking",
+        "amount": 1,
+        "price": 5,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "beacon",
+        "amount": 1,
+        "price": 32,
+        "priceItem": "diamond"
+      }
+    ]
   }
 ]

@@ -5,7 +5,7 @@ import { url, el } from './ui.js?v=4d932c1e';
 
 let itemsPromise = null;
 
-/** loadItems() -> {items: [{i, id, name}], byId, byName, tags, recipes}. Loaded once per page. */
+/** loadItems() -> {items: [{i, id, name}], byId, byName, tags, recipes, enchants, enchantById}. Loaded once per page. */
 export function loadItems() {
   if (!itemsPromise) {
     itemsPromise = fetch(url('data/items.json'))
@@ -16,7 +16,14 @@ export function loadItems() {
         const byId = new Map(items.map((it) => [it.id, it]));
         const byName = new Map(items.map((it) => [it.lower, it]));
         const recipes = new Map(Object.entries(d.recipes).map(([k, v]) => [Number(k), v]));
-        return { version: d.version, items, byId, byName, tags: d.tags, recipes };
+        const enchants = (d.enchants || []).map(([id, name, max]) => ({
+          id,
+          name,
+          max,
+          lower: name.toLowerCase(),
+        }));
+        const enchantById = new Map(enchants.map((e) => [e.id, e]));
+        return { version: d.version, items, byId, byName, tags: d.tags, recipes, enchants, enchantById };
       })
       .catch(() => null);
   }
@@ -25,6 +32,48 @@ export function loadItems() {
 
 export const itemName = (db, id) =>
   db && db.byId.get(id) ? db.byId.get(id).name : String(id || '').replaceAll('_', ' ');
+
+/* ---- Enchanted books ----------------------------------------------------------------------- */
+// A line can be an enchanted book with its enchantment: {item: 'enchanted_book', enchant: 'mending', level: 1}.
+// The level is optional (a shop may not say which).
+
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const BOOK = 'Enchanted Book';
+
+/** "Mending", "Efficiency V": an enchantment's name, with its level when it has more than one. */
+export function enchantText(db, id, level) {
+  const e = db && db.enchantById.get(id);
+  const name = e ? e.name : String(id || '').replaceAll('_', ' ');
+  return level && (!e || e.max > 1) ? `${name} ${ROMAN[level] || level}` : name;
+}
+
+/** An item line's name: "Oak Log", or "Enchanted Book: Mending" for a book. */
+export const lineItemName = (db, p) =>
+  p.enchant ? `${BOOK}: ${enchantText(db, p.enchant, p.level)}` : itemName(db, p.item);
+
+/**
+ * What a typed name is: {item} for a Minecraft item, {item: 'enchanted_book', enchant, level?} for a book, or null.
+ * A book can be typed as "Enchanted Book: Mending", "Mending", "Mending book" or "Efficiency V" / "Efficiency 5".
+ */
+export function parseItem(db, typed) {
+  if (!db) return null;
+  const text = String(typed || '')
+    .trim()
+    .toLowerCase();
+  const item = db.byName.get(text);
+  if (item) return { item: item.id };
+  const m = text
+    .replace(/^enchanted book\s*[:(-]?\s*/, '')
+    .replace(/\)$/, '')
+    .replace(/\s+(enchanted\s+)?book$/, '')
+    .match(/^(.+?)(?:\s+(\d+|[ivx]+))?$/);
+  if (!m) return null;
+  const enchant = db.enchants.find((e) => e.lower === m[1].trim());
+  if (!enchant) return null;
+  const level = !m[2] ? 0 : /^\d+$/.test(m[2]) ? Number(m[2]) : ROMAN.indexOf(m[2].toUpperCase());
+  if (m[2] && !(level >= 1 && level <= enchant.max)) return null;
+  return { item: 'enchanted_book', enchant: enchant.id, ...(level && enchant.max > 1 ? { level } : {}) };
+}
 
 /** A shop's own 16x16 icon (shown pixelated), or the general shop icon if it has none. */
 export function shopIconEl(shop) {
@@ -69,11 +118,14 @@ export const isOpen = (s) => !!s && !s.spoiler;
 /** What a line offers: "64× Oak Log" for an item, "2× Happy Ghast" for another product, the text for a service. */
 export function offerText(db, p) {
   if (p.service) return p.service;
-  if (p.item) return amountText(db, p.item, p.amount);
-  return p.amount > 1 ? `${p.amount}\u00d7 ${p.name}` : p.name || '';
+  const name = p.item ? lineItemName(db, p) : p.name || '';
+  return p.amount > 1 ? `${p.amount}\u00d7 ${name}` : name;
 }
 /** A line's own name, without the amount: for listing the kinds in a group. */
-export const lineName = (db, p) => p.service || (p.item ? itemName(db, p.item) : p.name || '');
+export const lineName = (db, p) => p.service || (p.item ? lineItemName(db, p) : p.name || '');
+
+/** A shop's owners (Minecraft names). Older shops have one `owner`; newer ones a list of `owners`. */
+export const ownersOf = (s) => (s && (s.owners || (s.owner ? [s.owner] : []))) || [];
 
 /**
  * A shop's product lines as rows for its price list. Lines with the same group name (p.group, like "Logs")
@@ -232,9 +284,15 @@ export function findShops(db, shops, query) {
   const scoreOf = (shop) => (best.get(shop) || {}).score;
 
   for (const s of shops) {
-    // A service or another product matches on its own words ("ghast" finds "Ghast storage" and "Happy Ghast").
+    // A service, another product or a book matches on its own words ("ghast" finds "Ghast storage" and
+    // "Happy Ghast", "mending" finds "Enchanted Book: Mending").
     const texts = (s.products || []).filter((p) => {
-      const text = (p.service || (!p.item && p.name) || '').toLowerCase();
+      const text = (
+        p.service ||
+        (p.enchant && lineItemName(db, p)) ||
+        (!p.item && p.name) ||
+        ''
+      ).toLowerCase();
       return text && words.every((w) => text.includes(w));
     });
     const sold = texts.filter((p) => !p.service);

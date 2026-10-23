@@ -19,7 +19,7 @@ import {
   DAY,
 } from './ui.js?v=4d932c1e';
 import { pattern } from './pattern.js?v=9f404389';
-import { shopIconEl, shopHref, isOpen } from './shops-core.js?v=c31c3fa6';
+import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=541d6721';
 import { raceBlock } from './race.js?v=c045db3d';
 import { statTile, hourChart, chipRow } from './widgets.js?v=f256c111';
 
@@ -45,6 +45,10 @@ const KINDS = {
 // How long things stay news.
 const ADVANCEMENT_NEWS_DAYS = 30;
 const SHOP_NEWS_DAYS = 21;
+
+/** "A", "A and B", "A, B and C". */
+const namesText = (names) =>
+  names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0] || '';
 
 /** Everything that could be news: hand-written items (news.json), big advancements and new shops. */
 async function buildNews(st) {
@@ -82,7 +86,7 @@ async function buildNews(st) {
   for (const s of shops.filter(isOpen)) {
     const at = Date.parse(s.added || '');
     if (at && now - at < SHOP_NEWS_DAYS * DAY)
-      items.push({ kind: 'shop', title: s.label, at, player: s.owner, shop: s });
+      items.push({ kind: 'shop', title: s.label, at, player: namesText(ownersOf(s)), shop: s });
   }
   return items;
 }
@@ -350,7 +354,7 @@ function initPreview() {
     started = true;
     try {
       await loadLeaflet();
-      const { createWorldMap } = await import('./map-core.js?v=00506aba');
+      const { createWorldMap } = await import('./map-core.js?v=741e673b');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,
