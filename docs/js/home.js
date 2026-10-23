@@ -19,7 +19,7 @@ import {
   DAY,
 } from './ui.js?v=4d932c1e';
 import { pattern } from './pattern.js?v=9f404389';
-import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=541d6721';
+import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=6be4719b';
 import { raceBlock } from './race.js?v=c045db3d';
 import { statTile, hourChart, chipRow } from './widgets.js?v=f256c111';
 
@@ -354,7 +354,7 @@ function initPreview() {
     started = true;
     try {
       await loadLeaflet();
-      const { createWorldMap } = await import('./map-core.js?v=741e673b');
+      const { createWorldMap } = await import('./map-core.js?v=6a906fb8');
       const { map, tiles } = await createWorldMap(holder, {
         interactive: false,
         labels: false,

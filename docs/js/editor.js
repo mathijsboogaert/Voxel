@@ -8,7 +8,7 @@ import {
   worldToLatLng,
   latLngToWorld,
   DETAIL_ZOOM,
-} from './map-core.js?v=741e673b';
+} from './map-core.js?v=6a906fb8';
 import {
   el,
   byId,
@@ -26,7 +26,7 @@ import {
   ownersOf,
   parseItem,
   lineItemName,
-} from './shops-core.js?v=541d6721';
+} from './shops-core.js?v=6be4719b';
 import { mapSearch } from './map-search.js?v=d6d0b003';
 
 const { map } = await createBaseMap(byId('map'));

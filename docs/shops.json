@@ -656,113 +656,7 @@
         "item": "white_wool",
         "amount": 128,
         "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "orange_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "magenta_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "light_blue_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "yellow_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "lime_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "pink_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "gray_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "light_gray_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "cyan_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "purple_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "blue_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "brown_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "green_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "red_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
-      },
-      {
-        "item": "black_wool",
-        "amount": 128,
-        "price": 1,
-        "priceItem": "diamond",
-        "group": "Wool"
+        "priceItem": "diamond"
       },
       {
         "item": "packed_ice",
@@ -793,28 +687,32 @@
         "enchant": "efficiency",
         "amount": 1,
         "price": 3,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Enchanted books"
       },
       {
         "item": "enchanted_book",
         "enchant": "protection",
         "amount": 1,
         "price": 3,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Enchanted books"
       },
       {
         "item": "enchanted_book",
         "enchant": "mending",
         "amount": 1,
         "price": 5,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Enchanted books"
       },
       {
         "item": "enchanted_book",
         "enchant": "unbreaking",
         "amount": 1,
         "price": 5,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Enchanted books"
       },
       {
         "item": "beacon",

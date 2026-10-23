@@ -9,6 +9,8 @@ import {
   shopIconEl,
   offerText,
   priceEl,
+  rowPriceEl,
+  samePrice,
   shopSlug,
   isService,
   kindLabel,
@@ -18,18 +20,28 @@ import {
   isOpen,
   productRows,
   ownersOf,
-} from './shops-core.js?v=541d6721';
+} from './shops-core.js?v=6be4719b';
 import { chipRow } from './widgets.js?v=f256c111';
 
-/** What a row offers: one item or service, or a group that opens to show every kind in it. */
+/**
+ * What a row offers: one item or service, or a group that opens to show every kind in it. When the kinds
+ * cost different amounts, each is listed with its own price.
+ */
 function offerCell(db, { lines, group }) {
   if (!group) return offerText(db, lines[0]);
   const amount = lines[0].amount > 1 ? `${lines[0].amount}× ` : '';
+  const kinds = samePrice(lines)
+    ? el('p', { class: 'small' }, lines.map((p) => lineName(db, p)).join(', '))
+    : el(
+        'ul',
+        { class: 'pgroup__list small' },
+        lines.map((p) => el('li', {}, el('span', {}, lineName(db, p)), priceEl(db, p) || 'Ask')),
+      );
   return el(
     'details',
     { class: 'pgroup' },
     el('summary', {}, `${amount}${group}`, el('span', { class: 'small' }, ` · ${lines.length} kinds`)),
-    el('p', { class: 'small' }, lines.map((p) => lineName(db, p)).join(', ')),
+    kinds,
   );
 }
 
@@ -47,7 +59,7 @@ function productTable(db, s) {
       'tbody',
       {},
       productRows(s).map((row) =>
-        el('tr', {}, el('td', {}, offerCell(db, row)), el('td', {}, priceEl(db, row.lines[0]) || 'Ask')),
+        el('tr', {}, el('td', {}, offerCell(db, row)), el('td', {}, rowPriceEl(db, row.lines) || 'Ask')),
       ),
     ),
   );

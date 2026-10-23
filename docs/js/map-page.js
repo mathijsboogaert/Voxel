@@ -7,9 +7,9 @@ import {
   latLngToWorld,
   DETAIL_ZOOM,
   DEFAULT_ZOOM,
-} from './map-core.js?v=741e673b';
+} from './map-core.js?v=6a906fb8';
 import { el, byId, faceEl, playerHref, colorDot, getJSON, SPAWN } from './ui.js?v=4d932c1e';
-import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=541d6721';
+import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=6be4719b';
 import { mapSearch } from './map-search.js?v=d6d0b003';
 
 const params = new URLSearchParams(location.search);

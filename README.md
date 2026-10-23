@@ -103,7 +103,7 @@ A shop without one gets the general shop icon. In the editor, click a shop and u
 what it is paid in, Diamond unless you pick another item). In `shops.json` a line is
 `{ "item": "oak_log", "amount": 64, "price": 2, "priceItem": "diamond" }`. No price shows as "Ask".
 
-**Groups.** A product line can have a `group` (the editor's Group field, like "Logs"). Lines in the same group with the same amount and price show on the Shops page as one row, "32× Logs · 10 kinds", which opens to list every kind. Search still finds each kind on its own.
+**Groups.** A product line can have a `group` (the editor's Group field, like "Logs"). Lines in the same group with the same amount show on the Shops page as one row, "32× Logs · 10 kinds", which opens to list every kind. Their prices may differ: the row then shows the range ("Enchanted books · 4 kinds, 3–5 diamonds") and opening it lists each kind with its own price. Search still finds each kind on its own, and names the group when several of its kinds match.
 
 **Kinds of lines.** Each line in a shop is one of three kinds, picked per line in the editor:
 

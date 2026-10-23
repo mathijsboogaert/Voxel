@@ -121,26 +121,38 @@ export function offerText(db, p) {
   const name = p.item ? lineItemName(db, p) : p.name || '';
   return p.amount > 1 ? `${p.amount}\u00d7 ${name}` : name;
 }
-/** A line's own name, without the amount: for listing the kinds in a group. */
-export const lineName = (db, p) => p.service || (p.item ? lineItemName(db, p) : p.name || '');
+/** A line's own name, without the amount: for listing the kinds in a group (a book is just its enchantment). */
+export const lineName = (db, p) =>
+  p.service ||
+  (p.enchant ? enchantText(db, p.enchant, p.level) : p.item ? lineItemName(db, p) : p.name || '');
 
 /** A shop's owners (Minecraft names). Older shops have one `owner`; newer ones a list of `owners`. */
 export const ownersOf = (s) => (s && (s.owners || (s.owner ? [s.owner] : []))) || [];
 
 /**
- * A shop's product lines as rows for its price list. Lines with the same group name (p.group, like "Logs")
- * and the same amount and price become one row, so a shop with many kinds of one thing stays short.
- * Rows keep the order of their first line. Each row: {lines, group}; group is '' for a single line.
+ * A shop's product lines as rows for its price list. Lines with the same group name (p.group, like "Logs" or
+ * "Enchanted books") and the same amount become one row, so a shop with many kinds of one thing stays short.
+ * Their prices may differ (a row then shows the range). Rows keep the order of their first line.
+ * Each row: {lines, group}; group is '' for a single line.
  */
 export function productRows(shop) {
   const rows = new Map();
   for (const p of shop.products || []) {
-    const key = p.group ? [p.group, p.amount, p.price, p.priceItem, p.free].join('|') : Symbol();
+    const key = p.group ? [p.group, p.amount].join('|') : Symbol();
     if (!rows.has(key)) rows.set(key, { lines: [], group: p.group || '' });
     rows.get(key).lines.push(p);
   }
   return [...rows.values()].map((r) => (r.lines.length > 1 ? r : { lines: r.lines, group: '' }));
 }
+
+/** Whether every line costs the same. */
+export const samePrice = (lines) =>
+  lines.every(
+    (p) =>
+      !!p.free === !!lines[0].free &&
+      p.price === lines[0].price &&
+      (p.priceItem || 'diamond') === (lines[0].priceItem || 'diamond'),
+  );
 
 /** "1 Diamond", "Free", or '' when the shop has not set a price. */
 export function priceText(db, p) {
@@ -154,12 +166,26 @@ export function priceEl(db, p) {
   if (p.free) return 'Free';
   if (!p.price) return null;
   if ((p.priceItem || 'diamond') !== 'diamond') return priceText(db, p);
-  const label = `${p.price} ${p.price === 1 ? 'diamond' : 'diamonds'}`;
+  return diamondPrice(String(p.price), `${p.price} ${p.price === 1 ? 'diamond' : 'diamonds'}`);
+}
+
+/** A row's price: its one price, a range in diamonds ("3–5"), "Varies", or null when nothing is priced. */
+export function rowPriceEl(db, lines) {
+  if (samePrice(lines)) return priceEl(db, lines[0]);
+  const diamondsOnly = lines.every((p) => p.free || (p.price && (p.priceItem || 'diamond') === 'diamond'));
+  if (!diamondsOnly) return 'Varies';
+  const prices = lines.map((p) => (p.free ? 0 : p.price));
+  const [lo, hi] = [Math.min(...prices), Math.max(...prices)];
+  return diamondPrice(`${lo}\u2013${hi}`, `${lo} to ${hi} diamonds`);
+}
+
+/** A number of diamonds with the diamond icon; label is what a screen reader says. */
+function diamondPrice(text, label) {
   return el(
     'span',
     { class: 'price', title: label },
     el('span', { class: 'sr-only' }, label),
-    el('span', { 'aria-hidden': 'true' }, String(p.price)),
+    el('span', { 'aria-hidden': 'true' }, text),
     el('img', {
       class: 'price__icon',
       src: url('assets/icons/diamond.png?v=fd11635e'),
@@ -270,11 +296,24 @@ export function findShops(db, shops, query) {
   const exact = targets.filter((t) => t.lower === q || t.lower === singular);
   const partTargets = exact.length ? exact : targets;
 
-  const lineText = (p) => {
-    const price = priceEl(db, p);
-    return [offerText(db, p), p.free ? ', free' : price ? [' for ', price] : ''].flat();
+  // Matching lines are described by their rows, so a group reads as one thing: "Enchanted books (4 kinds) for 3–5".
+  const rowText = ({ lines, group }) => {
+    const price = rowPriceEl(db, lines);
+    const amount = lines[0].amount > 1 ? `${lines[0].amount}\u00d7 ` : '';
+    const what = group ? `${amount}${group} (${lines.length} kinds)` : offerText(db, lines[0]);
+    return [what, samePrice(lines) && lines[0].free ? ', free' : price ? [' for ', price] : ''].flat();
   };
-  const joinLines = (lines) => lines.flatMap((p, i) => (i ? [', ', ...lineText(p)] : lineText(p)));
+  // One match in a group names that kind ("Enchanted Book: Mending"); several name the group.
+  const rowsFor = (shop, lines) =>
+    productRows(shop)
+      .map(({ lines: all, group }) => ({ lines: all.filter((p) => lines.includes(p)), group }))
+      .filter((r) => r.lines.length)
+      .map((r) => (r.lines.length > 1 ? r : { lines: r.lines, group: '' }));
+  const describe = (shop, verb, lines) => {
+    const rows = rowsFor(shop, lines);
+    const more = rows.length > 2 ? `, and ${rows.length - 2} more` : '';
+    return [verb, ...rows.slice(0, 2).flatMap((r, i) => (i ? [', ', ...rowText(r)] : rowText(r))), more];
+  };
 
   const best = new Map();
   const offer = (shop, score, reason, direct = null) => {
@@ -297,15 +336,17 @@ export function findShops(db, shops, query) {
     });
     const sold = texts.filter((p) => !p.service);
     const offered = texts.filter((p) => p.service);
-    if (sold.length) offer(s, 4.5, ['Sells ', ...joinLines(sold.slice(0, 2))], sold[0]);
-    if (offered.length) offer(s, 4.5, ['Offers ', ...joinLines(offered.slice(0, 2))], offered[0]);
+    if (sold.length) offer(s, 4.5, describe(s, 'Sells ', sold), sold[0]);
+    if (offered.length) offer(s, 4.5, describe(s, 'Offers ', offered), offered[0]);
     if (offersServices(s) && words.every((w) => 'services'.startsWith(w))) offer(s, 3, 'Offers services');
 
     // Sells it outright (all the matching lines, a couple named).
     const items = itemsSold(db, s);
-    const direct = targets.filter((t) => items.has(t.i)).map((t) => items.get(t.i));
-    const more = direct.length > 2 ? `, and ${direct.length - 2} more` : '';
-    const directText = direct.length ? ['Sells ', ...joinLines(direct.slice(0, 2)), more] : '';
+    const direct = (s.products || []).filter((p) => {
+      const it = p.item && db && db.byId.get(p.item);
+      return it && targets.some((t) => t.i === it.i);
+    });
+    const directText = direct.length ? describe(s, 'Sells ', direct) : '';
     if (s.label && s.label.toLowerCase().includes(q)) {
       offer(s, 5, directText || (best.get(s) || {}).reason || '', direct[0] || null);
     }
