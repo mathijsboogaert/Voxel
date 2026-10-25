@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-25T12:32:58Z",
+  "generated_at": "2026-10-25T16:49:00Z",
   "players": {
     "BBGPlays": {
       "active": 14832,
@@ -10,11 +10,11 @@
       "afk": 1523
     },
     "Detective_Mikey": {
-      "active": 114222,
+      "active": 125406,
       "afk": 3477
     },
     "EchoinSilence": {
-      "active": 131486,
+      "active": 135858,
       "afk": 188144
     },
     "EmrysPendragon": {
@@ -38,7 +38,7 @@
       "afk": 1001
     },
     "Mathi_Craft": {
-      "active": 108964,
+      "active": 117863,
       "afk": 105778
     },
     "Mister_Shade": {
@@ -50,12 +50,12 @@
       "afk": 0
     },
     "Roefus": {
-      "active": 75942,
+      "active": 79023,
       "afk": 679
     },
     "_Farren": {
-      "active": 53503,
-      "afk": 0
+      "active": 65087,
+      "afk": 2886
     },
     "briosh721": {
       "active": 40025,
@@ -66,7 +66,7 @@
       "afk": 601
     },
     "kayushka": {
-      "active": 42474,
+      "active": 46762,
       "afk": 0
     }
   }
