@@ -1447,5 +1447,32 @@
       "FrTylerFr",
       "briosh721"
     ]
+  },
+  {
+    "points": [
+      {
+        "x": 707,
+        "z": 1251
+      },
+      {
+        "x": 765,
+        "z": 1251
+      },
+      {
+        "x": 765,
+        "z": 1309
+      },
+      {
+        "x": 707,
+        "z": 1309
+      }
+    ],
+    "label": "Angela & Mathijs' Temple",
+    "color": "#748ffc",
+    "hideLabel": false,
+    "owners": [
+      "Mathi_Craft",
+      "EmrysPendragon"
+    ]
   }
 ]
