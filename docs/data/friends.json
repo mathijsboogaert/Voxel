@@ -1,0 +1,343 @@
+{
+  "_about": "Who knows who on Voxel. people: id, real name, label (player name, or Discord name if they never played), mc (Minecraft name, for the face and playtime), via (who brought them in; \"me\" is the centre). groups: withMe puts the centre in the group too; outline draws a dashed line instead of a fill. rels: couple, married or siblings.",
+  "people": [
+    {
+      "id": "me",
+      "name": "Mathijs",
+      "label": "Mathi_Craft",
+      "mc": "Mathi_Craft",
+      "via": []
+    },
+    {
+      "id": "audumn",
+      "name": "Audumn",
+      "label": "Audumn_",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "iris",
+      "name": "Iris",
+      "label": "Cute_Iris",
+      "mc": "Cute_Iris",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "dexter",
+      "name": "Dexter",
+      "label": "Roefus",
+      "mc": "Roefus",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "lucas",
+      "name": "Lucas",
+      "label": "EchoinSilence",
+      "mc": "EchoinSilence",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "farren",
+      "name": "Farren",
+      "label": "_Farren",
+      "mc": "_Farren",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "angela",
+      "name": "Angela",
+      "label": "EmrysPendragon",
+      "mc": "EmrysPendragon",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "cassie",
+      "name": "Cassie",
+      "label": "xCassie310x",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "ang",
+      "name": "Ang",
+      "label": "Genname4427",
+      "mc": "Genname4427",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "kaja",
+      "name": "Kaja",
+      "label": "kayushka",
+      "mc": "kayushka",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "piotr",
+      "name": "Piotr",
+      "label": "xXkorniszon2137",
+      "mc": "xXkorniszon2137",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "liam",
+      "name": "Liam",
+      "label": "Lisnee2",
+      "mc": "Lisnee2",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "daniel",
+      "name": "Daniel",
+      "label": "Pantless_Hobo",
+      "mc": "Pantless_Hobo",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "nout",
+      "name": "Nout",
+      "label": "Noot_Noot__",
+      "mc": "Noot_Noot__",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "david",
+      "name": "David",
+      "label": "FriendOfTyse",
+      "mc": "FriendOfTyse",
+      "via": [
+        "me"
+      ]
+    },
+    {
+      "id": "briosh",
+      "name": "Brian",
+      "label": "briosh721",
+      "mc": "briosh721",
+      "via": [
+        "iris"
+      ]
+    },
+    {
+      "id": "tyler",
+      "name": "Tyler",
+      "label": "FrTylerFr",
+      "mc": "FrTylerFr",
+      "via": [
+        "iris"
+      ]
+    },
+    {
+      "id": "jay",
+      "name": "Jay",
+      "label": "JayGoGamer",
+      "mc": "JayGoGamer",
+      "via": [
+        "iris"
+      ]
+    },
+    {
+      "id": "henk",
+      "name": "Lucas",
+      "label": "Hamersveld",
+      "mc": "Hamersveld",
+      "via": [
+        "lucas"
+      ]
+    },
+    {
+      "id": "shade",
+      "name": "Brian",
+      "label": "Mister_Shade",
+      "mc": "Mister_Shade",
+      "via": [
+        "farren"
+      ]
+    },
+    {
+      "id": "bas",
+      "name": "Bas",
+      "label": "BBGPlays",
+      "mc": "BBGPlays",
+      "via": [
+        "farren"
+      ]
+    },
+    {
+      "id": "finn",
+      "name": "Finn",
+      "label": "finndutemps",
+      "mc": "finndutemps",
+      "via": [
+        "angela"
+      ]
+    },
+    {
+      "id": "mike",
+      "name": "Michael",
+      "label": "Detective_Mikey",
+      "mc": "Detective_Mikey",
+      "via": [
+        "angela"
+      ]
+    },
+    {
+      "id": "emma",
+      "name": "Emma",
+      "label": "Emmac208",
+      "mc": "Emmac208",
+      "via": [
+        "liam",
+        "daniel",
+        "nout",
+        "david"
+      ]
+    },
+    {
+      "id": "nynke",
+      "name": "Nynke",
+      "label": "chimmochi_",
+      "mc": "chimmochi_",
+      "via": [
+        "david"
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "name": "Colleagues",
+      "cls": "work",
+      "withMe": true,
+      "members": [
+        "audumn",
+        "iris"
+      ]
+    },
+    {
+      "name": "The band",
+      "cls": "band",
+      "withMe": true,
+      "members": [
+        "liam",
+        "daniel",
+        "nout",
+        "david"
+      ]
+    },
+    {
+      "name": "Friend group",
+      "cls": "crew",
+      "withMe": true,
+      "members": [
+        "dexter",
+        "lucas",
+        "farren",
+        "angela"
+      ]
+    },
+    {
+      "name": "Married quad",
+      "cls": "close",
+      "withMe": true,
+      "members": [
+        "cassie",
+        "ang",
+        "kaja"
+      ]
+    },
+    {
+      "name": "Flatmates",
+      "cls": "home",
+      "outline": true,
+      "members": [
+        "emma",
+        "daniel",
+        "david",
+        "nout",
+        "liam"
+      ]
+    }
+  ],
+  "rels": [
+    {
+      "kind": "couple",
+      "members": [
+        "me",
+        "kaja"
+      ]
+    },
+    {
+      "kind": "couple",
+      "members": [
+        "david",
+        "nynke"
+      ]
+    },
+    {
+      "kind": "couple",
+      "members": [
+        "iris",
+        "jay"
+      ]
+    },
+    {
+      "kind": "couple",
+      "members": [
+        "farren",
+        "bas"
+      ]
+    },
+    {
+      "kind": "couple",
+      "members": [
+        "finn",
+        "mike"
+      ]
+    },
+    {
+      "kind": "married",
+      "members": [
+        "ang",
+        "cassie"
+      ]
+    },
+    {
+      "kind": "siblings",
+      "members": [
+        "kaja",
+        "piotr"
+      ]
+    },
+    {
+      "kind": "siblings",
+      "members": [
+        "briosh",
+        "tyler",
+        "jay"
+      ]
+    }
+  ]
+}

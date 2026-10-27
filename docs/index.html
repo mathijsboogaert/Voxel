@@ -26,7 +26,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/brand.css?v=f4ed1d87" />
-    <link rel="stylesheet" href="assets/site.css?v=24d08719" />
+    <link rel="stylesheet" href="assets/site.css?v=d9c39fe3" />
     <link rel="stylesheet" href="assets/map.css?v=fe2ab4a0" />
   </head>
   <body>
@@ -162,32 +162,25 @@
         </div>
       </section>
 
-      <section class="section section--flush" id="players" aria-labelledby="players-title">
+      <section class="section section--flush" id="friends" aria-labelledby="friends-title">
         <div class="wrap">
           <div class="head">
-            <p class="label eyebrow">Players</p>
-            <h2 id="players-title">Who's around</h2>
+            <p class="label eyebrow">Friends</p>
+            <h2 id="friends-title">Who knows who</h2>
+            <p class="small">Tap anyone to see how they connect.</p>
           </div>
-          <ul class="grid-faces" id="players-grid">
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-            <li class="skel skel--pcell" aria-hidden="true"></li>
-          </ul>
+          <div class="fc-controls">
+            <div id="fc-names"></div>
+            <ul class="fc-legend" id="fc-legend"></ul>
+          </div>
+          <div class="fc-chart" id="fc-chart"><div class="skel skel--card" aria-hidden="true"></div></div>
+          <div class="card fc-card" id="fc-card" aria-live="polite"></div>
           <div class="section-cta"><a class="btn" href="players/" id="players-all">All players</a></div>
         </div>
       </section>
     </main>
 
     <script type="module" src="js/nav.js?v=0aa91664"></script>
-    <script type="module" src="js/home.js?v=c398aa07"></script>
+    <script type="module" src="js/home.js?v=26a33e6e"></script>
   </body>
 </html>

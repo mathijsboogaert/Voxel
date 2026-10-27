@@ -1,4 +1,4 @@
-// Homepage: news, map preview, stats overview and player faces.
+// Homepage: news, map preview, stats overview and who knows who.
 import { loadStats } from './data.js?v=f15302e2';
 import {
   el,
@@ -21,6 +21,7 @@ import {
 import { pattern } from './pattern.js?v=9f404389';
 import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=6be4719b';
 import { raceBlock } from './race.js?v=c045db3d';
+import { mountFriends } from './friends.js?v=0798e1ae';
 import { statTile, hourChart, chipRow } from './widgets.js?v=d7485e33';
 
 document
@@ -320,21 +321,6 @@ function renderStats(st) {
 /* ---- Players ---------------------------------------------------------------------- */
 
 function renderPlayers(st) {
-  const cells = st.recent
-    .slice(0, 12)
-    .map((name) =>
-      el(
-        'li',
-        {},
-        el(
-          'a',
-          { class: 'pcell', href: playerHref(name) },
-          el('span', { class: 'pface' }, faceEl(name, 'lg')),
-          el('span', { class: 'pcell__name' }, name),
-        ),
-      ),
-    );
-  byId('players-grid').replaceChildren(...cells);
   byId('players-all').textContent = `All ${st.recent.length} players`;
 }
 
@@ -402,6 +388,7 @@ async function render(st) {
 }
 
 initPreview();
+mountFriends();
 loadStats()
   .then(render)
   .catch((e) => {
