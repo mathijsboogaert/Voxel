@@ -13,7 +13,7 @@ const BOW = 1.12;
 const OUTER_GAP = 0.3;
 // How far a dashed outline (the flatmates) sits outside its members.
 const OUTLINE_PAD = 46;
-const HEART =
+export const HEART =
   'M0,6 C-9,0 -7,-7 -3.5,-6.5 C-1.5,-6.2 -0.5,-4.8 0,-3.8 C0.5,-4.8 1.5,-6.2 3.5,-6.5 C7,-7 9,0 0,6 Z';
 const REL_WORD = { siblings: 'sibling of', married: 'married to', couple: 'together with' };
 

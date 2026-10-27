@@ -1,15 +1,15 @@
 /* Who knows who on the homepage: the chart, a name switch and a card for whoever is tapped. */
-import { byId, el, getJSON, faceEl, fmtHours } from './ui.js?v=4d932c1e';
+import { byId, el, svgEl, getJSON, faceEl, fmtHours } from './ui.js?v=4d932c1e';
 import { loadStats } from './data.js?v=f15302e2';
 import { chipRow } from './widgets.js?v=d7485e33';
-import { friendsChart } from './friends-core.js?v=e3143fd5';
+import { friendsChart, HEART } from './friends-core.js?v=b92f2984';
 
 const NAMES_KEY = 'voxel-friends-names';
 const LEGEND = [
   ['fc-key fc-key--direct', 'direct'],
   ['fc-key fc-key--via', 'via a friend'],
   ['fc-key fc-key--family', 'siblings'],
-  ['fc-key fc-key--love', 'couple'],
+  ['love', 'couple'],
   ['fc-key fc-key--ghost', 'never played'],
 ];
 
@@ -21,7 +21,7 @@ function savedNames() {
   }
 }
 
-/** Fills #fc-chart, #fc-names, #fc-legend and #fc-card. */
+/** Fills #fc-chart, #fc-names, #fc-legend, #fc-groups and #fc-card. */
 export async function mountFriends() {
   const [data, st] = await Promise.all([getJSON('data/friends.json', null), loadStats().catch(() => null)]);
   if (!data) {
@@ -36,16 +36,18 @@ export async function mountFriends() {
   chart.place();
   document.fonts?.ready.then(() => chart.place());
 
+  // Two short rows: what the lines mean, then the group colours.
+  const key = (cls) => el('span', { class: cls, 'aria-hidden': 'true' });
+  const heart = svgEl(
+    'svg',
+    { class: 'fc-key--love', viewBox: '-8 -7 16 14', 'aria-hidden': 'true' },
+    svgEl('path', { d: HEART, class: 'fc-heart' }),
+  );
   byId('fc-legend').replaceChildren(
-    ...LEGEND.map(([cls, text]) => el('li', {}, el('span', { class: cls, 'aria-hidden': 'true' }), text)),
-    ...data.groups.map((g) =>
-      el(
-        'li',
-        {},
-        el('span', { class: `fc-key fc-key--group fc-key--${g.cls}`, 'aria-hidden': 'true' }),
-        g.name,
-      ),
-    ),
+    ...LEGEND.map(([cls, text]) => el('li', {}, cls === 'love' ? heart : key(cls), text)),
+  );
+  byId('fc-groups').replaceChildren(
+    ...data.groups.map((g) => el('li', {}, key(`fc-key fc-key--group fc-key--${g.cls}`), g.name)),
   );
 
   function namesRow() {

@@ -1457,12 +1457,15 @@ main > .wrap {
 .fc-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  margin: 0 0 var(--space-3);
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-2);
   padding: 0;
   list-style: none;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--ink-muted);
+}
+.fc-legend + .fc-legend {
+  margin-bottom: var(--space-3);
 }
 .fc-legend li {
   display: flex;
@@ -1470,7 +1473,7 @@ main > .wrap {
   gap: var(--space-1-5);
 }
 .fc-key {
-  width: 18px;
+  width: 16px;
   height: 0;
   border-top: 3px solid var(--rust);
 }
@@ -1481,20 +1484,20 @@ main > .wrap {
   border-top: 3px dotted var(--ink);
 }
 .fc-key--love {
-  width: 10px;
-  height: 10px;
-  border: 0;
-  background: var(--rust);
-  transform: rotate(45deg);
+  width: 14px;
+  height: 12px;
+}
+.fc-key--love .fc-heart {
+  stroke: none;
 }
 .fc-key--ghost {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border: var(--stroke-2) dashed var(--ink-muted);
 }
 .fc-key--group {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border: 0;
   border-radius: 50%;
 }

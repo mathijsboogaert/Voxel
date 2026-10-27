@@ -21,7 +21,7 @@ import {
 import { pattern } from './pattern.js?v=9f404389';
 import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=6be4719b';
 import { raceBlock } from './race.js?v=c045db3d';
-import { mountFriends } from './friends.js?v=0798e1ae';
+import { mountFriends } from './friends.js?v=d34d06fb';
 import { statTile, hourChart, chipRow } from './widgets.js?v=d7485e33';
 
 document
