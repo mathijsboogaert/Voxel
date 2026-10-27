@@ -28,6 +28,44 @@ const ADV_POINTS = { advancement: 1, goal: 3, challenge: 5 };
 const POINTS_BY_NAME = { 'how did we get here?': 10 };
 const pointsFor = (type, name) => POINTS_BY_NAME[String(name).trim().toLowerCase()] ?? ADV_POINTS[type] ?? 0;
 
+// What killed someone, in a few words for "mostly ...": the mob that did it ("guardians"), other players ("players"),
+// or the thing itself ("falling", "lava"). The log line after the player's name is in the events' detail.
+const PLURAL = { wolf: 'wolves', enderman: 'endermen', silverfish: 'silverfish', drowned: 'drowned', bogged: 'bogged' };
+const plural = (name) => {
+  const n = name.toLowerCase().replace(/^elder /, '');
+  const last = n.split(' ').pop();
+  if (PLURAL[last]) return n.slice(0, n.length - last.length) + PLURAL[last];
+  if (/(s|x|z|ch|sh)$/.test(n)) return n + 'es';
+  return n + 's';
+};
+const SURROUNDINGS = [
+  [/lava/, 'lava'],
+  [/fire|flames|burn|crisp/, 'fire'],
+  [/fell|hit the ground|doomed to fall|high place|ladder|scaffolding|vines/, 'falling'],
+  [/drowned/, 'drowning'],
+  [/stalagmite/, 'stalagmites'],
+  [/suffocated/, 'suffocation'],
+  [/cactus|pricked/, 'cacti'],
+  [/berry|bush/, 'berry bushes'],
+  [/froze/, 'freezing'],
+  [/starved/, 'starvation'],
+  [/lightning/, 'lightning'],
+  [/anvil|squashed/, 'falling blocks'],
+  [/kinetic energy/, 'elytra crashes'],
+  [/withered/, 'withering'],
+  [/blew up|exploded|firework/, 'explosions'],
+];
+export const deathCause = (e) => {
+  const msg = String(e.detail || '');
+  if (e.category === 'PvP') return 'players';
+  const designed = msg.match(/\[(.+?)\]/);
+  if (designed) return designed[1].toLowerCase();
+  const killer = msg.match(/\bby (.+?)(?: using .+)?$/) || msg.match(/(?:escape|fighting|hurt) (.+?)$/);
+  if (killer && !/^(a|an|the)\b/i.test(killer[1])) return plural(killer[1]);
+  for (const [re, name] of SURROUNDINGS) if (re.test(msg)) return name;
+  return String(e.category || 'other').toLowerCase();
+};
+
 // Time together counts once two players shared this much time.
 const PARTNER_MIN_MS = 30 * MINUTE;
 // A day counts towards streaks and "different days" with this much play.
@@ -135,6 +173,7 @@ const newPlayer = (name) => ({
   longestMin: 0,
   lastEnd: '',
   byHour: new Array(24).fill(0),
+  byWeekHour: Array.from({ length: 7 }, () => new Array(24).fill(0)), // [Monday .. Sunday][hour], minutes
   weekendMin: 0,
   nightMin: 0,
   earlyMin: 0,
@@ -217,6 +256,8 @@ function removeAfk(p, t0, t1, minutes) {
     const weekday = new Date(Date.UTC(+f.year, +f.month - 1, +f.day)).getUTCDay();
     if (date < LAUNCH) continue;
     p.byHour[hr] = Math.max(0, p.byHour[hr] - part);
+    const row = (weekday + 6) % 7; // Sunday is 0 in JS; Monday is the first row
+    p.byWeekHour[row][hr] = Math.max(0, p.byWeekHour[row][hr] - part);
     p.dayMin[date] = Math.max(0, (p.dayMin[date] || 0) - part);
     if (weekday === 0 || weekday === 6) p.weekendMin = Math.max(0, p.weekendMin - part);
     if (isNight(hr)) p.nightMin = Math.max(0, p.nightMin - part);
@@ -298,6 +339,7 @@ function compute({ sessions, hourly, events, meta, adjust = {}, afkHistory = [] 
     const m = Number(r.minutes);
     const hr = +r.hour;
     p.byHour[hr] += m;
+    p.byWeekHour[+r.weekday - 1][hr] += m; // the CSV numbers Monday 1 to Sunday 7
     p.dayMin[r.date] = (p.dayMin[r.date] || 0) + m;
     if (+r.weekday >= 6) p.weekendMin += m;
     if (isNight(hr)) p.nightMin += m;
@@ -319,7 +361,8 @@ function compute({ sessions, hourly, events, meta, adjust = {}, afkHistory = [] 
     if (e.type === 'death') {
       const p = P(e.player);
       p.deaths += 1;
-      p.deathCauses[e.category] = (p.deathCauses[e.category] || 0) + 1;
+      const cause = deathCause(e);
+      p.deathCauses[cause] = (p.deathCauses[cause] || 0) + 1;
     } else if (e.type === 'chat') {
       P(e.player).chat += 1;
     } else if (ADV.includes(e.type)) {
@@ -383,6 +426,9 @@ function compute({ sessions, hourly, events, meta, adjust = {}, afkHistory = [] 
   return {
     meta,
     overview: overviewOf(S, H, all.length),
+    byWeekHourAll: Array.from({ length: 7 }, (_, d) =>
+      Array.from({ length: 24 }, (_, h) => Math.round(all.reduce((t, p) => t + p.byWeekHour[d][h], 0))),
+    ),
     byHourAll: H.reduce((list, r) => ((list[+r.hour] += Number(r.minutes)), list), new Array(24).fill(0)).map(
       r1,
     ),
@@ -471,6 +517,7 @@ function publicPlayer(p) {
     adminMin: r1(p.adminMin),
     lastEnd: p.lastEnd,
     byHour: p.byHour.map(r1),
+    byWeekHour: p.byWeekHour.map((row) => row.map(Math.round)),
     favHour: Math.max(...p.byHour) > 0 ? argMax(p.byHour) : null,
     deaths: p.deaths,
     topCause: p.topCause,

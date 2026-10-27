@@ -21,7 +21,7 @@ import {
   productRows,
   ownersOf,
 } from './shops-core.js?v=6be4719b';
-import { chipRow } from './widgets.js?v=f256c111';
+import { chipRow } from './widgets.js?v=d7485e33';
 
 /**
  * What a row offers: one item or service, or a group that opens to show every kind in it. When the kinds

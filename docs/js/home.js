@@ -21,7 +21,7 @@ import {
 import { pattern } from './pattern.js?v=9f404389';
 import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=6be4719b';
 import { raceBlock } from './race.js?v=c045db3d';
-import { statTile, hourChart, chipRow } from './widgets.js?v=f256c111';
+import { statTile, hourChart, chipRow } from './widgets.js?v=d7485e33';
 
 document
   .querySelector('[data-frieze]')
@@ -309,6 +309,7 @@ function renderStats(st) {
   const peak = `${o.peakPlayers}${o.peakAt ? ', ' + fmtDay(o.peakAt) : ''}`;
   const hours = hourChart({
     byHour: st.byHourAll,
+    byWeekHour: st.byWeekHourAll,
     heading: 'When people play',
     caption: `Dutch time. Most online at once: ${peak}.`,
   });

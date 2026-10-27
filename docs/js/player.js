@@ -3,7 +3,7 @@
 import { loadStats } from './data.js?v=f15302e2';
 import { raceBlock } from './race.js?v=c045db3d';
 import { shopIconEl, shopHref, isOpen, ownersOf } from './shops-core.js?v=6be4719b';
-import { statTile, hourChart } from './widgets.js?v=f256c111';
+import { statTile, hourChart } from './widgets.js?v=d7485e33';
 import {
   el,
   svgEl,
@@ -257,6 +257,7 @@ function render(st, places) {
     left.push(
       hourChart({
         byHour: p.byHour,
+        byWeekHour: p.byWeekHour,
         heading: 'When they play',
         caption: `Usually around ${hourLabel(p.favHour)}, Dutch time.`,
       }),

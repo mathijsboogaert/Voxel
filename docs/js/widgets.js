@@ -1,5 +1,5 @@
 // Small building blocks shared by the pages: chips, stat tiles and the hour chart.
-import { el, hourLabel, columns, barLength } from './ui.js?v=4d932c1e';
+import { el, hourLabel, columns, barLength, bar } from './ui.js?v=4d932c1e';
 
 /** A stat tile: a big number, what it counts, and an optional extra line (text or an element). */
 export function statTile(num, label, extra) {
@@ -12,13 +12,71 @@ export function statTile(num, label, extra) {
   );
 }
 
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAYS_PLURAL = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays', 'Sundays'];
+// Five shades of teal, and none for an empty hour. The square root keeps a quiet hour visible next to a busy one.
+const heatLevel = (minutes, max) =>
+  minutes <= 0 ? 0 : Math.min(5, 1 + Math.floor(4 * Math.sqrt(minutes / max)));
+
+/** Day by hour, combined: the hour columns on top, a heat map of the week below, each day's total at its right. */
+function weekHeat(byHour, byWeekHour) {
+  const max = Math.max(...byWeekHour.flat()) || 1;
+  const dayTotals = byWeekHour.map((row) => row.reduce((a, b) => a + b, 0));
+  const topDay = dayTotals.indexOf(Math.max(...dayTotals));
+  const top = byHour.indexOf(Math.max(...byHour));
+  const heights = byHour.map((minutes) => barLength(minutes, Math.max(...byHour) || 1));
+  const chart = columns(heights, (hour) => (hour === top ? 'bar__fill bar__fill--top' : 'bar__fill'));
+  const rows = byWeekHour.flatMap((row, d) => [
+    el('span', { class: 'heat__day small' }, DAYS[d]),
+    el(
+      'div',
+      { class: 'heat__cells' },
+      row.map((minutes, h) =>
+        el('i', { class: `heat--${heatLevel(minutes, max)}`, title: `${DAYS[d]} ${hourLabel(h)}` }),
+      ),
+    ),
+    el('span', { class: 'pbar heat__total' }, bar(barLength(dayTotals[d], dayTotals[topDay]))),
+  ]);
+  const grid = el(
+    'div',
+    {
+      class: 'heat',
+      role: 'img',
+      'aria-label': `Time played by day and hour. Busiest on ${DAYS_PLURAL[topDay]}, around ${hourLabel(top)}.`,
+    },
+    el('span'),
+    el('div', { class: 'heat__hours' }, chart),
+    el('span'),
+    rows,
+    el('span'),
+    el(
+      'div',
+      { class: 'rhythm-axis small', 'aria-hidden': 'true' },
+      ['00', '06', '12', '18', '24'].map((t) => el('span', {}, t)),
+    ),
+    el('span'),
+  );
+  return { grid, busiest: DAYS_PLURAL[topDay] };
+}
+
 /**
  * The time-of-day chart: one bar per hour, the busiest hour in rust.
  *   byHour   minutes played in each of the 24 hours
+ *   byWeekHour  optional, minutes for each day (Monday first) and hour: adds the heat map of the week
  *   heading  the card's label
  *   caption  the line under the chart
  */
-export function hourChart({ byHour, heading, caption }) {
+export function hourChart({ byHour, byWeekHour = null, heading, caption }) {
+  if (byWeekHour) {
+    const { grid, busiest } = weekHeat(byHour, byWeekHour);
+    return el(
+      'div',
+      { class: 'card hours' },
+      el('p', { class: 'label' }, heading),
+      grid,
+      el('p', { class: 'small mt-2' }, `${caption} Busiest on ${busiest}.`),
+    );
+  }
   const max = Math.max(...byHour) || 1;
   const top = byHour.indexOf(Math.max(...byHour));
   const heights = byHour.map((minutes) => barLength(minutes, max));

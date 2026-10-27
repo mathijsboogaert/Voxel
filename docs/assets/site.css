@@ -1165,6 +1165,55 @@ main > .wrap {
   margin-top: var(--space-2);
 }
 
+/* Week heat map under the hour columns (widgets.js weekHeat): day labels, 24 cells a day, each day's total at the right. */
+.heat {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 3rem;
+  column-gap: var(--space-2);
+  row-gap: 0;
+  align-items: center;
+  margin-top: var(--space-3);
+}
+.heat__hours {
+  position: relative;
+  height: 72px;
+  margin-bottom: var(--space-2);
+}
+.heat__cells {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+}
+/* The border is the card's own colour, so the cells read as separate squares and line up with the hour columns above. */
+.heat__cells i {
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid var(--paper-sunken);
+}
+.heat__day {
+  line-height: 1;
+}
+.heat__total {
+  height: 6px;
+}
+.heat--0 {
+  background: var(--paper);
+}
+.heat--1 {
+  background: color-mix(in srgb, var(--teal) 20%, var(--paper));
+}
+.heat--2 {
+  background: color-mix(in srgb, var(--teal) 40%, var(--paper));
+}
+.heat--3 {
+  background: color-mix(in srgb, var(--teal) 62%, var(--paper));
+}
+.heat--4 {
+  background: color-mix(in srgb, var(--teal) 82%, var(--paper));
+}
+.heat--5 {
+  background: var(--teal);
+}
+
 /* Advancement race (race.js). Each line's colour, weight and dash is a class. */
 .race {
   display: block;
