@@ -948,8 +948,12 @@
       },
       {
         "service": "Furniture Constuction",
-        "price": 2,
+        "price": 1,
         "priceItem": "diamond"
+      },
+      {
+        "service": "Cushion Course",
+        "free": true
       }
     ]
   }
