@@ -62,6 +62,14 @@
       ]
     },
     {
+      "id": "rosanne",
+      "name": "Rosanne",
+      "label": "Rosanne",
+      "via": [
+        "me"
+      ]
+    },
+    {
       "id": "cassie",
       "name": "Cassie",
       "label": "xCassie310x",
@@ -255,7 +263,8 @@
         "dexter",
         "lucas",
         "farren",
-        "angela"
+        "angela",
+        "rosanne"
       ]
     },
     {
