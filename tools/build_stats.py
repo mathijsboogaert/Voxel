@@ -19,6 +19,8 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 LOCAL = ZoneInfo("Europe/Amsterdam")
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'retired.json')) as _f:
+    RETIRED = set(json.load(_f)['players'])  # left the server: kept out of every file
 TS = re.compile(r'^\[(\d\d):(\d\d):(\d\d)\]')
 JOIN = re.compile(r'System chat: (\S+) joined the game')
 LEAVE = re.compile(r'System chat: (\S+) left the game')
@@ -136,6 +138,8 @@ def main():
     for p, s in online.items():
         sessions.append((p, s, last, True))
     sessions = sorted([x for x in sessions if x[2] > x[1]], key=lambda x: x[1])
+    everyone = {x[0] for x in sessions}  # retired players still count as killers in PvP deaths
+    sessions = [x for x in sessions if x[0] not in RETIRED]
     players = {x[0] for x in sessions}
 
     with open(os.path.join(out, 'voxel-sessions.csv'), 'w', newline='') as f:
@@ -181,7 +185,7 @@ def main():
             elif DEATH.match(rest) and not rest.startswith(('joined', 'left the game')):
                 if rest == 'was killed' and any('issued server command: /kill' in x for x in lines[max(0, i - 2) : i]):
                     continue  # /kill by an operator, not a real death
-                rec = ('death', s[1], rest, death_category(rest, players))
+                rec = ('death', s[1], rest, death_category(rest, everyone))
         if rec:
             events.append([rec[0], rec[1], fmt_utc(t), fmt_local(t), rec[2], rec[3]])
     with open(os.path.join(out, 'voxel-events.csv'), 'w', newline='') as f:

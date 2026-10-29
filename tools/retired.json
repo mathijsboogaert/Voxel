@@ -1,0 +1,4 @@
+{
+  "_note": "Players who left the server. The stats scripts leave them out of everything they write. Add a Minecraft name to remove someone, then delete their head from docs/faces.",
+  "players": ["Emmac208"]
+}

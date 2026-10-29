@@ -49,6 +49,9 @@ def main():
         print('no scoreboard.dat, skipping AFK counters')
         return
     players = read_counters(path)
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'retired.json')) as f:
+        for name in json.load(f)['players']:  # left the server
+            players.pop(name, None)
     if not players:
         print('no pt.total / pt.afktotal scores found yet')
         return

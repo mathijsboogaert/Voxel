@@ -213,18 +213,6 @@
       ]
     },
     {
-      "id": "emma",
-      "name": "Emma",
-      "label": "Emmac208",
-      "mc": "Emmac208",
-      "via": [
-        "liam",
-        "daniel",
-        "nout",
-        "david"
-      ]
-    },
-    {
       "id": "nynke",
       "name": "Nynke",
       "label": "chimmochi_",
@@ -282,7 +270,6 @@
       "cls": "home",
       "outline": true,
       "members": [
-        "emma",
         "daniel",
         "david",
         "nout",
