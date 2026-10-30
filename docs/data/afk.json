@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-30T19:59:10Z",
+  "generated_at": "2026-10-30T21:27:39Z",
   "players": {
     "BBGPlays": {
       "active": 27372,
@@ -14,12 +14,12 @@
       "afk": 6530
     },
     "EchoinSilence": {
-      "active": 216685,
+      "active": 218054,
       "afk": 188982
     },
     "EmrysPendragon": {
-      "active": 210884,
-      "afk": 98746
+      "active": 211146,
+      "afk": 103884
     },
     "FrTylerFr": {
       "active": 62756,
@@ -58,7 +58,7 @@
       "afk": 0
     },
     "Roefus": {
-      "active": 118483,
+      "active": 118596,
       "afk": 679
     },
     "_Farren": {
@@ -75,6 +75,10 @@
     },
     "kayushka": {
       "active": 49813,
+      "afk": 0
+    },
+    "xXkorniszon2137": {
+      "active": 4057,
       "afk": 0
     }
   }
