@@ -1,0 +1,39 @@
+name: Time spent in an area
+
+# One-off report: reads InhabitedTime for the chunks of an area and prints it in the job log.
+# Read-only on the server. Runs on pushes to the branch that adds it, or by hand.
+
+on:
+  push:
+    branches: [claude/stoic-gates-9q9sa7]
+    paths: [tools/world/inhabited.py, .github/workflows/inhabited.yml]
+  workflow_dispatch:
+    inputs:
+      area:
+        description: 'Area label from docs/shops.json, or "x0 z0 x1 z1"'
+        default: 'Museum WIP'
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SFTP_HOST: ${{ secrets.SFTP_HOST }}
+      SFTP_PORT: ${{ secrets.SFTP_PORT }}
+      SFTP_USER: ${{ secrets.SFTP_USER }}
+      SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      SFTP_KEY: ${{ secrets.SFTP_KEY }}
+      SFTP_HOST_FINGERPRINT: ${{ secrets.SFTP_HOST_FINGERPRINT || 'SHA256:5beRzNs0fQlLpxHtBYcYEEzlBF4ZQABeEi+4d0xaHI0' }}
+      SFTP_REGION_DIR: ${{ secrets.SFTP_REGION_DIR || 'world/dimensions/minecraft/overworld/region' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet paramiko
+      - env:
+          AREA: ${{ inputs.area || 'Museum WIP' }}
+        run: python3 tools/world/inhabited.py $AREA
