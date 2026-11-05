@@ -1,0 +1,20 @@
+name: ElytraLock
+version: '${project.version}'
+main: nl.voxel.elytralock.ElytraLockPlugin
+api-version: '1.21'
+description: Locks every item frame holding an elytra. Each player can take one elytra, once.
+authors: [Voxel]
+
+commands:
+  elytralock:
+    description: Check or reset elytra claims.
+    usage: /elytralock [check <player> | reset <player> | list | reload]
+    aliases: [elytra]
+
+permissions:
+  elytralock.admin:
+    description: Check, list and reset claims, and reload the config.
+    default: op
+  elytralock.bypass:
+    description: Take elytras out of frames and break those frames freely, without using a claim. Not given to ops by default.
+    default: false

@@ -1,0 +1,52 @@
+name: Build ElytraLock
+
+# Builds the ElytraLock plugin (plugins/elytra-lock) against the newest Paper 26.x API and attaches
+# ElytraLock-<version>.jar to the run. Download it from the run's "Artifacts" and drop it in the
+# server's plugins/ folder. Runs when the plugin changes, or on demand from the Actions tab.
+
+on:
+  push:
+    paths:
+      - 'plugins/elytra-lock/**'
+      - '.github/workflows/elytra-lock.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: plugins/elytra-lock
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Find the newest Paper 26.x API
+        id: paper
+        run: |
+          meta=$(curl -fsSL https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/maven-metadata.xml)
+          version=$(echo "$meta" | grep -o '<version>26\.[^<]*</version>' | sed 's/<[^>]*>//g' | tail -1)
+          if [ -z "$version" ]; then
+            echo "No 26.x paper-api found" >&2
+            exit 1
+          fi
+          echo "Building against paper-api $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: mvn -B -q package -Dpaper.version='${{ steps.paper.outputs.version }}'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ElytraLock
+          path: plugins/elytra-lock/target/ElytraLock-*.jar
+          if-no-files-found: error

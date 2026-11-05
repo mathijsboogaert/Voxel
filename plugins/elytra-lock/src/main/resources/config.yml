@@ -1,0 +1,20 @@
+# ElytraLock: every item frame holding an elytra is locked.
+# A player can take one elytra out of a frame, once, ever. After that every elytra frame stays shut for them.
+# Messages use MiniMessage (https://docs.advntr.dev/minimessage/format.html).
+# Placeholders: <player>, <date>.
+
+messages:
+  claimed: "<gold>You claimed your elytra.</gold> <gray>This was your one and only. Don't lose it.</gray>"
+  already-claimed: "<red>You already took your elytra on <date>.</red> <gray>Each player gets one.</gray>"
+  locked-hint: "<gray>This elytra is locked. Punch the frame to claim it. You only get one, ever.</gray>"
+  own-returned: "<gray>You took back the elytra you put here. Your claim is untouched.</gray>"
+  status-unclaimed: "<green>You have not claimed an elytra yet.</green> <gray>Find one in an End ship.</gray>"
+  status-claimed: "<gray>You claimed your elytra on <date>.</gray>"
+  check-unclaimed: "<green><player> has not claimed an elytra.</green>"
+  check-claimed: "<gray><player> claimed their elytra on <date>.</gray>"
+  reset-done: "<green>Reset <player>. They can claim one elytra again.</green>"
+  reset-none: "<gray><player> had no claim to reset.</gray>"
+  unknown-player: "<red>Never seen a player called <player>.</red>"
+  reloaded: "<green>ElytraLock config reloaded.</green>"
+  list-header: "<gold>Elytra claims (<count>):</gold>"
+  list-line: "<gray>- <player>, <date></gray>"
