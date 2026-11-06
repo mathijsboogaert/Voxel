@@ -93,7 +93,7 @@ It only touches links whose file changed. Run prettier and the stamp twice: a ve
 | `docs/data/items.json`                                                 | `tools/build_items.py`    | Every Minecraft 26.3 item with its English name and recipes, and every enchantment, for the item pickers and item search                                                                                                                                                                                                                                          |
 | `docs/data/friends.json`                                               | by hand                   | Who knows who: `people` (real `name`, `label` shown as the player name, `mc` for the face and playtime, `via`: who brought them in, `me` is the centre), `groups` (`withMe` puts the centre in it, `outline` draws a dashed line) and `rels` (`couple`, `married`, `siblings`). Drawn by `docs/js/friends-core.js`, shown on the homepage by `docs/js/friends.js` |
 | `docs/news.json`                                                       | by hand                   | Extra news items, mainly events with a countdown (below)                                                                                                                                                                                                                                                                                                          |
-| `docs/badges.json`                                                     | by hand                   | Community badges (`badges`: `id`, `name`, `points`, `how`) and who earned them (`awards`), see Community badges below                                                                                                                                                                                                                                             |
+| `docs/badges.json`                                                     | `tools/read_badges.py`    | The VoxelBadges plugin's badges and who holds which tier (`players`), plus `points` per tier by hand. See Community badges                                                                                                                                                                                                                                        |
 
 ## Shops, products and item search
 
@@ -224,9 +224,10 @@ labels above (Night owl and so on, worked out from the logs). The site mirrors t
 }
 ```
 
-- `badges` is the `badges:` list from the plugin's `config.yml` (same ids, names and tier texts). Change it in both places.
-- `players` is the plugin's `badges.yml` by Minecraft name: per badge the tier level, 1 bronze, 2 silver, 3 gold, 4 diamond. Like in game, only the highest tier shows.
-- `points` is what a badge is worth at each tier. The board ranks by total points (equal points: more high tiers first), equal points share a rank, and everyone ranked first is the most valuable badge holder.
+- **It updates itself.** Every stats run (see Live stats) also downloads the plugin's `badges.yml` and `config.yml` from `plugins/VoxelBadges/` (`SFTP_BADGES_DIR` if it is elsewhere), and `tools/read_badges.py` copies them into `badges.json`. So `/badge give` in game reaches the site within the hour, and new badges or changed tier texts in the plugin's config come along too. If a file can't be downloaded, the page keeps what it had.
+- `badges` is the `badges:` list from the plugin's `config.yml` (same ids, names and tier texts).
+- `players` is the plugin's `badges.yml`, by Minecraft name instead of UUID: per badge the tier level, 1 bronze, 2 silver, 3 gold, 4 diamond. Like in game, only the highest tier shows.
+- `points` is what a badge is worth at each tier, the only part you set here. The board ranks by total points (equal points: more high tiers first), equal points share a rank, and everyone ranked first is the most valuable badge holder.
 - The icons are the plugin's own 10x10 PNGs, `docs/assets/badges/community/<tier>_<id>.png`, shown at 2x, 3x or 5x so the pixels stay square. After changing the art in the plugin, copy the PNGs here too.
 
 The page is `docs/badges/index.html`, drawn by `docs/js/badges.js`; its menu icon (a medal) is in `tools/draw_nav_icons.py`.

@@ -11,6 +11,7 @@ Reads its settings from environment variables (in CI these are repository secret
   SFTP_PORT            optional   default 2022 (Pterodactyl's SFTP port)
   SFTP_LOG_DIR         optional   default "logs"
   SFTP_SCOREBOARD      optional   default "world/data/minecraft/scoreboard.dat" (the datapack's AFK counters)
+  SFTP_BADGES_DIR      optional   default "plugins/VoxelBadges" (its badges.yml and config.yml, for the Badges page)
   SFTP_HOST_FINGERPRINT optional  SHA256 fingerprint of the server's host key; when set, the
                                   connection is refused if it does not match
 Only the files build_stats.py needs are fetched: YYYY-MM-DD-n.log.gz and latest.log. Their
@@ -78,6 +79,13 @@ def main():
             print('downloaded the scoreboard')
         except OSError as e:
             print(f'note: could not fetch {board} ({e}); AFK counters are skipped this time')
+        badges = (os.environ.get('SFTP_BADGES_DIR') or 'plugins/VoxelBadges').strip('/')
+        for name in ('badges.yml', 'config.yml'):
+            try:
+                sftp.get(f'{badges}/{name}', os.path.join(dest, f'voxelbadges-{name}'))
+                print(f'downloaded VoxelBadges {name}')
+            except OSError as e:
+                print(f'note: could not fetch {badges}/{name} ({e}); the Badges page keeps what it has')
         if 'latest.log' not in names:
             sys.exit('latest.log was not found on the server; check SFTP_LOG_DIR')
     finally:
