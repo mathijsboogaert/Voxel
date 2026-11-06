@@ -1,0 +1,29 @@
+{
+  "badges": [
+    {
+      "id": "road-builder",
+      "name": "Road builder",
+      "points": 3,
+      "how": "Build a full road that connects a base to a main road or to spawn. Lit, walkable, no gaps."
+    },
+    {
+      "id": "bridge-builder",
+      "name": "Bridge builder",
+      "points": 3,
+      "how": "Build a bridge on a public route, over water, a ravine or anything else in the way."
+    },
+    {
+      "id": "shopkeeper",
+      "name": "Shopkeeper",
+      "points": 2,
+      "how": "Open a shop that is stocked, has its prices up and is on the Shops page."
+    },
+    {
+      "id": "game-maker",
+      "name": "Game maker",
+      "points": 5,
+      "how": "Build a mini game anyone can walk up to and play."
+    }
+  ],
+  "awards": []
+}
