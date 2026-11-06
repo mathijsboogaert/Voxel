@@ -16,12 +16,15 @@ advancements:
 
 packs:
   # Version numbers written into pack.mcmeta. Defaults are for Minecraft 26.3.
-  datapack-format: 109
+  datapack-format: 121
   resourcepack-format: 97
 
 resource-pack:
   enabled: true
   # Port of the small web server that hands out the icon pack. Needs to be an open port at your host.
+  # Set to 0 to skip the built-in web server and host the zip somewhere else (for example your
+  # GitHub site). public-url then points there; the plugin downloads it once to get its hash.
+  # The zip to upload is plugins/VoxelBadges/voxel-badges-pack.zip.
   port: 25590
   # The address players download the pack from. Replace with your server IP and the port above.
   public-url: "http://YOUR.SERVER.IP:25590/voxel-badges.zip"

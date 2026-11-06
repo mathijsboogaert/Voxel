@@ -40,7 +40,7 @@ public final class PackBuilder {
         Path root = worldFolder.toPath().resolve("datapacks").resolve("voxel_badges");
         Map<String, String> files = new LinkedHashMap<>();
 
-        int format = plugin.getConfig().getInt("packs.datapack-format", 109);
+        int format = plugin.getConfig().getInt("packs.datapack-format", 121);
         files.put("pack.mcmeta", mcmeta("Voxel Badges advancements", format));
 
         String bg = plugin.getConfig().getString("advancements.background", "minecraft:block/terracotta");
@@ -64,9 +64,9 @@ public final class PackBuilder {
                 }
                 """.formatted(NS, esc(bg)));
 
-        // Layout: root -> one label node per badge (auto-earned) -> its 4 tiers stacked below each other.
-        // Every tier hangs directly under the label, so all of them are visible before they're earned
-        // (Minecraft hides unearned advancements more than two steps below an earned one).
+        // Layout per badge: root -> label (auto-earned) -> Bronze -> Silver -> Gold -> Diamond.
+        // Minecraft shows unearned advancements up to two steps after an earned one, so Bronze and
+        // Silver are always visible; Gold appears after Bronze, Diamond after Silver.
         for (Badge b : badges) {
             String header = "badges/" + b.id() + "/header";
             files.put(advPath(header), """
@@ -103,6 +103,7 @@ public final class PackBuilder {
                         }
                         """.formatted(parent, NS, b.texture(t), esc(b.name()), t.display, t.color,
                         esc(b.requirement(t)), t.frame));
+                parent = NS + ":" + key;
             }
         }
 

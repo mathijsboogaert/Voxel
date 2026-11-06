@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public final class VoxelBadges extends JavaPlugin implements Listener {
 
@@ -34,6 +36,8 @@ public final class VoxelBadges extends JavaPlugin implements Listener {
     private PackServer packServer;
     private PackBuilder.Pack pack;
     private Nameplates nameplates;
+    /** Pack info for an externally hosted pack (port 0); its hash is computed from the download. */
+    private CompletableFuture<ResourcePackInfo> externalPack;
 
     @Override
     public void onEnable() {
@@ -94,6 +98,7 @@ public final class VoxelBadges extends JavaPlugin implements Listener {
             File out = new File(getDataFolder(), "voxel-badges-pack.zip");
             java.nio.file.Files.write(out.toPath(), pack.zip());
             if (packServer != null) packServer.update(pack.zip());
+            externalPack = null; // recompute the hash of an external pack on next use
         } catch (IOException e) {
             getLogger().severe("Could not build the resource pack: " + e.getMessage());
         }
@@ -118,7 +123,15 @@ public final class VoxelBadges extends JavaPlugin implements Listener {
 
     private void startPackServer() {
         if (!getConfig().getBoolean("resource-pack.enabled", true)) return;
+        if (packUrl() == null) {
+            getLogger().warning("resource-pack.public-url is not set, so nobody gets the badge icons. "
+                    + "Set it in config.yml and run /badge reload.");
+        }
         int port = getConfig().getInt("resource-pack.port", 25590);
+        if (port <= 0) {
+            getLogger().info("Built-in pack server off; players get the pack from " + packUrl());
+            return;
+        }
         try {
             packServer = new PackServer();
             packServer.start(port);
@@ -144,21 +157,54 @@ public final class VoxelBadges extends JavaPlugin implements Listener {
         });
     }
 
-    void sendPack(Player p) {
-        if (pack == null || packServer == null) return;
+    /** The configured download URL, or null while it's still the placeholder. */
+    private String packUrl() {
         String url = getConfig().getString("resource-pack.public-url", "");
-        if (url.isBlank() || url.contains("YOUR.SERVER.IP")) return;
-        ResourcePackInfo info = ResourcePackInfo.resourcePackInfo()
-                .id(PACK_ID)
-                .uri(URI.create(url))
-                .hash(pack.sha1())
-                .build();
+        return url.isBlank() || url.contains("YOUR.SERVER.IP") ? null : url;
+    }
+
+    void sendPack(Player p) {
+        if (!getConfig().getBoolean("resource-pack.enabled", true) || pack == null) return;
+        String url = packUrl();
+        if (url == null) return;
+        if (packServer != null) {
+            send(p, ResourcePackInfo.resourcePackInfo().id(PACK_ID).uri(URI.create(url)).hash(pack.sha1()).build());
+            return;
+        }
+        // Hosted elsewhere: download it once to get the hash, then send it to everyone.
+        if (externalPack == null) {
+            externalPack = ResourcePackInfo.resourcePackInfo().id(PACK_ID).uri(URI.create(url)).computeHashAndBuild();
+            externalPack.exceptionally(e -> {
+                getLogger().severe("Could not download the badge resource pack from " + url + ": " + e.getMessage());
+                externalPack = null;
+                return null;
+            });
+        }
+        externalPack.thenAccept(info -> {
+            if (info != null) Bukkit.getScheduler().runTask(this, () -> { if (p.isOnline()) send(p, info); });
+        });
+    }
+
+    private void send(Player p, ResourcePackInfo info) {
         p.sendResourcePacks(ResourcePackRequest.resourcePackRequest()
                 .packs(info)
                 .replace(false)
                 .required(getConfig().getBoolean("resource-pack.required", false))
                 .prompt(Component.text(getConfig().getString("resource-pack.prompt", "Voxel badge icons")))
                 .build());
+    }
+
+    @EventHandler
+    public void onPackStatus(PlayerResourcePackStatusEvent event) {
+        if (!PACK_ID.equals(event.getID())) return;
+        switch (event.getStatus()) {
+            case SUCCESSFULLY_LOADED -> getLogger().info(event.getPlayer().getName() + " loaded the badge icons.");
+            case ACCEPTED, DOWNLOADED -> { }
+            default -> getLogger().warning(event.getPlayer().getName() + " did not load the badge icons: "
+                    + event.getStatus() + (event.getStatus() == PlayerResourcePackStatusEvent.Status.DECLINED
+                    ? " (they declined the pack prompt; they can enable it under Multiplayer > Edit > Server Resource Packs)"
+                    : " (check that resource-pack.public-url opens in a browser)"));
+        }
     }
 
     // ----------------------------------------------------------- badge logic
