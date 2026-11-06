@@ -23,7 +23,6 @@ import {
 const name = new URLSearchParams(location.search).get('name') || '';
 
 const mapHref = (x, z) => `${url('map/')}?x=${Math.round(x)}&z=${Math.round(z)}&zoom=12`;
-const badgeSrc = (badge) => url(`assets/badges/${badge.toLowerCase().replace(/[^a-z]+/g, '-')}.svg`);
 
 const pinIcon = () =>
   svgEl(
@@ -60,14 +59,6 @@ function missing(page) {
 function hero(st, p) {
   const status = [`Last seen ${lastSeen(p.lastEnd)}`];
   if (st.meta && st.meta.generated_at) status.push(`stats updated ${relTime(st.meta.generated_at)}`);
-  const badges = p.badges.map((b) =>
-    el(
-      'span',
-      { class: 'badge' },
-      el('span', { class: 'badge__icon' }, el('img', { src: badgeSrc(b), alt: '' })),
-      b,
-    ),
-  );
   return el(
     'section',
     { class: 'page-head' },
@@ -83,7 +74,6 @@ function hero(st, p) {
         el('p', { class: 'small' }, status.join(' · ')),
       ),
     ),
-    badges.length ? el('div', { class: 'badges' }, badges) : null,
   );
 }
 

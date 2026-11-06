@@ -795,43 +795,8 @@ main > .wrap {
 .phero h1 {
   overflow-wrap: anywhere;
 }
-/* Badges sit on the same grid as the tiles under them: two columns on a phone, four (two per
-   column) on a wide screen, so every edge lines up. A long name wraps rather than breaking the grid. */
-.badges {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
 .page-head:has(+ .tiles) {
   padding-bottom: var(--space-3);
-}
-.badge {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
-  padding-right: var(--space-3);
-  font: 600 var(--text-md) / 1.286 var(--font-sans);
-  background: var(--paper);
-  border: var(--stroke-2) solid var(--line);
-}
-.badge__icon {
-  display: block;
-  flex: none;
-  width: 52px;
-  height: 52px;
-  overflow: hidden;
-  border-right: var(--stroke-2) solid var(--line);
-}
-/* The artwork's edge lines sit half outside its box; scaling it up by one stroke tucks them
-   under the label's border, so every line stays 2px. */
-.badge__icon img {
-  display: block;
-  width: 54px;
-  height: 54px;
-  max-width: none;
-  margin: -1px;
 }
 
 /* Two columns of cards under the tiles; one column on a phone. */
@@ -968,9 +933,6 @@ main > .wrap {
   }
   .adv-card .label.mt-4:first-child {
     margin-top: 0;
-  }
-  .badges {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

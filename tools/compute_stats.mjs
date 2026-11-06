@@ -71,54 +71,6 @@ const PARTNER_MIN_MS = 30 * MINUTE;
 // A day counts towards streaks and "different days" with this much play.
 const ACTIVE_DAY_MIN = 10;
 
-// Labels: anyone who clears a label's bar gets it, so there is no limit on how many people hold one. Edit the bars
-// here. `score` is how far past the bar the player is (1 = just clears it). A player holds at most MAX_LABELS, the
-// ones they clear by the widest margin. `minHours` stops a few hours from counting as a habit (all solo, or twenty
-// messages in one short visit).
-const MAX_LABELS = 3;
-const LABELS = [
-  {
-    badge: 'Night owl',
-    score: (p) => p.nightMin / 60,
-    label: (p) => `${r1(p.nightMin / 60)} h between 01:00 and 05:00`,
-  },
-  {
-    badge: 'Early bird',
-    score: (p) => p.earlyMin / 60,
-    label: (p) => `${r1(p.earlyMin / 60)} h between 05:00 and 09:00`,
-  },
-  {
-    badge: 'Marathon',
-    score: (p) => p.longestMin / 240,
-    label: (p) => `${Math.floor(p.longestMin / 60)} h ${Math.round(p.longestMin % 60)} min in one go`,
-  },
-  { badge: 'On a streak', score: (p) => p.streak / 5, label: (p) => `${p.streak} days in a row` },
-  { badge: 'Regular', score: (p) => p.days / 7, label: (p) => `online on ${p.days} different days` },
-  {
-    badge: 'Weekend warrior',
-    minHours: 5,
-    score: (p) => p.weekendShare / 0.5,
-    label: (p) => `${Math.round(p.weekendShare * 100)}% of their time on Sat and Sun`,
-  },
-  {
-    badge: 'Social butterfly',
-    score: (p) => p.partners / 10,
-    label: (p) => `played with ${p.partners} different people`,
-  },
-  {
-    badge: 'Lone wolf',
-    minHours: 5,
-    score: (p) => p.soloShare / 0.3,
-    label: (p) => `${Math.round(p.soloShare * 100)}% of their time on their own`,
-  },
-  {
-    badge: 'Chatterbox',
-    minHours: 3,
-    score: (p) => p.chatPerHour / 7,
-    label: (p) => `${r1(p.chatPerHour)} messages per hour played`,
-  },
-];
-
 const r1 = (x) => Math.round(x * 10) / 10;
 const dayMs = (d) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
 const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
@@ -409,12 +361,6 @@ function compute({ sessions, hourly, events, meta, adjust = {}, afkHistory = [] 
   const all = Object.values(players);
   const byPlaytime = [...all].sort((a, b) => b.minutes - a.minutes);
   byPlaytime.forEach((p, i) => (p.rank = i + 1));
-  for (const p of byPlaytime) {
-    p.badges = LABELS.filter((l) => p.minutes / 60 >= (l.minHours || 0) && l.score(p) >= 1)
-      .sort((a, b) => b.score(p) - a.score(p))
-      .slice(0, MAX_LABELS)
-      .map((l) => l.badge);
-  }
 
   const board = (value) =>
     all
@@ -521,7 +467,6 @@ function publicPlayer(p) {
     favHour: Math.max(...p.byHour) > 0 ? argMax(p.byHour) : null,
     deaths: p.deaths,
     topCause: p.topCause,
-    badges: p.badges,
     togetherShare: r1(p.togetherShare * 100) / 100,
     buddies: p.buddies,
     advPoints: p.advPoints,
