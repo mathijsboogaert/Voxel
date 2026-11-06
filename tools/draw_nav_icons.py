@@ -54,6 +54,20 @@ ICONS = {
         ],
         {'a': K, 'W': '#ffffff', 'e': '#a1fbe8', 'l': '#4aedd9', 'm': '#20c5b5', 'd': '#1aaaa7', 'D': '#11727a'},
     ),
+    # Medal: a rust and teal ribbon over a gold disc with a pale glint, darker on its lower right.
+    'medal': (
+        [
+            '.arrtta.',
+            '.arrtta.',
+            '..aaaa..',
+            '.aYGGGa.',
+            'aYGGGGda',
+            'aGGGGGda',
+            '.aGGdda.',
+            '..aaaa..',
+        ],
+        {'a': K, 'r': '#cc5803', 't': '#2a9d8f', 'G': '#ffb627', 'Y': '#fff1b0', 'd': '#cc8a00'},
+    ),
     # Book and quill: a closed book with a white feather.
     'writable-book': (
         [

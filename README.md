@@ -13,6 +13,7 @@ the stats come from the server's own logs.
 | Map     | `docs/map/index.html`              | The full pannable, zoomable world map with borders, shops and search. Read-only                                                                                                                                                            |
 | Players | `docs/players/index.html`          | Everyone, with face, playtime and when they were last on                                                                                                                                                                                   |
 | Shops   | `docs/shops/index.html`            | Every shop with its own icon, owners and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                                                                                                  |
+| Badges  | `docs/badges/index.html`           | Community badges: the most valuable badge holder on top, the leaderboard, and how each badge is earned (`badges/#road-builder`)                                                                                                            |
 | Player  | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements                                                                                                                                            |
 | Editor  | `docs/editor.html`                 | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site                                                                                                                                        |
 
@@ -92,6 +93,7 @@ It only touches links whose file changed. Run prettier and the stamp twice: a ve
 | `docs/data/items.json`                                                 | `tools/build_items.py`    | Every Minecraft 26.3 item with its English name and recipes, and every enchantment, for the item pickers and item search                                                                                                                                                                                                                                          |
 | `docs/data/friends.json`                                               | by hand                   | Who knows who: `people` (real `name`, `label` shown as the player name, `mc` for the face and playtime, `via`: who brought them in, `me` is the centre), `groups` (`withMe` puts the centre in it, `outline` draws a dashed line) and `rels` (`couple`, `married`, `siblings`). Drawn by `docs/js/friends-core.js`, shown on the homepage by `docs/js/friends.js` |
 | `docs/news.json`                                                       | by hand                   | Extra news items, mainly events with a countdown (below)                                                                                                                                                                                                                                                                                                          |
+| `docs/badges.json`                                                     | by hand                   | Community badges (`badges`: `id`, `name`, `points`, `how`) and who earned them (`awards`), see Community badges below                                                                                                                                                                                                                                             |
 
 ## Shops, products and item search
 
@@ -205,6 +207,24 @@ config is elsewhere; only that block is touched, and the old file is kept as `co
 Labels like Night owl or Marathon are earned by clearing a bar, so any number of players can hold the same one. The bars and the cap on how many labels one player can show
 (`MAX_LABELS`, currently 3, the ones they clear by the widest margin) are in `LABELS` near the top of `tools/compute_stats.mjs`. Each label's icon is
 `docs/assets/badges/<name>.svg`.
+
+## Community badges
+
+Community badges are earned by building things everyone can use: a road, a bridge, a shop, a mini game. They are not the
+player labels above (Night owl and so on, worked out from the logs); these are handed out by hand, in `docs/badges.json`:
+
+```json
+{
+  "badges": [{ "id": "road-builder", "name": "Road builder", "points": 3, "how": "Build a full road..." }],
+  "awards": [{ "player": "_Farren", "badge": "road-builder", "for": "West road", "date": "2026-11-10" }]
+}
+```
+
+- **A new badge:** add it to `badges` and draw its icon as `docs/assets/badges/community/<id>.svg` (8x8 view box, like the labels). Without an icon it shows its first letter.
+- **Handing one out:** add a line to `awards` with the Minecraft name. `for` (what they built) and `date` are optional but show on the page. The same badge can be awarded more than once and counts every time.
+- **The board** ranks by total points, then by number of badges, then by who got there first. Equal points share a rank, and everyone ranked first is shown as the most valuable badge holder.
+
+The page is `docs/badges/index.html`, drawn by `docs/js/badges.js`; its menu icon (a medal) is in `tools/draw_nav_icons.py`.
 
 ## Players, faces and places
 
