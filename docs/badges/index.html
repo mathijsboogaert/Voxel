@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Badges · Voxel</title>
+    <meta
+      name="description"
+      content="Community badges on Voxel: what you can earn for roads, bridges, shops and more, and who has them."
+    />
+    <meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="../assets/favicon.png?v=ad829b4b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../assets/brand.css?v=f4ed1d87" />
+    <link rel="stylesheet" href="../assets/site.css?v=8916a1b2" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="../" aria-label="Voxel, home">
+          <picture>
+            <source
+              srcset="../assets/logo-mark-reversed-small.png?v=c3c00a88"
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="brand__mark"
+              src="../assets/logo-mark-small.png?v=800d40a4"
+              alt=""
+              width="36"
+              height="36"
+            />
+          </picture>
+          <span class="brand__name">Voxel</span>
+        </a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="nav-toggle__open" d="M3 6h18M3 12h18M3 18h18" />
+            <path class="nav-toggle__close" d="M5 5l14 14M19 5L5 19" />
+          </svg>
+        </button>
+        <nav class="nav" id="site-nav" aria-label="Main">
+          <a href="../">
+            <img
+              class="nav__icon"
+              src="../assets/icons/nav/village.png?v=328b0ab3"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Home</span>
+          </a>
+          <a href="../map/">
+            <img
+              class="nav__icon"
+              src="../assets/icons/nav/map.png?v=b6a9cf2e"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Map</span>
+          </a>
+          <a href="../players/">
+            <img
+              class="nav__icon"
+              src="../assets/icons/nav/steve.png?v=717ed7db"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Players</span>
+          </a>
+          <a href="../shops/">
+            <img
+              class="nav__icon"
+              src="../assets/icons/nav/diamond.png?v=f095b32b"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Shops</span>
+          </a>
+          <a href="../badges/" aria-current="page">
+            <img
+              class="nav__icon"
+              src="../assets/icons/nav/medal.png?v=3d7858a5"
+              alt=""
+              width="32"
+              height="32"
+            />
+            <span class="nav__label">Badges</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <div class="wrap">
+        <div class="page-head">
+          <p class="label eyebrow">Badges</p>
+          <h1>Build for the community</h1>
+          <p class="small">
+            Lay a road, build a bridge, open a shop: an admin awards you a badge for it. Every badge has four
+            tiers, Bronze, Silver, Gold and Diamond, and each tier includes the one before it.
+          </p>
+        </div>
+        <p class="bnote">
+          The End opens once every base you can reach over land is connected to spawn by road or bridge.
+        </p>
+
+        <ul class="bgrid" id="bgrid" aria-busy="true">
+          <li class="skel skel--card" aria-hidden="true"></li>
+          <li class="skel skel--card" aria-hidden="true"></li>
+          <li class="skel skel--card" aria-hidden="true"></li>
+        </ul>
+      </div>
+
+      <section class="section" aria-labelledby="holders-title">
+        <div class="wrap">
+          <div class="head">
+            <p class="label eyebrow">Holders</p>
+            <h2 id="holders-title">Who has what</h2>
+            <p class="small">Each player's highest tier per badge. Most tiers first.</p>
+          </div>
+          <ol class="hlist" id="hlist"></ol>
+          <p class="empty" id="hnone" hidden>No badges awarded yet. Be the first.</p>
+        </div>
+      </section>
+
+      <section class="section section--flush" aria-labelledby="rules-title">
+        <div class="wrap">
+          <div class="head">
+            <p class="label eyebrow">The rules</p>
+            <h2 id="rules-title">What counts</h2>
+          </div>
+          <dl class="rules">
+            <div>
+              <dt>Road</dt>
+              <dd>
+                Connects two points along a clearly laid-out route, wide enough for a horse without
+                obstructions, and mob-proofed with lighting or other methods.
+              </dd>
+            </div>
+            <div>
+              <dt>Bridge</dt>
+              <dd>
+                Spans a gap end to end, connects to roads, fits a horse, is properly lit and has some design
+                features.
+              </dd>
+            </div>
+            <div>
+              <dt>Shop</dt>
+              <dd>
+                Whoever builds, maintains and stocks a shop is a keeper, and several people can keep one shop.
+                It must be connected to the road network and stand in the shopping district.
+              </dd>
+            </div>
+            <div>
+              <dt>Highway</dt>
+              <dd>A road in the Nether, or a large straight tunnel in the Overworld.</dd>
+            </div>
+            <div>
+              <dt>Restored chunk</dt>
+              <dd>Looks better than when it was first loaded: no unusual holes, and some lighting added.</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../js/nav.js?v=0aa91664"></script>
+    <script type="module" src="../js/badges.js?v=f6a56885"></script>
+  </body>
+</html>

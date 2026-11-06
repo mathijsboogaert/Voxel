@@ -1557,6 +1557,249 @@ main > .wrap {
   border-style: dashed;
 }
 
+/* ==== 6b. Badges ===================================================================== */
+
+/* Tier colours, the metal from each tier's icon palette. Text on them is always ink. */
+:root {
+  --tier-bronze: #c47a3a;
+  --tier-silver: #b8c0c8;
+  --tier-gold: #e3a521;
+  --tier-diamond: #4fd8e0;
+}
+.pix {
+  display: block;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+.bnote {
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 600;
+  background: var(--paper-sunken);
+  border-left: 4px solid var(--amber);
+}
+/* A grid of badge cards, like the shops. */
+.bgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bcard {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--paper-sunken);
+  border: var(--stroke-2) solid var(--line);
+  scroll-margin-top: 96px;
+}
+.bcard__head {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  column-gap: var(--space-3);
+  align-items: center;
+}
+.bcard__head .eyebrow {
+  margin-bottom: 2px;
+}
+.bcard__head h2 {
+  font: 600 var(--text-xl) / 1.3 var(--font-display);
+  overflow-wrap: anywhere;
+}
+/* The badge's own icon in the same 52px frame as a shop icon, drawn at 4x. */
+.bcard__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  background: var(--paper);
+  border: var(--stroke-2) solid var(--line);
+}
+.bcard__icon .pix {
+  width: 40px;
+  height: 40px;
+}
+/* The four tiers, one under the other, joined by a line like the advancement tree. */
+.tiers {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tier {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  column-gap: var(--space-3);
+  padding-block: var(--space-2);
+}
+.tier + .tier::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--space-2));
+  left: 17px;
+  width: var(--stroke-2);
+  height: calc(2 * var(--space-2));
+  background: var(--line-soft);
+}
+.tier__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--paper);
+  border: var(--stroke-2) solid var(--line-soft);
+}
+.tier__icon .pix {
+  width: 30px;
+  height: 30px;
+}
+.tier__body {
+  min-width: 0;
+}
+.tier__req {
+  margin-top: var(--space-1);
+  font-size: var(--text-md);
+}
+.tier__who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1-5) var(--space-3);
+  margin-top: var(--space-2);
+}
+.ttag {
+  display: inline-block;
+  padding: 1px var(--space-1-5);
+  font: 600 var(--text-2xs) / 1.45 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #16120f;
+  border: var(--stroke-1) solid #16120f;
+}
+.ttag--bronze {
+  background: var(--tier-bronze);
+}
+.ttag--silver {
+  background: var(--tier-silver);
+}
+.ttag--gold {
+  background: var(--tier-gold);
+}
+.ttag--diamond {
+  background: var(--tier-diamond);
+}
+.bperson {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+  min-width: 0;
+  min-height: 28px;
+  font: 600 var(--text-sm) / 1.3 var(--font-sans);
+  color: var(--ink);
+  text-decoration: none;
+}
+.bperson .face {
+  width: 24px;
+  height: 24px;
+}
+.bperson:hover span {
+  text-decoration: underline;
+}
+/* Holders: face and name on the left, their badge icons on the right (below on a phone). */
+.hlist {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hrow {
+  display: grid;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper-sunken);
+  border: var(--stroke-2) solid var(--line);
+}
+@media (min-width: 600px) {
+  .hrow {
+    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  }
+}
+.hrow__who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 44px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+.hrow__who .face {
+  width: 32px;
+  height: 32px;
+}
+.hrow__who span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hrow__who:hover span {
+  text-decoration: underline;
+}
+.hrow__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1-5);
+}
+.hbadge {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: var(--paper);
+  border: var(--stroke-2) solid var(--line-soft);
+}
+.hbadge:hover {
+  border-color: var(--line);
+}
+.hbadge .pix {
+  width: 30px;
+  height: 30px;
+}
+/* What counts: term and explanation side by side on a wide screen. */
+.rules {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 72ch;
+  margin: 0;
+}
+.rules > div {
+  padding-bottom: var(--space-3);
+  border-bottom: var(--stroke-1) solid var(--line-soft);
+}
+.rules dt {
+  font-weight: 600;
+}
+.rules dd {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-muted);
+}
+@media (min-width: 600px) {
+  .rules > div {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+  .rules dd {
+    margin: 0;
+  }
+}
+
 /* ==== 7. Utilities =================================================================== */
 
 [hidden] {
