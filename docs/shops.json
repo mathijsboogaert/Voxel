@@ -956,5 +956,249 @@
         "free": true
       }
     ]
+  },
+  {
+    "x": -62,
+    "z": 254,
+    "label": "The Cauldron",
+    "points": [
+      {
+        "x": -61,
+        "z": 244
+      },
+      {
+        "x": -61,
+        "z": 245
+      },
+      {
+        "x": -59,
+        "z": 245
+      },
+      {
+        "x": -59,
+        "z": 246
+      },
+      {
+        "x": -58,
+        "z": 246
+      },
+      {
+        "x": -58,
+        "z": 247
+      },
+      {
+        "x": -57,
+        "z": 247
+      },
+      {
+        "x": -57,
+        "z": 252
+      },
+      {
+        "x": -58,
+        "z": 252
+      },
+      {
+        "x": -58,
+        "z": 253
+      },
+      {
+        "x": -59,
+        "z": 253
+      },
+      {
+        "x": -59,
+        "z": 254
+      },
+      {
+        "x": -58,
+        "z": 254
+      },
+      {
+        "x": -58,
+        "z": 255
+      },
+      {
+        "x": -57,
+        "z": 255
+      },
+      {
+        "x": -57,
+        "z": 263
+      },
+      {
+        "x": -58,
+        "z": 263
+      },
+      {
+        "x": -58,
+        "z": 264
+      },
+      {
+        "x": -59,
+        "z": 264
+      },
+      {
+        "x": -59,
+        "z": 265
+      },
+      {
+        "x": -65,
+        "z": 265
+      },
+      {
+        "x": -65,
+        "z": 264
+      },
+      {
+        "x": -66,
+        "z": 264
+      },
+      {
+        "x": -66,
+        "z": 263
+      },
+      {
+        "x": -67,
+        "z": 263
+      },
+      {
+        "x": -67,
+        "z": 256
+      },
+      {
+        "x": -66,
+        "z": 256
+      },
+      {
+        "x": -66,
+        "z": 255
+      },
+      {
+        "x": -65,
+        "z": 255
+      },
+      {
+        "x": -65,
+        "z": 254
+      },
+      {
+        "x": -66,
+        "z": 254
+      },
+      {
+        "x": -66,
+        "z": 253
+      },
+      {
+        "x": -67,
+        "z": 253
+      },
+      {
+        "x": -67,
+        "z": 251
+      },
+      {
+        "x": -68,
+        "z": 251
+      },
+      {
+        "x": -68,
+        "z": 248
+      },
+      {
+        "x": -67,
+        "z": 248
+      },
+      {
+        "x": -67,
+        "z": 246
+      },
+      {
+        "x": -66,
+        "z": 246
+      },
+      {
+        "x": -66,
+        "z": 245
+      },
+      {
+        "x": -64,
+        "z": 245
+      },
+      {
+        "x": -64,
+        "z": 244
+      }
+    ],
+    "owners": [
+      "EchoinSilence"
+    ],
+    "added": "2026-11-06T21:31:37.000Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAsklEQVR4XmNgoBXY92baf2xm4xKHA2wKCGoiBuAyhBGkWUZKDqtzCYEnzx4xMoI0BwVFgNXeunWDkB44UFPTYFi3bgUDC0wEpNlrAh9RBmwr+ARXxwRyBsgkEDh35QkYwwA6G5kP0gPSC3cBCLyYA3HBNgaYDXwobFQ5CGBCdjPIX6QCFAPIASgGkBILMAA2ABQYV65cINoBILUgPSANKIFIiiEwgGIAzDX4nIKeaikORADjTFGhIyhQHgAAAABJRU5ErkJggg==",
+    "products": [
+      {
+        "item": "glass_bottle",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "blaze_rod",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "spider_eye",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Eye cream (both for 1 diamond)"
+      },
+      {
+        "item": "magma_cream",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Eye cream (both for 1 diamond)"
+      },
+      {
+        "item": "sugar",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "gunpowder",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "nether_wart",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "ender_pearl",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "experience_bottle",
+        "amount": 32,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "glowstone",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond"
+      }
+    ]
   }
 ]
