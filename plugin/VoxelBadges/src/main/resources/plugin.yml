@@ -1,0 +1,15 @@
+name: VoxelBadges
+version: '1.0.0'
+main: nl.voxel.badges.VoxelBadges
+api-version: '26.3'
+description: Community badges for Voxel, shown below player names and in an advancement tab.
+author: Mathi_Craft
+commands:
+  badge:
+    description: Give, view and list Voxel badges
+    usage: /badge
+    aliases: [badges]
+permissions:
+  voxelbadges.admin:
+    description: Give, change and take badges, and reload the plugin
+    default: op

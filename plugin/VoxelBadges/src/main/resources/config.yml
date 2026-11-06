@@ -1,0 +1,80 @@
+# Voxel Badges
+# Badge order matters: don't reorder or remove badges after launch, only add new ones at the bottom.
+# Each badge needs 4 tier lines (bronze, silver, gold, diamond) and textures named
+# <tier>_<id>.png. Put your own art in plugins/VoxelBadges/textures/ to override the built-in icons,
+# then run /badge reload.
+
+nameplate:
+  # Size of the icons under the player name, in pixels. 9 sits nicely next to the text.
+  glyph-height: 9
+  glyph-ascent: 8
+
+advancements:
+  # Background texture of the Voxel Badges tab.
+  # If the tab shows a purple/black checkerboard, try "minecraft:textures/block/gold_block.png"
+  background: "minecraft:block/gold_block"
+
+packs:
+  # Version numbers written into pack.mcmeta. Defaults are for Minecraft 26.3.
+  datapack-format: 109
+  resourcepack-format: 97
+
+resource-pack:
+  enabled: true
+  # Port of the small web server that hands out the icon pack. Needs to be an open port at your host.
+  port: 25590
+  # The address players download the pack from. Replace with your server IP and the port above.
+  public-url: "http://YOUR.SERVER.IP:25590/voxel-badges.zip"
+  required: false
+  prompt: "Voxel badge icons"
+
+badges:
+  road_runner:
+    name: "Road Runner"
+    tiers:
+      - "1 road"
+      - "3 roads"
+      - "5 roads"
+      - "Gold + roads are non-basic, with streetlights"
+  bridge_builder:
+    name: "Bridge Builder"
+    tiers:
+      - "1 bridge"
+      - "2 bridges"
+      - "5 bridges"
+      - "Gold + a landmark bridge, 100+ blocks"
+  shopkeeper:
+    name: "Shopkeeper"
+    tiers:
+      - "Shop listed on the site"
+      - "2 shops"
+      - "3 shops"
+      - "Gold + keeping your shops well stocked"
+  game_master:
+    name: "Game Master"
+    tiers:
+      - "1 mini game"
+      - "2 mini games"
+      - "3 mini games"
+      - "Gold + hosted a game event"
+  highway_builder:
+    name: "Highway Builder"
+    tiers:
+      - "Basic tunnel to a base"
+      - "Horse-sized + fast lane"
+      - "3 silver-level links"
+      - "Main hub connecting all bases"
+  public_service_agent:
+    name: "Public Service Agent"
+    tiers:
+      - "1 public build"
+      - "2 public builds"
+      - "3 public builds"
+      - "Helped significantly to reshape a public district"
+  cleanup_crew:
+    name: "Cleanup Crew"
+    tiers:
+      - "5 chunks restored"
+      - "10 chunks"
+      - "20 chunks"
+      - "Terraformed a full public zone"
