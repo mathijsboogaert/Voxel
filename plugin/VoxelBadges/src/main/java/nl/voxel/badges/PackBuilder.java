@@ -43,11 +43,17 @@ public final class PackBuilder {
         int format = plugin.getConfig().getInt("packs.datapack-format", 109);
         files.put("pack.mcmeta", mcmeta("Voxel Badges advancements", format));
 
-        String bg = plugin.getConfig().getString("advancements.background", "minecraft:block/gold_block");
+        String bg = plugin.getConfig().getString("advancements.background", "minecraft:block/terracotta");
+        if (bg.equals("minecraft:block/gold_block")) {
+            // Old default: move existing installs over to the new terracotta background.
+            bg = "minecraft:block/terracotta";
+            plugin.getConfig().set("advancements.background", bg);
+            plugin.saveConfig();
+        }
         files.put(advPath("badges/root"), """
                 {
                   "display": {
-                    "icon": {"id": "minecraft:gold_block"},
+                    "icon": {"id": "minecraft:paper", "components": {"minecraft:item_model": "%s:badge/logo"}},
                     "title": {"text": "Voxel Badges", "color": "#E3A521"},
                     "description": {"text": "Build for the community, earn badges"},
                     "background": "%s",
@@ -56,10 +62,29 @@ public final class PackBuilder {
                   },
                   "criteria": {"joined": {"trigger": "minecraft:tick"}}
                 }
-                """.formatted(esc(bg)));
+                """.formatted(NS, esc(bg)));
 
+        // Layout: root -> one label node per badge (auto-earned) -> its 4 tiers stacked below each other.
+        // Every tier hangs directly under the label, so all of them are visible before they're earned
+        // (Minecraft hides unearned advancements more than two steps below an earned one).
         for (Badge b : badges) {
-            String parent = NS + ":badges/root";
+            String header = "badges/" + b.id() + "/header";
+            files.put(advPath(header), """
+                    {
+                      "parent": "%s:badges/root",
+                      "display": {
+                        "icon": {"id": "minecraft:paper", "components": {"minecraft:item_model": "%s:badge/%s"}},
+                        "title": {"text": "%s", "color": "#E3A521"},
+                        "description": {"text": "Bronze, Silver, Gold, Diamond"},
+                        "frame": "task",
+                        "show_toast": false,
+                        "announce_to_chat": false,
+                        "hidden": false
+                      },
+                      "criteria": {"joined": {"trigger": "minecraft:tick"}}
+                    }
+                    """.formatted(NS, NS, b.texture(Tier.GOLD), esc(b.name())));
+            String parent = NS + ":" + header;
             for (Tier t : Tier.values()) {
                 String key = "badges/" + b.id() + "/" + t.id();
                 files.put(advPath(key), """
@@ -78,7 +103,6 @@ public final class PackBuilder {
                         }
                         """.formatted(parent, NS, b.texture(t), esc(b.name()), t.display, t.color,
                         esc(b.requirement(t)), t.frame));
-                parent = NS + ":" + key;
             }
         }
 
@@ -140,6 +164,16 @@ public final class PackBuilder {
                             {"model": {"type": "minecraft:model", "model": "%s:item/badge/%s"}}
                             """.formatted(NS, tex).getBytes(StandardCharsets.UTF_8));
                 }
+            }
+            byte[] logo = texture("logo");
+            if (logo != null) {
+                put(zip, "assets/" + NS + "/textures/item/badge/logo.png", logo);
+                put(zip, "assets/" + NS + "/models/item/badge/logo.json", """
+                        {"parent": "minecraft:item/generated", "textures": {"layer0": "%s:item/badge/logo"}}
+                        """.formatted(NS).getBytes(StandardCharsets.UTF_8));
+                put(zip, "assets/" + NS + "/items/badge/logo.json", """
+                        {"model": {"type": "minecraft:model", "model": "%s:item/badge/logo"}}
+                        """.formatted(NS).getBytes(StandardCharsets.UTF_8));
             }
             font.append("\n  ]\n}\n");
             put(zip, "assets/" + NS + "/font/badges.json", font.toString().getBytes(StandardCharsets.UTF_8));

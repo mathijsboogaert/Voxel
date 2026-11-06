@@ -11,8 +11,8 @@ nameplate:
 
 advancements:
   # Background texture of the Voxel Badges tab.
-  # If the tab shows a purple/black checkerboard, try "minecraft:textures/block/gold_block.png"
-  background: "minecraft:block/gold_block"
+  # Any block texture works, e.g. "minecraft:block/gold_block" or "minecraft:block/orange_terracotta".
+  background: "minecraft:block/terracotta"
 
 packs:
   # Version numbers written into pack.mcmeta. Defaults are for Minecraft 26.3.
