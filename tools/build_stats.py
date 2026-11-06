@@ -34,6 +34,9 @@ DEATH_STARTS = [
     'experienced', 'withered', 'didn.t want', 'left the confines', 'went off with a bang',
 ]  # fmt: skip
 DEATH = re.compile('^(' + '|'.join(DEATH_STARTS) + ')')
+# VoxelBadges plugin tiers, e.g. "Road Runner · Bronze". Logged as 'badge' so they stay out of the
+# vanilla advancement points, race and news.
+BADGE = re.compile(r' · (Bronze|Silver|Gold|Diamond)$')
 ADV_TYPE = {
     'made the advancement': 'advancement',
     'reached the goal': 'goal',
@@ -181,7 +184,8 @@ def main():
         elif (s := SYS.search(ln)) and s[1] in players:
             rest = s[2]
             if a := ADV.search(rest):
-                rec = (ADV_TYPE[a[1]], s[1], a[2], a[1])
+                kind = 'badge' if BADGE.search(a[2]) else ADV_TYPE[a[1]]
+                rec = (kind, s[1], a[2], a[1])
             elif DEATH.match(rest) and not rest.startswith(('joined', 'left the game')):
                 if rest == 'was killed' and any('issued server command: /kill' in x for x in lines[max(0, i - 2) : i]):
                     continue  # /kill by an operator, not a real death
