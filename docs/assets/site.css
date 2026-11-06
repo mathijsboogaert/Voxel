@@ -1144,33 +1144,24 @@ main > .wrap {
 
 /* ==== 6. Badges ====================================================================== */
 
-/* A community badge's icon: 8x8 artwork in a square with the same 2px outline as the player labels. */
+/* A community badge's icon: the plugin's own 10x10 pixel art, shown at a whole multiple so every pixel stays square. */
 .bicon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 52px;
-  height: 52px;
-  overflow: hidden;
-  border: var(--stroke-2) solid var(--line);
-  background: var(--teal);
-}
-.bicon img {
   display: block;
-  width: 100%;
-  height: 100%;
+  flex: none;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 .bicon--sm {
-  width: 24px;
-  height: 24px;
-  border-width: var(--stroke-1);
+  width: 20px;
+  height: 20px;
 }
-.bicon__letter {
-  font: 600 var(--text-lg) / 1 var(--font-display);
-  color: var(--on-brand);
+.bicon--md {
+  width: 30px;
+  height: 30px;
 }
-.bicon--sm .bicon__letter {
-  font-size: var(--text-xs);
+.bicon--lg {
+  width: 50px;
+  height: 50px;
 }
 
 /* The row of small icons under a name, each with a count when it was earned more than once. */
@@ -1214,9 +1205,6 @@ main > .wrap {
   font: 600 var(--text-3xl) / 1.15 var(--font-display);
   overflow-wrap: anywhere;
 }
-.bmvp .bicon--sm {
-  border-color: var(--on-brand);
-}
 
 /* The board below the most valuable holder, a step apart like the rest of the stack. */
 .bmvp + .plist {
@@ -1252,23 +1240,45 @@ main > .wrap {
   align-items: center;
   gap: var(--space-3);
 }
-.bcard__title {
+/* The four tiers, each with its icon, what it needs and what it is worth. */
+.btiers {
   display: grid;
-  justify-items: start;
-  gap: var(--space-1);
+  gap: var(--space-2-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.btier {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-5);
+}
+.btier__text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.btier__name {
+  font-weight: 600;
+}
+.btier__pts {
+  flex: none;
+  font-variant-numeric: tabular-nums;
 }
 .bcard__foot {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1) var(--space-3);
   padding-top: var(--space-3);
   border-top: var(--stroke-1) solid var(--line-soft);
 }
-.bcard__faces {
-  display: flex;
-  flex-wrap: wrap;
+/* Who holds the badge: their face with the tier they reached. */
+.bholder {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-1);
+  min-height: 44px;
 }
 
 @media (min-width: 768px) {

@@ -1,29 +1,81 @@
 {
+  "points": [
+    1,
+    2,
+    3,
+    5
+  ],
   "badges": [
     {
-      "id": "road-builder",
-      "name": "Road builder",
-      "points": 3,
-      "how": "Build a full road that connects a base to a main road or to spawn. Lit, walkable, no gaps."
+      "id": "road_runner",
+      "name": "Road Runner",
+      "tiers": [
+        "1 road",
+        "3 roads",
+        "5 roads",
+        "Gold + roads are non-basic, with streetlights"
+      ]
     },
     {
-      "id": "bridge-builder",
-      "name": "Bridge builder",
-      "points": 3,
-      "how": "Build a bridge on a public route, over water, a ravine or anything else in the way."
+      "id": "bridge_builder",
+      "name": "Bridge Builder",
+      "tiers": [
+        "1 bridge",
+        "2 bridges",
+        "5 bridges",
+        "Gold + a landmark bridge, 100+ blocks"
+      ]
     },
     {
       "id": "shopkeeper",
       "name": "Shopkeeper",
-      "points": 2,
-      "how": "Open a shop that is stocked, has its prices up and is on the Shops page."
+      "tiers": [
+        "Shop listed on the site",
+        "2 shops",
+        "3 shops",
+        "Gold + keeping your shops well stocked"
+      ]
     },
     {
-      "id": "game-maker",
-      "name": "Game maker",
-      "points": 5,
-      "how": "Build a mini game anyone can walk up to and play."
+      "id": "game_master",
+      "name": "Game Master",
+      "tiers": [
+        "1 mini game",
+        "2 mini games",
+        "3 mini games",
+        "Gold + hosted a game event"
+      ]
+    },
+    {
+      "id": "highway_builder",
+      "name": "Highway Builder",
+      "tiers": [
+        "Basic tunnel to a base",
+        "Horse-sized + fast lane",
+        "3 silver-level links",
+        "Main hub connecting all bases"
+      ]
+    },
+    {
+      "id": "public_service_agent",
+      "name": "Public Service Agent",
+      "tiers": [
+        "1 public build",
+        "2 public builds",
+        "3 public builds",
+        "Helped significantly to reshape a public district"
+      ]
+    },
+    {
+      "id": "cleanup_crew",
+      "name": "Cleanup Crew",
+      "tiers": [
+        "5 chunks restored",
+        "10 chunks",
+        "20 chunks",
+        "Terraformed a full public zone"
+      ]
     }
   ],
-  "awards": []
+  "players": {}
 }

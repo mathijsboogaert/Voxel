@@ -1,60 +1,59 @@
-// Badges page: the community badges, who holds the most valuable set, and how each one is earned.
-// Everything comes from badges.json, written by hand: `badges` (what can be earned, worth how many points)
-// and `awards` (who earned which one, for what, when). A badge can be earned more than once.
-import { el, byId as $, url, getJSON, faceEl, playerHref, bar, barLength, fmtDay } from './ui.js?v=4d932c1e';
+// Badges page: the community badges from the VoxelBadges plugin, who holds the most valuable set, and how
+// each tier is earned. Everything comes from badges.json:
+//   badges   the plugin's badges (id, name, and what each of the four tiers needs), as in its config.yml
+//   players  per Minecraft name, the tier of each badge they hold (1 bronze … 4 diamond), as in badges.yml
+//   points   what a badge is worth at each tier; a player's total decides their place on the board
+// Like in game, a player only ever shows their highest tier of a badge.
+import { el, byId as $, url, getJSON, faceEl, playerHref, bar, barLength } from './ui.js?v=4d932c1e';
 
-const iconSrc = (id) => url(`assets/badges/community/${id}.svg`);
+const TIERS = ['bronze', 'silver', 'gold', 'diamond'];
+const TIER_NAMES = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 const pts = (n) => `${n} ${n === 1 ? 'point' : 'points'}`;
 
-/** A badge's icon. Without an icon file it falls back to the badge's first letter. */
-function iconEl(def) {
-  const img = el('img', { src: iconSrc(def.id), alt: '' });
-  img.addEventListener(
-    'error',
-    () => img.replaceWith(el('span', { class: 'bicon__letter' }, def.name.charAt(0))),
-    { once: true },
-  );
-  return img;
+/** A badge's pixel art at a tier (1 to 4), the same 10x10 PNG the plugin uses. */
+function iconEl(def, level, size = 'md') {
+  return el('img', {
+    class: `bicon bicon--${size}`,
+    src: url(`assets/badges/community/${TIERS[level - 1]}_${def.id}.png`),
+    alt: '',
+    width: 10,
+    height: 10,
+  });
 }
 
-/**
- * Everyone who holds a badge, most points first. Equal points: more badges first, then whoever got
- * there first. Players with the same points share a rank.
- */
-function rank(defs, awards) {
-  const by = new Map();
-  for (const a of awards) {
-    const def = defs.get(a.badge);
-    if (!def || !a.player) continue;
-    const h = by.get(a.player) || { name: a.player, points: 0, count: 0, kinds: new Map(), last: '' };
-    h.points += def.points;
-    h.count += 1;
-    h.kinds.set(def.id, (h.kinds.get(def.id) || 0) + 1);
-    if ((a.date || '') > h.last) h.last = a.date || '';
-    by.set(a.player, h);
-  }
-  const list = [...by.values()].sort(
-    (a, b) => b.points - a.points || b.count - a.count || a.last.localeCompare(b.last),
-  );
+/** Everyone who holds a badge, most points first; equal points: more diamonds, then golds, and so on. */
+function rank(defs, players, points) {
+  const list = Object.entries(players)
+    .map(([name, held]) => {
+      const kinds = Object.entries(held || {})
+        .filter(([id, level]) => defs.has(id) && level >= 1 && level <= 4)
+        .sort(([a, x], [b, y]) => y - x || [...defs.keys()].indexOf(a) - [...defs.keys()].indexOf(b));
+      const total = kinds.reduce((sum, [, level]) => sum + points[level - 1], 0);
+      const levels = kinds.map(([, level]) => level).join('');
+      return { name, kinds, points: total, levels };
+    })
+    .filter((h) => h.kinds.length)
+    .sort((a, b) => b.points - a.points || b.levels.localeCompare(a.levels) || a.name.localeCompare(b.name));
   list.forEach((h, i) => (h.rank = i && list[i - 1].points === h.points ? list[i - 1].rank : i + 1));
   return list;
 }
 
-/** The small icons of what someone holds, with a count when they earned one more than once. */
-function minis(defs, h) {
+/** The badges someone holds, each at their highest tier. */
+function minis(defs, h, size = 'sm') {
   return el(
     'span',
     { class: 'bmini' },
-    [...h.kinds].map(([id, n]) =>
+    h.kinds.map(([id, level]) =>
       el(
         'span',
-        { class: 'bmini__item', title: defs.get(id).name },
-        el('span', { class: 'bicon bicon--sm' }, iconEl(defs.get(id))),
-        n > 1 ? el('span', { class: 'small' }, `×${n}`) : null,
+        { class: 'bmini__item', title: `${defs.get(id).name}, ${TIER_NAMES[level - 1]}` },
+        iconEl(defs.get(id), level, size),
       ),
     ),
   );
 }
+
+const summary = (h) => `${pts(h.points)} from ${h.kinds.length} ${h.kinds.length === 1 ? 'badge' : 'badges'}`;
 
 function mvp(defs, h) {
   return el(
@@ -66,12 +65,8 @@ function mvp(defs, h) {
       { class: 'bmvp__body' },
       el('span', { class: 'label eyebrow' }, 'Most valuable badge holder'),
       el('span', { class: 'bmvp__name' }, h.name),
-      el(
-        'span',
-        { class: 'small' },
-        `${pts(h.points)} from ${h.count} ${h.count === 1 ? 'badge' : 'badges'}`,
-      ),
-      minis(defs, h),
+      el('span', { class: 'small' }, summary(h)),
+      minis(defs, h, 'md'),
     ),
   );
 }
@@ -112,60 +107,59 @@ function board(defs, holders) {
     ];
   }
   const max = holders[0].points;
-  const top = holders.filter((h) => h.rank === 1);
-  const rest = holders.filter((h) => h.rank !== 1);
   return [
-    ...top.map((h) => mvp(defs, h)),
-    rest.length
+    ...holders.filter((h) => h.rank === 1).map((h) => mvp(defs, h)),
+    holders.some((h) => h.rank !== 1)
       ? el(
           'ul',
           { class: 'plist' },
-          rest.map((h) => row(defs, h, max)),
+          holders.filter((h) => h.rank !== 1).map((h) => row(defs, h, max)),
         )
       : null,
   ];
 }
 
-function card(def, awards) {
-  const mine = awards.filter((a) => a.badge === def.id);
-  const names = [...new Set(mine.map((a) => a.player))];
-  const latest = mine.reduce((a, b) => ((b.date || '') > (a.date || '') ? b : a), mine[0]);
+/** One badge: its four tiers, what each needs and is worth, and who holds it at which tier. */
+function card(def, players, points) {
+  const holders = Object.entries(players)
+    .map(([name, held]) => [name, (held || {})[def.id] || 0])
+    .filter(([, level]) => level >= 1 && level <= 4)
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b));
   return el(
     'li',
     { class: 'card bcard', id: def.id },
+    el('div', { class: 'bcard__top' }, iconEl(def, 3, 'lg'), el('h3', {}, def.name)),
     el(
-      'div',
-      { class: 'bcard__top' },
-      el('span', { class: 'bicon' }, iconEl(def)),
-      el(
-        'div',
-        { class: 'bcard__title' },
-        el('h3', {}, def.name),
-        el('span', { class: 'tag tag--amber' }, pts(def.points)),
+      'ol',
+      { class: 'btiers' },
+      def.tiers.map((need, i) =>
+        el(
+          'li',
+          { class: 'btier' },
+          iconEl(def, i + 1, 'md'),
+          el(
+            'span',
+            { class: 'btier__text' },
+            el('span', { class: 'btier__name' }, TIER_NAMES[i]),
+            el('span', { class: 'small' }, need),
+          ),
+          el('span', { class: 'btier__pts small' }, pts(points[i])),
+        ),
       ),
     ),
-    el('p', {}, def.how),
     el(
       'div',
       { class: 'bcard__foot small' },
-      mine.length
-        ? [
+      holders.length
+        ? holders.map(([name, level]) =>
             el(
-              'span',
-              { class: 'bcard__faces' },
-              names.map((n) => faceEl(n, 'sm')),
+              'a',
+              { class: 'bholder', href: playerHref(name), title: `${name}, ${TIER_NAMES[level - 1]}` },
+              faceEl(name, 'sm'),
+              iconEl(def, level, 'sm'),
             ),
-            el(
-              'span',
-              {},
-              `Earned ${mine.length === 1 ? 'once' : `${mine.length} times`}` +
-                (latest && latest.date
-                  ? `, latest by ${latest.player} on ${fmtDay(latest.date)}` +
-                    (latest.for ? ` (${latest.for})` : '')
-                  : ''),
-            ),
-          ]
-        : 'Not earned yet',
+          )
+        : 'Nobody has this one yet',
     ),
   );
 }
@@ -173,10 +167,11 @@ function card(def, awards) {
 getJSON('badges.json', null)
   .then((data) => {
     if (!data) throw new Error('No badges.json');
+    const points = data.points || [1, 2, 3, 5];
+    const players = data.players || {};
     const defs = new Map(data.badges.map((b) => [b.id, b]));
-    const awards = (data.awards || []).filter((a) => defs.has(a.badge));
-    $('board').replaceChildren(...board(defs, rank(defs, awards)));
-    $('blist').replaceChildren(...data.badges.map((d) => card(d, awards)));
+    $('board').replaceChildren(...board(defs, rank(defs, players, points)));
+    $('blist').replaceChildren(...data.badges.map((d) => card(d, players, points)));
   })
   .catch((e) => {
     console.error(e);

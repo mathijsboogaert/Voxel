@@ -210,19 +210,24 @@ Labels like Night owl or Marathon are earned by clearing a bar, so any number of
 
 ## Community badges
 
-Community badges are earned by building things everyone can use: a road, a bridge, a shop, a mini game. They are not the
-player labels above (Night owl and so on, worked out from the logs); these are handed out by hand, in `docs/badges.json`:
+Community badges come from the **VoxelBadges** plugin: 7 badges (Road Runner, Bridge Builder, Shopkeeper, Game Master,
+Highway Builder, Public Service Agent, Cleanup Crew), each with four tiers, bronze to diamond. They are not the player
+labels above (Night owl and so on, worked out from the logs). The site mirrors the plugin in `docs/badges.json`:
 
 ```json
 {
-  "badges": [{ "id": "road-builder", "name": "Road builder", "points": 3, "how": "Build a full road..." }],
-  "awards": [{ "player": "_Farren", "badge": "road-builder", "for": "West road", "date": "2026-11-10" }]
+  "points": [1, 2, 3, 5],
+  "badges": [
+    { "id": "road_runner", "name": "Road Runner", "tiers": ["1 road", "3 roads", "5 roads", "Gold + ..."] }
+  ],
+  "players": { "_Farren": { "road_runner": 3, "bridge_builder": 1 } }
 }
 ```
 
-- **A new badge:** add it to `badges` and draw its icon as `docs/assets/badges/community/<id>.svg` (8x8 view box, like the labels). Without an icon it shows its first letter.
-- **Handing one out:** add a line to `awards` with the Minecraft name. `for` (what they built) and `date` are optional but show on the page. The same badge can be awarded more than once and counts every time.
-- **The board** ranks by total points, then by number of badges, then by who got there first. Equal points share a rank, and everyone ranked first is shown as the most valuable badge holder.
+- `badges` is the `badges:` list from the plugin's `config.yml` (same ids, names and tier texts). Change it in both places.
+- `players` is the plugin's `badges.yml` by Minecraft name: per badge the tier level, 1 bronze, 2 silver, 3 gold, 4 diamond. Like in game, only the highest tier shows.
+- `points` is what a badge is worth at each tier. The board ranks by total points (equal points: more high tiers first), equal points share a rank, and everyone ranked first is the most valuable badge holder.
+- The icons are the plugin's own 10x10 PNGs, `docs/assets/badges/community/<tier>_<id>.png`, shown at 2x, 3x or 5x so the pixels stay square. After changing the art in the plugin, copy the PNGs here too.
 
 The page is `docs/badges/index.html`, drawn by `docs/js/badges.js`; its menu icon (a medal) is in `tools/draw_nav_icons.py`.
 
