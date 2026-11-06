@@ -5,8 +5,8 @@ import java.util.Locale;
 /** Badge tiers. Level 0 means "no badge". */
 public enum Tier {
     BRONZE(1, "Bronze", "#C47A3A", "task"),
-    SILVER(2, "Silver", "#B8C0C8", "task"),
-    GOLD(3, "Gold", "#E3A521", "goal"),
+    SILVER(2, "Silver", "#B8C0C8", "goal"),
+    GOLD(3, "Gold", "#E3A521", "challenge"),
     DIAMOND(4, "Diamond", "#4FD8E0", "challenge");
 
     public final int level;

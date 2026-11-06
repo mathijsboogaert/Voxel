@@ -64,27 +64,11 @@ public final class PackBuilder {
                 }
                 """.formatted(NS, esc(bg)));
 
-        // Layout per badge: root -> label (auto-earned) -> Bronze -> Silver -> Gold -> Diamond.
+        // Layout per badge: root -> Bronze -> Silver -> Gold -> Diamond.
         // Minecraft shows unearned advancements up to two steps after an earned one, so Bronze and
         // Silver are always visible; Gold appears after Bronze, Diamond after Silver.
         for (Badge b : badges) {
-            String header = "badges/" + b.id() + "/header";
-            files.put(advPath(header), """
-                    {
-                      "parent": "%s:badges/root",
-                      "display": {
-                        "icon": {"id": "minecraft:paper", "components": {"minecraft:item_model": "%s:badge/%s"}},
-                        "title": {"text": "%s", "color": "#E3A521"},
-                        "description": {"text": "Bronze, Silver, Gold, Diamond"},
-                        "frame": "task",
-                        "show_toast": false,
-                        "announce_to_chat": false,
-                        "hidden": false
-                      },
-                      "criteria": {"joined": {"trigger": "minecraft:tick"}}
-                    }
-                    """.formatted(NS, NS, b.texture(Tier.GOLD), esc(b.name())));
-            String parent = NS + ":" + header;
+            String parent = NS + ":badges/root";
             for (Tier t : Tier.values()) {
                 String key = "badges/" + b.id() + "/" + t.id();
                 files.put(advPath(key), """
@@ -110,6 +94,10 @@ public final class PackBuilder {
         boolean changed = false;
         // Older builds wrote the root to voxel:root by mistake; remove that stray tab.
         if (Files.deleteIfExists(root.resolve(advPath("root")))) changed = true;
+        // Earlier builds had a label node per badge; remove those too.
+        for (Badge b : badges) {
+            if (Files.deleteIfExists(root.resolve(advPath("badges/" + b.id() + "/header")))) changed = true;
+        }
         for (Map.Entry<String, String> f : files.entrySet()) {
             Path p = root.resolve(f.getKey());
             byte[] data = f.getValue().getBytes(StandardCharsets.UTF_8);
