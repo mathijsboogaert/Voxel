@@ -168,6 +168,14 @@
       ]
     },
     {
+      "id": "thijmen",
+      "name": "Thijmen",
+      "label": "ilyAfterLife",
+      "via": [
+        "iris"
+      ]
+    },
+    {
       "id": "henk",
       "name": "Lucas",
       "label": "Hamersveld",
@@ -209,7 +217,7 @@
       "label": "Detective_Mikey",
       "mc": "Detective_Mikey",
       "via": [
-        "angela"
+        "me"
       ]
     },
     {
