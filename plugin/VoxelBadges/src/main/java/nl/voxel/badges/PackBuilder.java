@@ -44,7 +44,7 @@ public final class PackBuilder {
         files.put("pack.mcmeta", mcmeta("Voxel Badges advancements", format));
 
         String bg = plugin.getConfig().getString("advancements.background", "minecraft:block/gold_block");
-        files.put(advPath("root"), """
+        files.put(advPath("badges/root"), """
                 {
                   "display": {
                     "icon": {"id": "minecraft:gold_block"},
@@ -83,6 +83,8 @@ public final class PackBuilder {
         }
 
         boolean changed = false;
+        // Older builds wrote the root to voxel:root by mistake; remove that stray tab.
+        if (Files.deleteIfExists(root.resolve(advPath("root")))) changed = true;
         for (Map.Entry<String, String> f : files.entrySet()) {
             Path p = root.resolve(f.getKey());
             byte[] data = f.getValue().getBytes(StandardCharsets.UTF_8);
