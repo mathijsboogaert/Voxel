@@ -959,7 +959,7 @@
   },
   {
     "x": -62,
-    "z": 254,
+    "z": 249,
     "label": "The Cauldron",
     "points": [
       {
@@ -1009,74 +1009,6 @@
       {
         "x": -59,
         "z": 254
-      },
-      {
-        "x": -58,
-        "z": 254
-      },
-      {
-        "x": -58,
-        "z": 255
-      },
-      {
-        "x": -57,
-        "z": 255
-      },
-      {
-        "x": -57,
-        "z": 263
-      },
-      {
-        "x": -58,
-        "z": 263
-      },
-      {
-        "x": -58,
-        "z": 264
-      },
-      {
-        "x": -59,
-        "z": 264
-      },
-      {
-        "x": -59,
-        "z": 265
-      },
-      {
-        "x": -65,
-        "z": 265
-      },
-      {
-        "x": -65,
-        "z": 264
-      },
-      {
-        "x": -66,
-        "z": 264
-      },
-      {
-        "x": -66,
-        "z": 263
-      },
-      {
-        "x": -67,
-        "z": 263
-      },
-      {
-        "x": -67,
-        "z": 256
-      },
-      {
-        "x": -66,
-        "z": 256
-      },
-      {
-        "x": -66,
-        "z": 255
-      },
-      {
-        "x": -65,
-        "z": 255
       },
       {
         "x": -65,
@@ -1206,5 +1138,93 @@
         "group": "Potion ingredients"
       }
     ]
+  },
+  {
+    "x": -62,
+    "z": 260,
+    "label": "Rocket Science",
+    "points": [
+      {
+        "x": -59,
+        "z": 254
+      },
+      {
+        "x": -58,
+        "z": 254
+      },
+      {
+        "x": -58,
+        "z": 255
+      },
+      {
+        "x": -57,
+        "z": 255
+      },
+      {
+        "x": -57,
+        "z": 263
+      },
+      {
+        "x": -58,
+        "z": 263
+      },
+      {
+        "x": -58,
+        "z": 264
+      },
+      {
+        "x": -59,
+        "z": 264
+      },
+      {
+        "x": -59,
+        "z": 265
+      },
+      {
+        "x": -65,
+        "z": 265
+      },
+      {
+        "x": -65,
+        "z": 264
+      },
+      {
+        "x": -66,
+        "z": 264
+      },
+      {
+        "x": -66,
+        "z": 263
+      },
+      {
+        "x": -67,
+        "z": 263
+      },
+      {
+        "x": -67,
+        "z": 256
+      },
+      {
+        "x": -66,
+        "z": 256
+      },
+      {
+        "x": -66,
+        "z": 255
+      },
+      {
+        "x": -65,
+        "z": 255
+      },
+      {
+        "x": -65,
+        "z": 254
+      }
+    ],
+    "owners": [
+      "EchoinSilence"
+    ],
+    "added": "2026-11-07T22:47:40.000Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4XmNgoCXQkJD4D8Jk2QHS+ObZNTDGZwgjNtNBGo6c28fwwCsMLh3z4g3DjRcvMNQz4XIesuYDbz7hUsbAgktGYdsquFQCAwPDHCMnrEpxGkCsC3B6gVgwDLyANR2AAHriwZYGCIKKEIP/IExQITbw604AWCPIgC89GqQZgqwB5gKYgQQBukJkL2BzCQDwmkhIW/mevAAAAABJRU5ErkJggg=="
   }
 ]
