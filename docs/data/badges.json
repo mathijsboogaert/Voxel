@@ -85,7 +85,15 @@
       "badges": {
         "shopkeeper": 3,
         "highway_builder": 1,
-        "public_service_agent": 1
+        "public_service_agent": 1,
+        "bridge_builder": 1
+      }
+    },
+    {
+      "name": "EchoinSilence",
+      "badges": {
+        "shopkeeper": 4,
+        "highway_builder": 1
       }
     },
     {
@@ -95,13 +103,6 @@
         "bridge_builder": 1,
         "road_runner": 1,
         "cleanup_crew": 1
-      }
-    },
-    {
-      "name": "EchoinSilence",
-      "badges": {
-        "shopkeeper": 2,
-        "highway_builder": 1
       }
     }
   ]
