@@ -1196,8 +1196,7 @@
         "item": "experience_bottle",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond",
-        "group": "Potion ingredients"
+        "priceItem": "diamond"
       },
       {
         "item": "glowstone",

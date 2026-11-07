@@ -25,7 +25,8 @@ import { chipRow } from './widgets.js?v=d7485e33';
 
 /**
  * What a row offers: one item or service, or a group that opens to show every kind in it. When the kinds
- * cost different amounts, each is listed with its own price.
+ * cost different amounts, each is listed with its own price and the group starts open, so the prices show
+ * without a tap.
  */
 function offerCell(db, { lines, group }) {
   if (!group) return offerText(db, lines[0]);
@@ -39,7 +40,7 @@ function offerCell(db, { lines, group }) {
       );
   return el(
     'details',
-    { class: 'pgroup' },
+    { class: 'pgroup', open: !samePrice(lines) },
     el('summary', {}, `${amount}${group}`, el('span', { class: 'small' }, ` · ${lines.length} kinds`)),
     kinds,
   );
