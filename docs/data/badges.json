@@ -73,6 +73,14 @@
   ],
   "holders": [
     {
+      "name": "Detective_Mikey",
+      "badges": {
+        "highway_builder": 1,
+        "shopkeeper": 1,
+        "cleanup_crew": 4
+      }
+    },
+    {
       "name": "Mathi_Craft",
       "badges": {
         "shopkeeper": 2,
