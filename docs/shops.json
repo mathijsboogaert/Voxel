@@ -1141,45 +1141,50 @@
         "item": "glass_bottle",
         "amount": 16,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       },
       {
         "item": "blaze_rod",
         "amount": 16,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       },
       {
         "item": "spider_eye",
         "amount": 16,
         "price": 1,
         "priceItem": "diamond",
-        "group": "Eye cream (both for 1 diamond)"
+        "group": "Potion ingredients"
       },
       {
         "item": "magma_cream",
         "amount": 16,
         "price": 1,
         "priceItem": "diamond",
-        "group": "Eye cream (both for 1 diamond)"
+        "group": "Potion ingredients"
       },
       {
         "item": "sugar",
         "amount": 16,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       },
       {
         "item": "gunpowder",
         "amount": 16,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       },
       {
         "item": "nether_wart",
         "amount": 16,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       },
       {
         "item": "ender_pearl",
@@ -1191,13 +1196,15 @@
         "item": "experience_bottle",
         "amount": 32,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       },
       {
         "item": "glowstone",
         "amount": 16,
         "price": 1,
-        "priceItem": "diamond"
+        "priceItem": "diamond",
+        "group": "Potion ingredients"
       }
     ]
   }
