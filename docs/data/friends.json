@@ -53,6 +53,14 @@
       ]
     },
     {
+      "id": "rosanne",
+      "name": "Rosanne",
+      "label": "Rosanne",
+      "via": [
+        "me"
+      ]
+    },
+    {
       "id": "angela",
       "name": "Angela",
       "label": "EmrysPendragon",
@@ -62,9 +70,10 @@
       ]
     },
     {
-      "id": "rosanne",
-      "name": "Rosanne",
-      "label": "Rosanne",
+      "id": "mike",
+      "name": "Michael",
+      "label": "Detective_Mikey",
+      "mc": "Detective_Mikey",
       "via": [
         "me"
       ]
@@ -209,15 +218,6 @@
       "mc": "finndutemps",
       "via": [
         "angela"
-      ]
-    },
-    {
-      "id": "mike",
-      "name": "Michael",
-      "label": "Detective_Mikey",
-      "mc": "Detective_Mikey",
-      "via": [
-        "me"
       ]
     },
     {
