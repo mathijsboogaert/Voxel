@@ -34,6 +34,9 @@ html,body{margin:0;height:100%;background:#0e1528;overflow:hidden;font-family:Ru
 #ui{position:fixed;right:16px;top:12px;display:flex;gap:8px;align-items:center;font:14px Rubik,sans-serif;color:#f6efe3;opacity:.35;transition:opacity .2s;z-index:10}
 #ui:hover{opacity:1}
 #ui button{font:inherit;background:#16213e;color:#f6efe3;border:2px solid #f6efe3;padding:4px 10px;cursor:pointer}
+#tune{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(14,21,40,.55);z-index:20;cursor:pointer}
+#tune.show{display:flex}
+#tune button{font:40px/1.2 Minecraft,"Courier New",monospace;color:#F6EFE3;background:#C42B24;border:6px solid #F6EFE3;padding:20px 44px;cursor:pointer;box-shadow:8px 8px 0 rgba(0,0,0,.35)}
 #hint{position:fixed;left:50%;top:16px;transform:translateX(-50%);font:14px Rubik,sans-serif;color:#f6efe3;background:#16213ecc;padding:6px 12px;transition:opacity 1s;z-index:10;pointer-events:none}
 @media (prefers-reduced-motion:reduce){#ticker .run{animation-duration:400s}}
 </style></head><body>
@@ -151,6 +154,8 @@ html,body{margin:0;height:100%;background:#0e1528;overflow:hidden;font-family:Ru
 <div id="ticker"><p class="lbl">Villager News</p><div class="track"><div class="run" id="run"><span class="seg">Does anyone read this bar?<span class=d></span>I just got a cute cat<span class=d></span>Mud is my favorite block<span class=d></span>Local chicken refuses to explain itself<span class=d></span>Creeper seen being polite, experts confused<span class=d></span>Gravel falls again, nobody surprised<span class=d></span>Sheep demands to be dyed purple<span class=d></span>Reminder: water is still wet<span class=d></span>Breaking: nothing happened<span class=d></span>Man digs straight down, has regrets<span class=d></span>Please stop putting cake in chests<span class=d></span>Cow stares at wall for six hours<span class=d></span>Witnesses say the cactus started it<span class=d></span>Torch shortage feared after cave trip<span class=d></span>Bread prices stable, wheat unimpressed<span class=d></span>If you can read this, you are reading<span class=d></span>Squid declines interview<span class=d></span>Someone left the furnace on<span class=d></span></span><span class="seg">Does anyone read this bar?<span class=d></span>I just got a cute cat<span class=d></span>Mud is my favorite block<span class=d></span>Local chicken refuses to explain itself<span class=d></span>Creeper seen being polite, experts confused<span class=d></span>Gravel falls again, nobody surprised<span class=d></span>Sheep demands to be dyed purple<span class=d></span>Reminder: water is still wet<span class=d></span>Breaking: nothing happened<span class=d></span>Man digs straight down, has regrets<span class=d></span>Please stop putting cake in chests<span class=d></span>Cow stares at wall for six hours<span class=d></span>Witnesses say the cactus started it<span class=d></span>Torch shortage feared after cave trip<span class=d></span>Bread prices stable, wheat unimpressed<span class=d></span>If you can read this, you are reading<span class=d></span>Squid declines interview<span class=d></span>Someone left the furnace on<span class=d></span></span></div></div></div>
 <div class="front" data-i="0"></div><div class="front" data-i="1"><img src="villager-mic.png" alt="Villager" style="position:absolute;left:1390px;top:547px;width:460px;height:499px;object-fit:contain"></div><div class="front" data-i="2"><img src="villager-village.png" alt="Villager" style="position:absolute;left:1400px;top:628px;width:440px;height:468px;object-fit:contain"></div><div class="front" data-i="3"></div><div class="front" data-i="4"></div><div class="front" data-i="5"></div><div class="front" data-i="6"></div><div class="front" data-i="7"></div><div class="front" data-i="8"></div><div class="front" data-i="9"><img src="villager-headphones.png" alt="Villager" style="position:absolute;left:1380px;top:577px;width:470px;height:519px;object-fit:contain"></div><div class="front" data-i="10"><img src="villager.png" alt="Villager" style="position:absolute;left:1420px;top:603px;width:400px;height:437px;object-fit:contain"></div><div class="front" data-i="11"><img src="villager-mic-flip.png" alt="Villager" style="position:absolute;left:1300px;top:486px;width:520px;height:564px;object-fit:contain"></div>
 </div>
+<audio id="intro" src="intro.mp3" preload="auto"></audio>
+<div id="tune"><button type="button">&#9654; Tune in</button></div>
 <div id="hint">Use the arrow keys, click, or swipe to go through the news</div>
 <div id="ui"><button id="prev" aria-label="Previous slide">&#8249;</button><span id="count"></span><button id="next" aria-label="Next slide">&#8250;</button><button id="fs" aria-label="Full screen">&#x26F6;</button></div>
 <script>
@@ -183,8 +188,14 @@ addEventListener('resize',fit);fit();show(i,false);
 addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){show(i+1);e.preventDefault()}if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){show(i-1);e.preventDefault()}if(e.key==='Home')show(0,false);if(e.key==='End')show(S.length-1,false);if(e.key==='f')document.getElementById('fs').click()});
 document.getElementById('prev').onclick=e=>{e.stopPropagation();show(i-1)};document.getElementById('next').onclick=e=>{e.stopPropagation();show(i+1)};
 document.getElementById('fs').onclick=e=>{e.stopPropagation();document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()};
-addEventListener('click',e=>{if(e.target.closest('#ui'))return;show(e.clientX<innerWidth/3?i-1:i+1)});
+addEventListener('click',e=>{if(e.target.closest('#ui')||e.target.closest('#tune'))return;show(e.clientX<innerWidth/3?i-1:i+1)});
 let tx=null;addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>40)show(d<0?i+1:i-1);tx=null});
 setTimeout(()=>document.getElementById('hint').style.opacity=0,4000);
+// intro jingle: play once per page load; browsers may block sound until the first click
+const au=document.getElementById('intro'),tune=document.getElementById('tune');let played=false;
+function playIntro(){if(played)return;played=true;au.currentTime=0;au.play().catch(()=>{});tune.classList.remove('show')}
+au.play().then(()=>{played=true}).catch(()=>{au.pause();tune.classList.add('show')});
+tune.addEventListener('click',e=>{e.stopPropagation();playIntro()},true);
+addEventListener('keydown',()=>{if(tune.classList.contains('show'))playIntro()},true);
 </script>
 </body></html>
