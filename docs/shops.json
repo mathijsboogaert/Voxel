@@ -100,42 +100,6 @@
     ]
   },
   {
-    "x": -3,
-    "z": 187,
-    "label": "Cheapslate",
-    "points": [
-      {
-        "x": -8,
-        "z": 182
-      },
-      {
-        "x": -8,
-        "z": 192
-      },
-      {
-        "x": 1,
-        "z": 192
-      },
-      {
-        "x": 1,
-        "z": 182
-      }
-    ],
-    "owners": [
-      "EmrysPendragon"
-    ],
-    "added": "2026-10-18T14:39:16.729Z",
-    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAB+klEQVQ4EXVTTUsbURQ9T0bMGDV+RIgfwaCjiCFtBaGgq/4B11l14V+QLtofIEgVpBC601/gUl3qwoUb20VpqUXMFI3VOFjQjCmkNs650xvThL7Fu+/deefce857YzKZTBXBKJfLDLBtW+L/9o1nrHg8XgN4nod0Oi37m9IdujraZa0Tc2X/Fna0UyLPW1rJ9309h+2LE0hbJcAEWa5nTLT2/dor1tYWV/XgrctjOJvvUTlyUbnyYIxBS38fDl+/xeydi1QigiOM1SQb9YBE7GZicgr7pQtUCo9VUitvUA1aWdhaxcbOOWKDoUxKMI7jSLck4FATuVZ54703cN/lUC3+hPtqGcP3FBYOk81mhUBNY9RBwyL+Z6QGbOx+uAJyayIn/3IRT/sSIr2FAHVXI4E0KuJ/wovpHgG3do/h++IS7oue8ksUE+uvRr/2/DnBSKId69un6B56EqZ/3Yqp3NB4SrS+ff0S6g4MYYIeDNuXUpng322D/9yS1R8TMvXHIiAafbzjoQA8ElwVwc/m5kWePqjjwwO0jY8KQTKZlIJyC3yNbCmsHAvABQw4z+Vg43RwlhcDmSdGCLRtVt776DWBtd16Mn18YmK9ZrrNB8KhnuiaUd+JksrPlC+cI/+j1FSZROoPozpP/UoqJtp/9SqrfG2YtGVN69kHukcQP1uuMCIAAAAASUVORK5CYII=",
-    "products": [
-      {
-        "item": "cobbled_deepslate",
-        "amount": 64,
-        "price": 1,
-        "priceItem": "diamond"
-      }
-    ]
-  },
-  {
     "x": -52,
     "z": 194,
     "label": "Park & Recreation",
@@ -211,33 +175,6 @@
         "priceItem": "diamond"
       }
     ]
-  },
-  {
-    "x": -152,
-    "z": 232,
-    "label": "Museum WIP",
-    "points": [
-      {
-        "x": -131,
-        "z": 296
-      },
-      {
-        "x": -173,
-        "z": 296
-      },
-      {
-        "x": -173,
-        "z": 168
-      },
-      {
-        "x": -131,
-        "z": 168
-      }
-    ],
-    "owners": [
-      "EchoinSilence"
-    ],
-    "added": "2026-10-18T14:42:33.748Z"
   },
   {
     "x": -12,
@@ -1226,5 +1163,159 @@
     ],
     "added": "2026-11-07T22:47:40.000Z",
     "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4XmNgoCXQkJD4D8Jk2QHS+ObZNTDGZwgjNtNBGo6c28fwwCsMLh3z4g3DjRcvMNQz4XIesuYDbz7hUsbAgktGYdsquFQCAwPDHCMnrEpxGkCsC3B6gVgwDLyANR2AAHriwZYGCIKKEIP/IExQITbw604AWCPIgC89GqQZgqwB5gKYgQQBukJkL2BzCQDwmkhIW/mevAAAAABJRU5ErkJggg=="
+  },
+  {
+    "x": 15,
+    "z": 77,
+    "label": "Shop in a Bottle",
+    "points": [
+      {
+        "x": 18,
+        "z": 66
+      },
+      {
+        "x": 18,
+        "z": 67
+      },
+      {
+        "x": 19,
+        "z": 67
+      },
+      {
+        "x": 19,
+        "z": 68
+      },
+      {
+        "x": 20,
+        "z": 68
+      },
+      {
+        "x": 20,
+        "z": 80
+      },
+      {
+        "x": 19,
+        "z": 80
+      },
+      {
+        "x": 19,
+        "z": 82
+      },
+      {
+        "x": 18,
+        "z": 82
+      },
+      {
+        "x": 18,
+        "z": 83
+      },
+      {
+        "x": 17,
+        "z": 83
+      },
+      {
+        "x": 17,
+        "z": 84
+      },
+      {
+        "x": 16,
+        "z": 84
+      },
+      {
+        "x": 16,
+        "z": 88
+      },
+      {
+        "x": 13,
+        "z": 88
+      },
+      {
+        "x": 13,
+        "z": 84
+      },
+      {
+        "x": 12,
+        "z": 84
+      },
+      {
+        "x": 12,
+        "z": 83
+      },
+      {
+        "x": 11,
+        "z": 83
+      },
+      {
+        "x": 11,
+        "z": 82
+      },
+      {
+        "x": 10,
+        "z": 82
+      },
+      {
+        "x": 10,
+        "z": 80
+      },
+      {
+        "x": 9,
+        "z": 80
+      },
+      {
+        "x": 9,
+        "z": 68
+      },
+      {
+        "x": 10,
+        "z": 68
+      },
+      {
+        "x": 10,
+        "z": 67
+      },
+      {
+        "x": 11,
+        "z": 67
+      },
+      {
+        "x": 11,
+        "z": 66
+      }
+    ],
+    "owners": [
+      "EmrysPendragon",
+      "Mathi_Craft"
+    ],
+    "added": "2026-11-08T10:42:34.812Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAAA80lEQVQ4EWNgoBAwkqL/9bP0/zD1olIzwXqZYALk0hQbAHbGlIsnwU7L1jNjmHrpFFbH5OibY/cuSPPN/7/+gwCIxoVhlqCbzgISUGNgZbjF8JshZ1Y1ivyUtFY431XPkAFmCLJrGEGCIEkQUHx/Ga7hvqAunO0rJ8Kw+dEbBlCA/QPi3ZfOM+zOjwfLwwMRpAgbAIlrKkuBXQnSDAPX7z5jAGGwF0CCIEU6+o4weTgNEt+w/zrYiyCbQQDZC3ADuvZfYihz1INrhDGQNSNrhMmjRCNMEEYjRys2zSB1jA9uzIcnT5hGUmh4IJKiCVntwBsAALc5cWlXEJ8AAAAAAElFTkSuQmCC",
+    "products": [
+      {
+        "item": "sea_lantern",
+        "amount": 32,
+        "price": 1,
+        "priceItem": "diamond"
+      },
+      {
+        "item": "prismarine",
+        "amount": 64,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Prismarine"
+      },
+      {
+        "item": "prismarine_bricks",
+        "amount": 32,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Prismarine"
+      },
+      {
+        "item": "dark_prismarine",
+        "amount": 16,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Prismarine"
+      }
+    ]
   }
 ]
