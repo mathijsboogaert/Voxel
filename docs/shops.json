@@ -1317,5 +1317,17 @@
         "group": "Prismarine"
       }
     ]
+  },
+  {
+    "x": 60,
+    "z": 120,
+    "label": "The Präncing Pony",
+    "owners": [
+      "Mathi_Craft",
+      "kayushka"
+    ],
+    "added": "2026-11-08T17:14:07.000Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAFBlWElmTU0AKgAAAAgAAgESAAMAAAABAAEAAIdpAAQAAAABAAAAJgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAAmiF/sAAAAvklEQVQ4EY2QwQ3CMBAEUwCFIDpAdEAR9EQFFEEd/HlSAQXkY5jHWGvlLIh0Wudud3LxshTP/nRsVRXWsZWhy/nQsnI2pr5vOVzfj3a/7jYbCEtvB9HEQFgAkF+gKUAI4BmEWQlg4Cacq2LbEqBZgGpfnQIMVGoYLQGENFWAnAPgbqZ3MAN5oeoGYDA1v0zQwvMX4PW89V8TXN4BQwca1dwiPX0DDpoxpIk+WwDJ/hD2RQgqSM2Z/qmmOc9V4ANHm5nNSDk7sgAAAABJRU5ErkJggg==",
+    "products": []
   }
 ]
