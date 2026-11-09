@@ -10,8 +10,36 @@ const LEGEND = [
   ['fc-key fc-key--via', 'via a friend'],
   ['fc-key fc-key--family', 'siblings'],
   ['love', 'couple'],
-  ['fc-key fc-key--ghost', 'never played'],
 ];
+
+/**
+ * Only people who are in the stats (have played) are on the chart. Their Minecraft name takes the spelling
+ * from the stats, so the face matches. Groups and couples keep the people still shown; whoever a hidden
+ * person brought in is linked to whoever brought that person in. Without stats everyone is shown.
+ */
+function onlyPlayed(data, st) {
+  if (!st?.players) return data;
+  const played = new Map(Object.keys(st.players).map((n) => [n.toLowerCase(), n]));
+  const people = data.people
+    .filter((p) => p.id === 'me' || (p.mc && played.has(p.mc.toLowerCase())))
+    .map((p) => (p.mc ? { ...p, mc: played.get(p.mc.toLowerCase()) ?? p.mc } : { ...p }));
+  const all = Object.fromEntries(data.people.map((p) => [p.id, p]));
+  const on = new Set(people.map((p) => p.id));
+  const reach = (id, seen = new Set()) =>
+    on.has(id) || seen.has(id) ? [id] : (seen.add(id), (all[id]?.via ?? []).flatMap((v) => reach(v, seen)));
+  for (const p of people) p.via = [...new Set(p.via.flatMap((v) => reach(v)))].filter((v) => on.has(v));
+  for (const p of people) if (p.id !== 'me' && !p.via.length) p.via = ['me'];
+  return {
+    ...data,
+    people,
+    groups: data.groups
+      .map((g) => ({ ...g, members: g.members.filter((m) => on.has(m)) }))
+      .filter((g) => g.members.length),
+    rels: data.rels
+      .map((r) => ({ ...r, members: r.members.filter((m) => on.has(m)) }))
+      .filter((r) => r.members.length > 1),
+  };
+}
 
 function savedNames() {
   try {
@@ -23,7 +51,8 @@ function savedNames() {
 
 /** Fills #fc-chart, #fc-names, #fc-legend, #fc-groups and #fc-card. */
 export async function mountFriends() {
-  const [data, st] = await Promise.all([getJSON('data/friends.json', null), loadStats().catch(() => null)]);
+  const [raw, st] = await Promise.all([getJSON('data/friends.json', null), loadStats().catch(() => null)]);
+  const data = raw && onlyPlayed(raw, st);
   if (!data) {
     byId('friends').setAttribute('hidden', '');
     return;

@@ -1,5 +1,5 @@
 {
-  "_about": "Who knows who on Voxel. people: id, real name, label (player name, or Discord name if they never played), mc (Minecraft name, for the face and playtime), via (who brought them in; \"me\" is the centre). groups: withMe puts the centre in the group too; outline draws a dashed line instead of a fill. rels: couple, married or siblings.",
+  "_about": "Who knows who on Voxel. people: id, real name, label (player name, or Discord name if they never played), mc (Minecraft name, for the face and playtime; someone only shows on the chart once this name is in the stats), via (who brought them in; \"me\" is the centre). groups: withMe puts the centre in the group too; outline draws a dashed line instead of a fill. rels: couple, married or siblings.",
   "people": [
     {
       "id": "me",
@@ -179,10 +179,11 @@
     {
       "id": "thijmen",
       "name": "Thijmen",
-      "label": "ilyAfterLife",
+      "label": "ilyAfterlife",
       "via": [
         "iris"
-      ]
+      ],
+      "mc": "ilyAfterlife"
     },
     {
       "id": "henk",
@@ -227,6 +228,15 @@
       "mc": "chimmochi_",
       "via": [
         "david"
+      ]
+    },
+    {
+      "id": "senna",
+      "name": "Senna",
+      "label": "Senna_roereitje",
+      "mc": "Senna_roereitje",
+      "via": [
+        "nout"
       ]
     }
   ],
@@ -281,7 +291,8 @@
         "daniel",
         "david",
         "nout",
-        "liam"
+        "liam",
+        "senna"
       ]
     }
   ],
