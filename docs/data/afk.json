@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-09T10:28:30Z",
+  "generated_at": "2026-11-09T21:03:35Z",
   "players": {
     "BBGPlays": {
       "active": 27372,
@@ -10,20 +10,24 @@
       "afk": 1523
     },
     "Detective_Mikey": {
-      "active": 319497,
+      "active": 325861,
       "afk": 7223
     },
     "EchoinSilence": {
-      "active": 438918,
-      "afk": 218204
+      "active": 452897,
+      "afk": 221984
     },
     "EmrysPendragon": {
-      "active": 343168,
-      "afk": 266203
+      "active": 352648,
+      "afk": 269815
     },
     "FrTylerFr": {
-      "active": 90308,
+      "active": 98018,
       "afk": 600
+    },
+    "FriendOfTyse": {
+      "active": 4505,
+      "afk": 0
     },
     "Genname4427": {
       "active": 237,
@@ -38,7 +42,7 @@
       "afk": 1001
     },
     "Lisnee2": {
-      "active": 96144,
+      "active": 99352,
       "afk": 0
     },
     "Mathi_Craft": {
@@ -54,7 +58,7 @@
       "afk": 0
     },
     "Pantless_Hobo": {
-      "active": 28347,
+      "active": 31839,
       "afk": 0
     },
     "Roefus": {
@@ -66,23 +70,27 @@
       "afk": 3709
     },
     "briosh721": {
-      "active": 163437,
+      "active": 170523,
       "afk": 2182
     },
+    "chimmochi_": {
+      "active": 4361,
+      "afk": 0
+    },
     "finndutemps": {
-      "active": 92174,
+      "active": 96214,
       "afk": 601
     },
     "ilyAfterlife": {
-      "active": 75637,
-      "afk": 894
+      "active": 86796,
+      "afk": 2710
     },
     "kayushka": {
       "active": 56730,
       "afk": 808
     },
     "xXkorniszon2137": {
-      "active": 10008,
+      "active": 11530,
       "afk": 0
     }
   }

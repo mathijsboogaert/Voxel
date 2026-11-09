@@ -73,20 +73,38 @@
   ],
   "holders": [
     {
-      "name": "Detective_Mikey",
+      "name": "Roefus",
       "badges": {
-        "highway_builder": 1,
-        "shopkeeper": 1,
+        "bridge_builder": 2,
+        "road_runner": 1,
+        "public_service_agent": 1,
         "cleanup_crew": 4
       }
     },
     {
       "name": "EmrysPendragon",
       "badges": {
-        "shopkeeper": 3,
+        "shopkeeper": 4,
         "highway_builder": 1,
         "public_service_agent": 1,
         "bridge_builder": 1
+      }
+    },
+    {
+      "name": "Mathi_Craft",
+      "badges": {
+        "shopkeeper": 4,
+        "bridge_builder": 1,
+        "road_runner": 1,
+        "cleanup_crew": 1
+      }
+    },
+    {
+      "name": "Detective_Mikey",
+      "badges": {
+        "highway_builder": 1,
+        "shopkeeper": 1,
+        "cleanup_crew": 4
       }
     },
     {
@@ -97,12 +115,17 @@
       }
     },
     {
-      "name": "Mathi_Craft",
+      "name": "_Farren",
       "badges": {
-        "shopkeeper": 2,
-        "bridge_builder": 1,
+        "shopkeeper": 1,
         "road_runner": 1,
-        "cleanup_crew": 1
+        "bridge_builder": 2
+      }
+    },
+    {
+      "name": "kayushka",
+      "badges": {
+        "shopkeeper": 1
       }
     }
   ]
