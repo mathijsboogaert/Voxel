@@ -1417,5 +1417,102 @@
         "free": true
       }
     ]
+  },
+  {
+    "x": -60,
+    "z": 294,
+    "label": "Butcher",
+    "points": [
+      {
+        "x": -54,
+        "z": 304
+      },
+      {
+        "x": -54,
+        "z": 293
+      },
+      {
+        "x": -56,
+        "z": 293
+      },
+      {
+        "x": -56,
+        "z": 285
+      },
+      {
+        "x": -58,
+        "z": 285
+      },
+      {
+        "x": -58,
+        "z": 284
+      },
+      {
+        "x": -64,
+        "z": 284
+      },
+      {
+        "x": -64,
+        "z": 285
+      },
+      {
+        "x": -66,
+        "z": 285
+      },
+      {
+        "x": -66,
+        "z": 286
+      },
+      {
+        "x": -67,
+        "z": 286
+      },
+      {
+        "x": -67,
+        "z": 301
+      },
+      {
+        "x": -66,
+        "z": 301
+      },
+      {
+        "x": -66,
+        "z": 304
+      }
+    ],
+    "owners": [
+      "ilyAfterlife"
+    ],
+    "added": "2026-11-10T08:08:00.791Z",
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0VXHyAAABDklEQVQ4EWNgoBAwgvT7O2j8h5mz8cANsBiMj05jVYssiK4BFx+mhwWk4OOnr3BXwFyQaMIPdxVIzfwzH1FcC9IDAmADwCwgARLUVhb5byb4GyYEp0EGnnrPClbDz8cNF2cCsQ6ce8wIMxEug4cBUgvSA1KCEmC4bEc2C+SKq3ffwPWBXQBTAJNI7lzGAMIwgMyHqYHJoRgAEwTRnv7hcC4yGy4IZcCdApNAD32YOIyGxQaMjxILIMHssHSYHFZ6/pkuFHEUF5zpKkOJexSVSByTsi64PqxhcOvxUwYQhgF0PkwcRGM1QE1WmsHd7zpcHYgNEsMG4E6BSSJ7Q9FwD1j4/nkXmDQDsvPhgpQwACZUZfv8j4LsAAAAAElFTkSuQmCC",
+    "products": [
+      {
+        "item": "cooked_beef",
+        "amount": 32,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Meats"
+      },
+      {
+        "item": "cooked_chicken",
+        "amount": 32,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Meats"
+      },
+      {
+        "item": "cooked_porkchop",
+        "amount": 32,
+        "price": 1,
+        "priceItem": "diamond",
+        "group": "Meats"
+      },
+      {
+        "item": "leather",
+        "amount": 32,
+        "price": 2,
+        "priceItem": "diamond"
+      }
+    ]
   }
 ]
