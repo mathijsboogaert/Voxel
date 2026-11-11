@@ -6,3 +6,8 @@ docs/tiles/
 docs/wasm/
 docs/*.json
 vendor/
+# Written by tools/build_news.py and the news editor.
+docs/news/editions/
+docs/news/editions.json
+docs/news/*/index.html
+!docs/news/editor/index.html

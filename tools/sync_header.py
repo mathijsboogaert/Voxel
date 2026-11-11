@@ -24,6 +24,7 @@ MENU = [
     ('players', 'players/', 'steve', 'Players'),
     ('shops', 'shops/', 'diamond', 'Shops'),
     ('badges', 'badges/', 'medal', 'Badges'),
+    ('news', 'news/', 'news', 'News'),
 ]
 # The editor isn't linked from the site, but on its own page the menu shows it as the current page.
 EDITOR = ('editor', 'editor.html', 'editor', 'Editor')
@@ -36,6 +37,7 @@ PAGES = {
     'player/index.html': 'players',
     'shops/index.html': 'shops',
     'badges/index.html': 'badges',
+    'news/index.html': 'news',
     'editor.html': 'editor',
 }
 

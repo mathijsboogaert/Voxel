@@ -1,0 +1,402 @@
+{
+  "v": 1,
+  "slug": "special-edition",
+  "title": "Voxel Special Edition",
+  "edition": "Special Edition",
+  "date": "2026-11-07",
+  "summary": "Voxel gets its own Villager News: new shops, badges, a new player and the Ender Dragon fight on 14 November.",
+  "intro": true,
+  "ticker": {
+    "label": "Villager News",
+    "items": [
+      "Does anyone read this bar?",
+      "I just got a cute cat",
+      "Mud is my favorite block",
+      "Local chicken refuses to explain itself",
+      "Creeper seen being polite, experts confused",
+      "Gravel falls again, nobody surprised",
+      "Sheep demands to be dyed purple",
+      "Reminder: water is still wet",
+      "Breaking: nothing happened",
+      "Man digs straight down, has regrets",
+      "Please stop putting cake in chests",
+      "Cow stares at wall for six hours",
+      "Witnesses say the cactus started it",
+      "Torch shortage feared after cave trip",
+      "Bread prices stable, wheat unimpressed",
+      "If you can read this, you are reading",
+      "Squid declines interview",
+      "Someone left the furnace on"
+    ]
+  },
+  "pages": [
+    {
+      "id": "cover",
+      "layout": "cover",
+      "sign": "VILLAGER\nNEWS",
+      "transition": "push",
+      "ticker": false,
+      "villager": null,
+      "blocks": []
+    },
+    {
+      "id": "tonight",
+      "layout": "story",
+      "sign": "BREAKING NEWS!",
+      "villager": {
+        "src": "assets/villagers/villager-mic.png",
+        "x": 1390,
+        "y": 547,
+        "w": 460,
+        "flip": false
+      },
+      "blocks": [
+        {
+          "type": "lead",
+          "text": "Voxel just got its very own **Villager News**!"
+        },
+        {
+          "type": "text",
+          "text": "Tonight we’re covering recent events that you may not have remembered."
+        },
+        {
+          "type": "text",
+          "text": "A lot has happened in the past week, from **multiple shop openings** to **website updates** and **an End update?!**"
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "dragon",
+      "layout": "story",
+      "sign": "THE ENDER DRAGON FIGHT IS ANNOUNCED!",
+      "villager": {
+        "src": "assets/villagers/villager-village.png",
+        "x": 1400,
+        "y": 628,
+        "w": 440,
+        "flip": false
+      },
+      "blocks": [
+        {
+          "type": "lead",
+          "text": "That’s right!"
+        },
+        {
+          "type": "text",
+          "text": "Sharpen your swords and string your bows, because we’re fighting the big bad Ender Dragon on"
+        },
+        {
+          "type": "big",
+          "text": "Saturday, November 14th at 20:00!",
+          "color": "red",
+          "size": "m"
+        },
+        {
+          "type": "text",
+          "text": "Be there or be square (haha, block jokes)."
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "shops",
+      "layout": "story",
+      "sign": "NEW SHOPS IN THE SHOPPING DISTRICT",
+      "villager": null,
+      "blocks": [
+        {
+          "type": "columns",
+          "cols": [
+            {
+              "icon": "assets/icons/shop-rocket-science.png",
+              "lead": "In response to this exciting news,",
+              "text": "EchoinSilence (Lucas) has already opened a new shop: **Rocket Science**. It’s shaped like a rocket, so you can’t miss it! It sells…*\\*drumroll please\\**…Nether Bricks! I’m just kidding, it sells rockets. **64 rockets for 1 diamond.**"
+            },
+            {
+              "icon": "assets/icons/shop-shop-in-a-bottle.png",
+              "lead": "But that’s not the only shop opening we’ve had this week!",
+              "text": "**Mathi_Craft** and **EmrysPendragon** (Mathijs and Angela) have opened a new shop selling **prismarine** in multiple variants and **sea lanterns**. It’s called **Shop in a Bottle** and can be found at the start of the Shopping District."
+            }
+          ]
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "shops2",
+      "layout": "story",
+      "sign": "NEW SHOPS IN THE SHOPPING DISTRICT",
+      "villager": null,
+      "blocks": [
+        {
+          "type": "columns",
+          "cols": [
+            {
+              "icon": "assets/icons/shop-prancing-pony.png",
+              "lead": "It seems like Mathi_Craft is making shops left and right,",
+              "text": "as he and **kayushka** (Kaya) are opening their **horse shop**! **The Präncing Pony**"
+            },
+            {
+              "icon": "assets/icons/shop-the-cauldron.png",
+              "lead": "What’s that? I just heard that EchoinSilence has opened another shop!",
+              "text": "Located next to Rocket Science, **The Cauldron** is now open for all your magical needs! Be it brewing your first potion or throwing your first pearl, they have everything you need to get started with the supernatural!"
+            }
+          ],
+          "size": "s"
+        },
+        {
+          "type": "callout",
+          "icon": "assets/icons/badge-shopkeeper.png",
+          "lead": "With five shops under his belt, EchoinSilence joins the **Diamond Shop Badge** brigade.",
+          "text": "Huh? You guys don’t know what badges are? Silly me, I should explain!"
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "badges",
+      "layout": "story",
+      "sign": "VOXEL BADGES ARE HERE!",
+      "villager": null,
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Voxel Admin Mathijs has been a very busy bee indeed this past week and has introduced a new system to the server:"
+        },
+        {
+          "type": "lead",
+          "text": "Badges!",
+          "size": "l"
+        },
+        {
+          "type": "text",
+          "text": "Here is a list of all the current badges and how to get your own:",
+          "size": "s"
+        },
+        {
+          "type": "chips",
+          "items": [
+            {
+              "icon": "assets/icons/badge-road-runner.png",
+              "label": "Road Runner"
+            },
+            {
+              "icon": "assets/icons/badge-bridge-builder.png",
+              "label": "Bridge Builder"
+            },
+            {
+              "icon": "assets/icons/badge-shopkeeper.png",
+              "label": "Shopkeeper"
+            },
+            {
+              "icon": "assets/icons/badge-game-master.png",
+              "label": "Game Master"
+            },
+            {
+              "icon": "assets/icons/badge-highway-builder.png",
+              "label": "Highway Builder"
+            },
+            {
+              "icon": "assets/icons/badge-public-service-agent.png",
+              "label": "Public Service Agent"
+            },
+            {
+              "icon": "assets/icons/badge-cleanup-crew.png",
+              "label": "Cleanup Crew"
+            }
+          ]
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "tiers",
+      "layout": "story",
+      "sign": "But how do you get a badge?",
+      "villager": null,
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Lay a road, build a bridge, open a shop, or complete one of the other qualifying activities, and **an admin can award you a badge** for it."
+        },
+        {
+          "type": "lead",
+          "text": "Every badge has four tiers:"
+        },
+        {
+          "type": "chips",
+          "items": [
+            {
+              "icon": "assets/icons/badge-shopkeeper-bronze.png",
+              "label": "Bronze"
+            },
+            {
+              "icon": "assets/icons/badge-shopkeeper-silver.png",
+              "label": "Silver"
+            },
+            {
+              "icon": "assets/icons/badge-shopkeeper-gold.png",
+              "label": "Gold"
+            },
+            {
+              "icon": "assets/icons/badge-shopkeeper.png",
+              "label": "Diamond"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "with each tier including the one before it.",
+          "size": "s"
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "rules1",
+      "layout": "story",
+      "sign": "But how do you get a badge?",
+      "villager": null,
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            {
+              "term": "Road:",
+              "text": "A pathway that connects two points along a clearly laid-out route. It should be wide enough for a horse to pass through without obstructions. The road itself must be mob-proofed using lighting or other methods."
+            },
+            {
+              "term": "Bridge:",
+              "text": "Spans a gap from end to end and connects to roads. It must be wide enough for a horse to cross and properly lit. The bridge should also have at least some decorative/design features."
+            },
+            {
+              "term": "Shop:",
+              "text": "If you build, maintain, and stock a shop, you are considered a shopkeeper. Multiple people can run a single shop. The shop must be connected to the road network and located in the Shopping District."
+            }
+          ]
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "rules2",
+      "layout": "story",
+      "sign": "But how do you get a badge?",
+      "villager": null,
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            {
+              "term": "Highway:",
+              "text": "A road in the Nether or a large, straight tunnel in the Overworld."
+            },
+            {
+              "term": "Restored Chunk:",
+              "text": "A chunk that looks better than it did when it was first loaded. There should be no unusual holes, and some lighting should be added where needed."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "If you think you’re eligible for a badge, please let **Mathijs** know and he’ll award you the badge and add you to the website!",
+          "size": "s"
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "welcome",
+      "layout": "story",
+      "sign": "NEW ARRIVAL ON VOXEL",
+      "villager": {
+        "src": "assets/villagers/villager-headphones.png",
+        "x": 1380,
+        "y": 577,
+        "w": 470,
+        "flip": false
+      },
+      "blocks": [
+        {
+          "type": "lead",
+          "text": "And that’s not all the server news!"
+        },
+        {
+          "type": "text",
+          "text": "Voxel can grow again, as we’ve welcomed a new member to our server:"
+        },
+        {
+          "type": "big",
+          "text": "ilyAfterLife (Thijmen)"
+        },
+        {
+          "type": "lead",
+          "text": "Welcome to Voxel!",
+          "color": "ink"
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "weather",
+      "layout": "story",
+      "sign": "AND NOW, THE WEATHER",
+      "villager": {
+        "src": "assets/villagers/villager.png",
+        "x": 1420,
+        "y": 603,
+        "w": 400,
+        "flip": false
+      },
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Those were our most important updates from around the server. But before we wrap things up, I just heard from **Wooly** that the weather forecast is **rain again**.",
+          "size": "s"
+        },
+        {
+          "type": "lead",
+          "text": "What a surprise!"
+        },
+        {
+          "type": "text",
+          "text": "Apparently, there’s more rain on the way, so don’t forget your umbrellas. Or perhaps it’s time to invest in a boat.",
+          "size": "s"
+        }
+      ],
+      "transition": "push",
+      "ticker": true
+    },
+    {
+      "id": "signoff",
+      "layout": "story",
+      "sign": "Well, that’s it for this Special Edition of Villager News!",
+      "transition": "fade",
+      "villager": {
+        "src": "assets/villagers/villager-mic-flip.png",
+        "x": 1300,
+        "y": 486,
+        "w": 520,
+        "flip": false
+      },
+      "blocks": [
+        {
+          "type": "big",
+          "text": "Until next week!",
+          "size": "l"
+        }
+      ],
+      "ticker": true
+    }
+  ]
+}
