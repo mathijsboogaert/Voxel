@@ -32,8 +32,8 @@ HEAD = 'https://minotar.net/helm/{}/128.png'  # face plus hat layer, 128px (show
 STEVE = {'8266c20bee5826023265f2348690aff50e048ad7e8136d18605b41e4a21f2c08'}
 # Mojang profile with textures: tells us whether a player really has a custom skin.
 SESSION = 'https://sessionserver.mojang.com/session/minecraft/profile/{}'
-# Second head service, used when Minotar serves Steve for a player who does have a skin.
-FALLBACK = 'https://crafatar.com/avatars/{}?size=128&overlay'
+# Other head services, tried in order when Minotar serves Steve for a player who does have a skin.
+FALLBACKS = ('https://mc-heads.net/avatar/{}/128', 'https://crafatar.com/avatars/{}?size=128&overlay')
 UA = {'User-Agent': 'voxel-site/1.0 (github.com/mathijsboogaert/Voxel)'}
 
 
@@ -43,12 +43,10 @@ def get(url, tries=3):
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r:
                 return r.read()
         except urllib.error.HTTPError as e:
-            if e.code in (204, 404):
-                return None
-            if e.code == 429:
+            if e.code == 429 or e.code >= 500:
                 time.sleep(5 * (i + 1))
                 continue
-            raise
+            return None  # 204/404/other: no image, never crash the stats job over a head
         except (urllib.error.URLError, TimeoutError):
             time.sleep(2 * (i + 1))
     return None
@@ -110,11 +108,12 @@ def main():
                 skin = has_skin(uuid)
                 time.sleep(0.3)
                 if skin:
-                    alt = get(FALLBACK.format(uuid))
-                    if is_png(alt):
-                        png, is_steve = alt, False
-                    else:
-                        png = None  # real skin but no head service has it: try again next run
+                    png = None  # real skin but no head service has it: try again next run
+                    for fallback in FALLBACKS:
+                        alt = get(fallback.format(uuid))
+                        if is_png(alt):
+                            png, is_steve = alt, False
+                            break
             if is_png(png):
                 checked = today
                 old_png = pathlib.Path(face).read_bytes() if have_face else None
