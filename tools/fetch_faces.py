@@ -14,6 +14,7 @@ A player Mojang does not know (offline-mode account, renamed) gets no face file;
 a plain letter tile for them instead.
 """
 
+import base64
 import csv
 import datetime
 import pathlib
@@ -29,6 +30,10 @@ PROFILE = 'https://api.mojang.com/users/profiles/minecraft/{}'
 HEAD = 'https://minotar.net/helm/{}/128.png'  # face plus hat layer, 128px (shown pixelated)
 # sha256 of Minotar's Steve head (/helm/<x>/128.png): what it returns when it can't get the skin.
 STEVE = {'8266c20bee5826023265f2348690aff50e048ad7e8136d18605b41e4a21f2c08'}
+# Mojang profile with textures: tells us whether a player really has a custom skin.
+SESSION = 'https://sessionserver.mojang.com/session/minecraft/profile/{}'
+# Second head service, used when Minotar serves Steve for a player who does have a skin.
+FALLBACK = 'https://crafatar.com/avatars/{}?size=128&overlay'
 UA = {'User-Agent': 'voxel-site/1.0 (github.com/mathijsboogaert/Voxel)'}
 
 
@@ -47,6 +52,25 @@ def get(url, tries=3):
         except (urllib.error.URLError, TimeoutError):
             time.sleep(2 * (i + 1))
     return None
+
+
+def has_skin(uuid):
+    """True/False if Mojang says the player has a custom skin, None if we couldn't tell."""
+    body = get(SESSION.format(uuid))
+    if not body:
+        return None
+    try:
+        for prop in json.loads(body).get('properties', []):
+            if prop.get('name') == 'textures':
+                tex = json.loads(base64.b64decode(prop['value']))
+                return 'SKIN' in tex.get('textures', {})
+    except (ValueError, KeyError):
+        return None
+    return False
+
+
+def is_png(b):
+    return bool(b) and b[:4] == b'\x89PNG'
 
 
 def main():
@@ -80,10 +104,20 @@ def main():
                     uuid = json.loads(body).get('id')
                 time.sleep(0.3)
             png = get(HEAD.format(uuid or name)) if uuid else None
-            if png and png[:4] == b'\x89PNG':
+            is_steve = is_png(png) and hashlib.sha256(png).hexdigest() in STEVE
+            if is_steve:
+                # Minotar falls back to Steve when it can't get the skin; check with Mojang.
+                skin = has_skin(uuid)
+                time.sleep(0.3)
+                if skin:
+                    alt = get(FALLBACK.format(uuid))
+                    if is_png(alt):
+                        png, is_steve = alt, False
+                    else:
+                        png = None  # real skin but no head service has it: try again next run
+            if is_png(png):
                 checked = today
                 old_png = pathlib.Path(face).read_bytes() if have_face else None
-                is_steve = hashlib.sha256(png).hexdigest() in STEVE
                 had_real = old_png is not None and hashlib.sha256(old_png).hexdigest() not in STEVE
                 if png != old_png and not (is_steve and had_real):
                     with open(face, 'wb') as f:
