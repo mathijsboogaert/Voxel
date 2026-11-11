@@ -43,6 +43,27 @@ map.on('mousemove', (e) => {
 map.on('moveend zoomend mouseout', showCenter);
 showCenter();
 
+// When the tiles were last drawn, as a tag beside the position: "09/11 10:56" in Dutch time.
+const updated = byId('map-updated');
+const generated = tiles?.manifest.generated;
+if (generated) {
+  const part = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+      timeZone: 'Europe/Amsterdam',
+    })
+      .formatToParts(new Date(generated))
+      .map((p) => [p.type, p.value]),
+  );
+  updated.textContent = `${part.day}/${part.month} ${part.hour}:${part.minute}`;
+  updated.title = 'Map last updated';
+  updated.hidden = false;
+}
+
 /* ---- Search ------------------------------------------------------------------------- */
 
 let roster = [];

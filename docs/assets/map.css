@@ -170,8 +170,17 @@ body.map-page {
   padding: var(--space-1-5) var(--space-2-5);
   font: 600 var(--text-sm) / 1.385 var(--font-sans);
   font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
 }
-.mapinfo:empty {
+/* The "Updated 3 h ago" tag: when the map tiles were last drawn. */
+.mapinfo__updated {
+  padding: 0 var(--space-1-5);
+  border-width: var(--stroke-1);
+}
+.mapinfo__updated[hidden] {
   display: none;
 }
 
