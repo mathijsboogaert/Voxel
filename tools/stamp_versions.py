@@ -51,9 +51,8 @@ def write_if_changed(path, text):
         print('stamped', path.relative_to(DOCS.parent))
 
 
-def main():
-    # Scripts first, leaves before the scripts that import them, so each version covers its imports.
-    scripts = {p.name: p for p in (DOCS / 'js').glob('*.js')}
+def stamp_scripts(folder):
+    scripts = {p.name: p for p in folder.glob('*.js')}
     imports = {
         n: set(re.findall(r"""(?:from\s+|import\()\s*'\./([\w-]+\.js)""", p.read_text())) for n, p in scripts.items()
     }
@@ -64,10 +63,17 @@ def main():
             raise SystemExit(f'Scripts import each other in a circle: {sorted(set(scripts) - set(done))}')
         for name in ready:
             path = scripts[name]
-            text = stamp(path.read_text(), JS_IMPORT, lambda link: DOCS / 'js' / link[2:])
+            text = stamp(path.read_text(), JS_IMPORT, lambda link: folder / link[2:])
             text = stamp(text, JS_ASSET, lambda link: DOCS / link)
             write_if_changed(path, text)
             done.append(name)
+
+
+def main():
+    # Scripts first, leaves before the scripts that import them, so each version covers its imports.
+    # Each folder of scripts imports only from itself.
+    for folder in (DOCS / 'js', DOCS / 'news' / 'assets'):
+        stamp_scripts(folder)
 
     for page in DOCS.rglob('*.html'):
         text = stamp(page.read_text(), HTML_LINK, lambda link, page=page: (page.parent / link).resolve())

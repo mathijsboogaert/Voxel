@@ -1,0 +1,78 @@
+/* The full-screen viewer around the slides (news/<edition>/): buttons, hint and the tune-in screen. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #0e1528;
+  overflow: hidden;
+  font-family: Rubik, Arial, sans-serif;
+}
+#ui {
+  position: fixed;
+  right: 16px;
+  top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font:
+    14px Rubik,
+    sans-serif;
+  color: #f6efe3;
+  opacity: 0.35;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+#ui:hover,
+#ui:focus-within {
+  opacity: 1;
+}
+#ui button,
+#ui a {
+  font: inherit;
+  background: #16213e;
+  color: #f6efe3;
+  border: 2px solid #f6efe3;
+  padding: 4px 10px;
+  cursor: pointer;
+  text-decoration: none;
+}
+#tune {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 21, 40, 0.55);
+  z-index: 20;
+  cursor: pointer;
+}
+#tune.show {
+  display: flex;
+}
+#tune button {
+  font:
+    40px/1.2 Minecraft,
+    'Courier New',
+    monospace;
+  color: #f6efe3;
+  background: #c42b24;
+  border: 6px solid #f6efe3;
+  padding: 20px 44px;
+  cursor: pointer;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.35);
+}
+#hint {
+  position: fixed;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  font:
+    14px Rubik,
+    sans-serif;
+  color: #f6efe3;
+  background: #16213ecc;
+  padding: 6px 12px;
+  transition: opacity 1s;
+  z-index: 10;
+  pointer-events: none;
+}

@@ -68,6 +68,20 @@ ICONS = {
         ],
         {'a': K, 'r': '#8a3b2a', 'c': '#5e2a1e', 'p': '#e8dcc0', 'w': '#f0f0f0', 'f': '#a8a8a8', 'k': '#2a2a2a'},
     ),
+    # News: a newspaper page with a red picture, a headline and lines of text.
+    'news': (
+        [
+            'aaaaaaaa',
+            'appppppa',
+            'arrpkkpa',
+            'arrppppa',
+            'appppppa',
+            'akkkkkpa',
+            'appkkkpa',
+            'aaaaaaaa',
+        ],
+        {'a': K, 'p': '#f2e2c2', 'r': '#c8402f', 'k': '#7a6450'},
+    ),
     # Medal: the Voxel Badges logo, a gold medal with a white glint on a red ribbon.
     'medal': (
         [

@@ -1,0 +1,56 @@
+name: Build news
+
+# When an edition of Villager News is added or changed (docs/news/editions/*.json, for example uploaded
+# on GitHub after downloading it from the news editor), this gives it its own page at news/<slug>/ and
+# updates the archive list (tools/build_news.py), then commits that.
+
+on:
+  push:
+    paths:
+      - 'docs/news/editions/**'
+      - 'tools/build_news.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the edition pages
+        run: |
+          python3 tools/build_news.py
+          python3 tools/stamp_versions.py
+
+      - name: Commit
+        id: commit
+        run: |
+          git config user.name "voxel-news"
+          git config user.email "voxel-news@users.noreply.github.com"
+          git add -A docs/news
+          if git diff --cached --quiet; then
+            echo "Nothing to build."
+            echo "pushed=no" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Build news pages"
+            git pull --rebase --autostash
+            git push
+            echo "pushed=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pushes made with the built-in token don't always start a Pages build by themselves.
+      - name: Ask Pages to rebuild
+        if: steps.commit.outputs.pushed == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

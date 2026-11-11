@@ -15,6 +15,7 @@ the stats come from the server's own logs.
 | Shops   | `docs/shops/index.html`            | Every shop with its own icon, owners and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                                                                                                  |
 | Player  | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements                                                                                                                                            |
 | Editor  | `docs/editor.html`                 | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site                                                                                                                                        |
+| News    | `docs/news/index.html`             | Villager News: every edition of the news show, each playable at `news/<slug>/`. Written in `docs/news/editor/` (below). Not in the menu yet                                                                                                |
 
 `generate.sh` (further down) is the original one-off PNG renderer of the seed, kept for reference.
 
@@ -167,6 +168,35 @@ The homepage news section needs no upkeep. It builds itself from the data:
 
 An `event` shows a live countdown to `at` (write it with a UTC offset, or `Z`). The featured card is the first item with `"pin": true`, otherwise the
 nearest upcoming event, otherwise the newest item. An event disappears a day after it starts. Other `type` values: `note`, `achievement`, `shop`.
+
+## Villager News
+
+The weekly news show lives at `/news/` (not in the site menu yet; add it to `MENU` in `tools/sync_header.py` when it's ready): the newest edition big, older ones below. Every edition has its own link,
+`/news/<slug>/`, that plays it full screen like a slide show (arrow keys, click or swipe; `#slide-3` opens page 3;
+Discord shows the title and summary as a preview). `/villager-news/` sends people to the first edition.
+
+**Writing an edition** happens in the news editor at `/news/editor/` (linked at the bottom of the news page):
+
+- **Pages:** add one from a layout (cover, breaking news, event, two shops, list with icons, rules, new arrival,
+  photo, weather, sign-off, blank), duplicate, delete, or drag the thumbnails to reorder. _Save as template_ keeps
+  a page as your own layout (in that browser).
+- **On a page:** the sign text, the villager (pick one, mirror, resize, drag it on the slide, or upload your own
+  picture), slide or fade in, news bar on or off, and the content blocks: headline, paragraph, big line, columns,
+  callout, icon list, rules list and image. Icons come straight from the site's shops and badges, or upload one.
+  Text takes `**bold**` and `*italic*`. Click anything on the slide to edit it; a page that is too full turns red.
+- **Edition tab:** title, edition name (the cover badge), date, link name and a summary. **News bar tab:** the
+  label and the headlines, one per line.
+- Work is kept as a draft in the browser, with undo (Ctrl+Z). **Play** shows the draft full screen.
+
+**Publishing:** _Publish_ downloads `<slug>.json`. Upload it to `docs/news/editions/` (on GitHub: Add file, Upload
+files). The _Build news_ workflow (`.github/workflows/news.yml`) then runs `tools/build_news.py`, which writes the
+edition's page and `docs/news/editions.json`, and commits that; a minute later it is live. Replacing a file updates
+the edition; deleting it removes its page. Run `python3 tools/build_news.py && python3 tools/stamp_versions.py`
+yourself to do the same locally. Images uploaded in the editor are stored inside the JSON, scaled down.
+
+The slides are drawn in the browser from the JSON (`docs/news/assets/news.js`, shared by the viewer, the archive
+and the editor). The villager pictures, the quartz wall, the font and the intro jingle are in `docs/news/assets/`.
+To offer another villager, add its PNG to `docs/news/assets/villagers/` and a line to `VILLAGERS` in `news.js`.
 
 ## Live stats
 

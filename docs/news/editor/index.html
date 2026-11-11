@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>News editor · Voxel</title>
+    <link rel="icon" href="../../assets/favicon.png?v=ad829b4b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600&family=Fraunces:opsz,wght@9..144,600&family=Rubik:wght@400..700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="preload" href="../assets/Minecraft.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="../../assets/brand.css?v=f4ed1d87" />
+    <link rel="stylesheet" href="../assets/news.css?v=bf0013b6" />
+    <link rel="stylesheet" href="../assets/editor.css?v=d6857f11" />
+  </head>
+  <body class="ne">
+    <header class="ne-bar">
+      <a class="ne-brand" href="../" aria-label="Back to Villager News">
+        <img src="../../assets/logo-mark-small.png?v=800d40a4" alt="" width="28" height="28" />
+        <span>News editor</span>
+      </a>
+      <input class="ne-title" id="title" type="text" placeholder="Edition title" aria-label="Edition title" />
+      <span class="ne-status" id="status" aria-live="polite"></span>
+      <div class="ne-bar__actions">
+        <button
+          class="ne-btn ne-btn--icon"
+          id="undo"
+          type="button"
+          aria-label="Undo"
+          data-tip="Undo (Ctrl+Z)"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 14L4 9l5-5" />
+            <path d="M4 9h11a5 5 0 0 1 0 10h-3" />
+          </svg>
+        </button>
+        <button
+          class="ne-btn ne-btn--icon"
+          id="redo"
+          type="button"
+          aria-label="Redo"
+          data-tip="Redo (Ctrl+Shift+Z)"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 14l5-5-5-5" />
+            <path d="M20 9H9a5 5 0 0 0 0 10h3" />
+          </svg>
+        </button>
+        <button class="ne-btn" id="open" type="button">Open</button>
+        <button class="ne-btn" id="play" type="button">Play</button>
+        <button class="ne-btn ne-btn--primary" id="publish" type="button">Publish</button>
+      </div>
+    </header>
+
+    <div class="ne-main">
+      <aside class="ne-pages" aria-label="Pages">
+        <div class="ne-pages__head">
+          <h2>Pages</h2>
+          <button class="ne-btn ne-btn--small" id="addPage" type="button" aria-haspopup="true">
+            + Add page
+          </button>
+        </div>
+        <ol class="ne-thumbs" id="thumbs"></ol>
+      </aside>
+
+      <section class="ne-canvas" aria-label="Preview">
+        <div class="ne-canvas__box" id="canvasBox">
+          <div class="vn-stage" id="stage"></div>
+        </div>
+        <p class="ne-warn" id="warn" hidden>
+          This page is too full: the bottom gets cut off. Shorten the text or move some of it to a new page.
+        </p>
+        <p class="ne-hint">Click text on the slide to edit it. Drag the villager to move it.</p>
+      </section>
+
+      <aside class="ne-side" aria-label="Settings">
+        <div class="ne-tabs" role="tablist">
+          <button role="tab" id="tab-page" aria-selected="true" aria-controls="panel-page">Page</button>
+          <button role="tab" id="tab-edition" aria-selected="false" aria-controls="panel-edition">
+            Edition
+          </button>
+          <button role="tab" id="tab-ticker" aria-selected="false" aria-controls="panel-ticker">
+            News bar
+          </button>
+        </div>
+        <div class="ne-panel" role="tabpanel" id="panel-page" aria-labelledby="tab-page"></div>
+        <div class="ne-panel" role="tabpanel" id="panel-edition" aria-labelledby="tab-edition" hidden></div>
+        <div class="ne-panel" role="tabpanel" id="panel-ticker" aria-labelledby="tab-ticker" hidden></div>
+      </aside>
+    </div>
+
+    <div class="ne-menu" id="menu" hidden></div>
+    <dialog class="ne-dialog" id="dialog"></dialog>
+    <input type="file" id="file" hidden />
+
+    <script type="module" src="../assets/editor.js?v=e389f0d9"></script>
+  </body>
+</html>
