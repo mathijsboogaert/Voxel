@@ -1933,5 +1933,32 @@
     "owners": [
       "ilyAfterlife"
     ]
+  },
+  {
+    "points": [
+      {
+        "x": -722,
+        "z": 826
+      },
+      {
+        "x": -874,
+        "z": 826
+      },
+      {
+        "x": -874,
+        "z": 983
+      },
+      {
+        "x": -722,
+        "z": 983
+      }
+    ],
+    "label": "David & Nynke",
+    "color": "#ff4d4f",
+    "hideLabel": false,
+    "owners": [
+      "FriendOfTyse",
+      "chimmochi_"
+    ]
   }
 ]
