@@ -15,7 +15,7 @@ the stats come from the server's own logs.
 | Shops   | `docs/shops/index.html`            | Every shop with its own icon, owners and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                                                                                                  |
 | Player  | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements                                                                                                                                            |
 | Editor  | `docs/editor.html`                 | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site                                                                                                                                        |
-| News    | `docs/news/index.html`             | Villager News: every edition of the news show, each playable at `news/<slug>/`. Written in `docs/news/editor/` (below)                                                                                                                     |
+| News    | `docs/news/index.html`             | Villager News: every edition of the news show, each playable at `news/<slug>/`. Written in `docs/news/editor/` (below). Not in the menu yet                                                                                                |
 
 `generate.sh` (further down) is the original one-off PNG renderer of the seed, kept for reference.
 
@@ -171,7 +171,7 @@ nearest upcoming event, otherwise the newest item. An event disappears a day aft
 
 ## Villager News
 
-The weekly news show lives at `/news/`: the newest edition big, older ones below. Every edition has its own link,
+The weekly news show lives at `/news/` (not in the site menu yet; add it to `MENU` in `tools/sync_header.py` when it's ready): the newest edition big, older ones below. Every edition has its own link,
 `/news/<slug>/`, that plays it full screen like a slide show (arrow keys, click or swipe; `#slide-3` opens page 3;
 Discord shows the title and summary as a preview). `/villager-news/` sends people to the first edition.
 

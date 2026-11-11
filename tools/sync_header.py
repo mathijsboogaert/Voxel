@@ -24,8 +24,9 @@ MENU = [
     ('players', 'players/', 'steve', 'Players'),
     ('shops', 'shops/', 'diamond', 'Shops'),
     ('badges', 'badges/', 'medal', 'Badges'),
-    ('news', 'news/', 'news', 'News'),
 ]
+# Villager News (news/) has its own page with this header, but stays out of the menu until it is finished.
+# To show it: add ('news', 'news/', 'news', 'News') above.
 # The editor isn't linked from the site, but on its own page the menu shows it as the current page.
 EDITOR = ('editor', 'editor.html', 'editor', 'Editor')
 
