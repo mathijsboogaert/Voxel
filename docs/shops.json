@@ -1162,7 +1162,15 @@
       "EchoinSilence"
     ],
     "added": "2026-11-07T22:47:40.000Z",
-    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4XmNgoCXQkJD4D8Jk2QHS+ObZNTDGZwgjNtNBGo6c28fwwCsMLh3z4g3DjRcvMNQz4XIesuYDbz7hUsbAgktGYdsquFQCAwPDHCMnrEpxGkCsC3B6gVgwDLyANR2AAHriwZYGCIKKEIP/IExQITbw604AWCPIgC89GqQZgqwB5gKYgQQBukJkL2BzCQDwmkhIW/mevAAAAABJRU5ErkJggg=="
+    "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4XmNgoCXQkJD4D8Jk2QHS+ObZNTDGZwgjNtNBGo6c28fwwCsMLh3z4g3DjRcvMNQz4XIesuYDbz7hUsbAgktGYdsquFQCAwPDHCMnrEpxGkCsC3B6gVgwDLyANR2AAHriwZYGCIKKEIP/IExQITbw604AWCPIgC89GqQZgqwB5gKYgQQBukJkL2BzCQDwmkhIW/mevAAAAABJRU5ErkJggg==",
+    "products": [
+      {
+        "item": "firework_rocket",
+        "amount": 64,
+        "price": 1,
+        "priceItem": "diamond"
+      }
+    ]
   },
   {
     "x": 15,
