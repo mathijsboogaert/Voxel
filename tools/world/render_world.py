@@ -36,6 +36,7 @@ import argparse
 import array
 import collections
 import gzip
+import io
 import json
 import math
 import os
@@ -575,14 +576,31 @@ def build_tiles(region_pngs, detail, out_dir, box, source_label):
             os.makedirs(os.path.dirname(path), exist_ok=True)
             jobs.append((path, tile))
             keep.add(os.path.abspath(path))
+    def write(job):
+        """Writes a tile only when its bytes differ from the file already there. True if it wrote."""
+        path, tile = job
+        buf = io.BytesIO()
+        tile.save(buf, 'WEBP', lossless=True, quality=100, method=4)
+        data = buf.getvalue()
+        try:
+            with open(path, 'rb') as f:
+                if f.read() == data:
+                    return False
+        except OSError:
+            pass
+        with open(path, 'wb') as f:
+            f.write(data)
+        return True
+
     with ThreadPoolExecutor(os.cpu_count() or 4) as ex:
-        list(ex.map(lambda pt: pt[1].save(pt[0], 'WEBP', lossless=True, quality=100, method=4), jobs))
+        redrawn = sum(ex.map(write, jobs))
     size = sum(os.path.getsize(p) for p in keep)
     for root, _, files in os.walk(out_dir):
         for fn in files:
             p = os.path.abspath(os.path.join(root, fn))
             if fn.endswith(('.png', '.webp')) and p not in keep:
                 os.remove(p)
+                redrawn += 1
     for root, _dirs, _files in os.walk(out_dir, topdown=False):  # tidy empty folders
         if root != out_dir and not os.listdir(root):
             os.rmdir(root)
@@ -600,7 +618,8 @@ def build_tiles(region_pngs, detail, out_dir, box, source_label):
         source=source_label,
         tiles={str(z): sorted([x, y] for (x, y) in tiles) for z, tiles in pyramid.items()},
     )
-    # Only rewrite the manifest when the tiles changed, so a night without changes makes no commit.
+    # Only rewrite the manifest when the tiles changed (one redrawn, added or removed), so a night
+    # without changes makes no commit. 'generated' is what the map shows as its last update.
     path = os.path.join(out_dir, 'manifest.json')
     try:
         with open(path) as f:
@@ -610,7 +629,7 @@ def build_tiles(region_pngs, detail, out_dir, box, source_label):
     same = {k: v for k, v in old.items() if k not in ('generated', 'source')} == {
         k: v for k, v in manifest.items() if k not in ('generated', 'source')
     }
-    if not same:
+    if redrawn or not same:
         with open(path, 'w') as f:
             json.dump(manifest, f, separators=(',', ':'))
     return sum(len(v) for v in pyramid.values()), size, time.time() - t0, pyramid
