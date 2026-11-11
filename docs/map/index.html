@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="../assets/brand.css?v=f4ed1d87" />
     <link rel="stylesheet" href="../assets/site.css?v=72c9b4bc" />
-    <link rel="stylesheet" href="../assets/map.css?v=fe2ab4a0" />
+    <link rel="stylesheet" href="../assets/map.css?v=d002568c" />
   </head>
   <body class="map-page">
     <a class="skip" href="#main">Skip to content</a>
@@ -134,7 +134,10 @@
         </button>
       </div>
 
-      <p class="mapinfo" id="mapinfo" aria-live="off">Loading the map</p>
+      <p class="mapinfo" aria-live="off">
+        <span id="mapinfo">Loading the map</span>
+        <span class="tag tag--teal mapinfo__updated" id="map-updated" hidden></span>
+      </p>
 
       <div class="msearch" id="msearch" role="search">
         <div class="msearch__bar">
@@ -159,6 +162,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script type="module" src="../js/nav.js?v=0aa91664"></script>
-    <script type="module" src="../js/map-page.js?v=7be33e91"></script>
+    <script type="module" src="../js/map-page.js?v=4853350b"></script>
   </body>
 </html>

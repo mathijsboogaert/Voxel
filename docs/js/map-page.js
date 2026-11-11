@@ -8,7 +8,7 @@ import {
   DETAIL_ZOOM,
   DEFAULT_ZOOM,
 } from './map-core.js?v=6a906fb8';
-import { el, byId, faceEl, playerHref, colorDot, getJSON, SPAWN } from './ui.js?v=4d932c1e';
+import { el, byId, faceEl, playerHref, colorDot, getJSON, relTime, SPAWN } from './ui.js?v=4d932c1e';
 import { loadItems, findShops, matchItems, shopIconEl } from './shops-core.js?v=6be4719b';
 import { mapSearch } from './map-search.js?v=d6d0b003';
 
@@ -42,6 +42,21 @@ map.on('mousemove', (e) => {
 });
 map.on('moveend zoomend mouseout', showCenter);
 showCenter();
+
+// When the tiles were last drawn, as a tag beside the position ("Updated 3 h ago"), full date on hover.
+const updated = byId('map-updated');
+const generated = tiles?.manifest.generated;
+if (generated) {
+  const showUpdated = () => (updated.textContent = 'Updated ' + relTime(generated));
+  updated.title = new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Europe/Amsterdam',
+  }).format(new Date(generated));
+  showUpdated();
+  setInterval(showUpdated, 60_000);
+  updated.hidden = false;
+}
 
 /* ---- Search ------------------------------------------------------------------------- */
 
