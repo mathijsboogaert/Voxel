@@ -133,6 +133,12 @@
       "badges": {
         "shopkeeper": 1
       }
+    },
+    {
+      "name": "Lisnee2",
+      "badges": {
+        "bridge_builder": 1
+      }
     }
   ]
 }

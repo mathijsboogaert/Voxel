@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-12T18:28:30Z",
+  "generated_at": "2026-11-12T23:52:55Z",
   "players": {
     "BBGPlays": {
-      "active": 36235,
+      "active": 40311,
       "afk": 0
     },
     "Cute_Iris": {
@@ -14,12 +14,12 @@
       "afk": 7223
     },
     "EchoinSilence": {
-      "active": 479459,
+      "active": 487646,
       "afk": 300185
     },
     "EmrysPendragon": {
-      "active": 389031,
-      "afk": 285511
+      "active": 397756,
+      "afk": 291942
     },
     "FrTylerFr": {
       "active": 107492,
@@ -42,11 +42,11 @@
       "afk": 1001
     },
     "Lisnee2": {
-      "active": 173481,
+      "active": 190685,
       "afk": 10057
     },
     "Mathi_Craft": {
-      "active": 253906,
+      "active": 263459,
       "afk": 273369
     },
     "Mister_Shade": {
@@ -54,19 +54,19 @@
       "afk": 795
     },
     "Noot_Noot__": {
-      "active": 21863,
+      "active": 27289,
       "afk": 0
     },
     "Pantless_Hobo": {
-      "active": 55763,
-      "afk": 1083
+      "active": 63879,
+      "afk": 3500
     },
     "Roefus": {
       "active": 122856,
       "afk": 679
     },
     "Senna_Roereitje": {
-      "active": 22490,
+      "active": 29135,
       "afk": 0
     },
     "_Farren": {
@@ -86,15 +86,15 @@
       "afk": 601
     },
     "ilyAfterlife": {
-      "active": 118203,
-      "afk": 12082
+      "active": 129888,
+      "afk": 12942
     },
     "kayushka": {
-      "active": 56730,
+      "active": 62799,
       "afk": 808
     },
     "xXkorniszon2137": {
-      "active": 14142,
+      "active": 21681,
       "afk": 0
     }
   }
