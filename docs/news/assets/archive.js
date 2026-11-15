@@ -1,6 +1,6 @@
 // The Villager News archive (news/): the newest edition large with its cover, the rest as a grid.
 // The list comes from news/editions.json (tools/build_news.py); each cover is drawn live from its edition.
-import { renderPage, layoutSlide, fontsReady, fit, loadEdition, loadIndex } from './news.js?v=4af17cf6';
+import { renderPage, layoutSlide, fontsReady, fit, loadEdition, loadIndex } from './news.js?v=bf52e32f';
 
 const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3l15 9-15 9z"/></svg>';
 const esc = (s) =>

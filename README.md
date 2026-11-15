@@ -180,10 +180,11 @@ Discord shows the title and summary as a preview). `/villager-news/` sends peopl
 - **Pages:** add one from a layout (cover, breaking news, event, two shops, list with icons, rules, new arrival,
   photo, weather, sign-off, blank), duplicate, delete, or drag the thumbnails to reorder. _Save as template_ keeps
   a page as your own layout (in that browser).
-- **On a page:** the sign text, the villager (pick one, mirror, resize, drag it on the slide, or upload your own
-  picture), slide or fade in, news bar on or off, and the content blocks: headline, paragraph, big line, columns,
+- **On a page:** the sign text, the villager (pick one, mirror, resize, drag it on the slide, scroll on it to resize, or upload or
+  drop your own picture of any size: see-through edges are cropped off and it lands in the corner at villager size), slide or fade in, news bar on or off, and the content blocks: headline, paragraph, big line, columns,
   callout, icon list, rules list and image. Icons come straight from the site's shops and badges, or upload one.
-  Text takes `**bold**` and `*italic*`. Click anything on the slide to edit it; a page that is too full turns red.
+  Text takes `**bold**`, `*italic*` and the 16 Minecraft colours (`{gold}…{/}`, or select text and press the A button);
+  a whole block can get a colour too. Click anything on the slide to edit it; a page that is too full turns red.
 - **Edition tab:** title, edition name (the cover badge), date, link name and a summary. **News bar tab:** the
   label and the headlines, one per line.
 - Work is kept as a draft in the browser, with undo (Ctrl+Z). **Play** shows the draft full screen.

@@ -29,7 +29,51 @@ export const VILLAGERS = [
   { src: 'assets/villagers/villager.png', name: 'Arms crossed', x: 1420, y: 603, w: 400 },
 ];
 
+/** The newsroom colours, tuned for the light card. */
 export const COLORS = { red: 'Red', green: 'Green', ink: 'Ink', gold: 'Gold' };
+
+/** The 16 Minecraft text colours, with the darker shadow the game draws under them. A block colour is
+ *  stored as 'mc-<id>'; inside text, {<id>}…{/} colours a part (a new colour or {/} ends the last one). */
+export const MC_COLORS = [
+  { id: 'black', code: '0', name: 'Black', hex: '#000000', shadow: '#000000' },
+  { id: 'dark_blue', code: '1', name: 'Dark Blue', hex: '#0000AA', shadow: '#00002A' },
+  { id: 'dark_green', code: '2', name: 'Dark Green', hex: '#00AA00', shadow: '#002A00' },
+  { id: 'dark_aqua', code: '3', name: 'Dark Aqua', hex: '#00AAAA', shadow: '#002A2A' },
+  { id: 'dark_red', code: '4', name: 'Dark Red', hex: '#AA0000', shadow: '#2A0000' },
+  { id: 'dark_purple', code: '5', name: 'Dark Purple', hex: '#AA00AA', shadow: '#2A002A' },
+  { id: 'gold', code: '6', name: 'Gold', hex: '#FFAA00', shadow: '#2A2A00' },
+  { id: 'gray', code: '7', name: 'Gray', hex: '#AAAAAA', shadow: '#2A2A2A' },
+  { id: 'dark_gray', code: '8', name: 'Dark Gray', hex: '#555555', shadow: '#151515' },
+  { id: 'blue', code: '9', name: 'Blue', hex: '#5555FF', shadow: '#15153F' },
+  { id: 'green', code: 'a', name: 'Green', hex: '#55FF55', shadow: '#153F15' },
+  { id: 'aqua', code: 'b', name: 'Aqua', hex: '#55FFFF', shadow: '#153F3F' },
+  { id: 'red', code: 'c', name: 'Red', hex: '#FF5555', shadow: '#3F1515' },
+  { id: 'light_purple', code: 'd', name: 'Light Purple', hex: '#FF55FF', shadow: '#3F153F' },
+  { id: 'yellow', code: 'e', name: 'Yellow', hex: '#FFFF55', shadow: '#3F3F15' },
+  { id: 'white', code: 'f', name: 'White', hex: '#FFFFFF', shadow: '#3F3F3F' },
+];
+const MC = Object.fromEntries(MC_COLORS.map((c) => [c.id, c]));
+const COLOR_TAG = new RegExp(`\\{(/|${MC_COLORS.map((c) => c.id).join('|')})\\}`, 'g');
+
+/** Inline style for a Minecraft colour (so it works without the stylesheet too). */
+export function mcStyle(id) {
+  const c = MC[id];
+  return c ? `color:${c.hex};text-shadow:0.09em 0.09em 0 ${c.shadow}` : '';
+}
+
+/** Splits text on {colour}…{/} tags, formats each part with fmt and wraps the coloured ones in a span. */
+export function colorize(text, fmt = (t) => esc(t)) {
+  const parts = String(text ?? '').split(COLOR_TAG);
+  let out = fmt(parts[0]);
+  let open = false;
+  for (let i = 1; i < parts.length; i += 2) {
+    if (open) out += '</span>';
+    open = parts[i] !== '/';
+    if (open) out += `<span class="vn-mc-c" style="${mcStyle(parts[i])}">`;
+    out += fmt(parts[i + 1]);
+  }
+  return open ? out + '</span>' : out;
+}
 
 const esc = (s) =>
   String(s ?? '').replace(
@@ -39,16 +83,19 @@ const esc = (s) =>
 
 /** Plain text with **bold**, *italic* and line breaks, as safe HTML. */
 export function inline(text) {
-  return esc(String(text ?? '').replace(/\\\*/g, '\u0001'))
-    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-    .replace(/\*(.+?)\*/g, '<i>$1</i>')
-    .replace(/\n/g, '<br>')
-    .replace(/\u0001/g, '*');
+  return colorize(String(text ?? '').replace(/\\\*/g, '\u0001'), (t) =>
+    esc(t)
+      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+      .replace(/\*(.+?)\*/g, '<i>$1</i>')
+      .replace(/\n/g, '<br>')
+      .replace(/\u0001/g, '*'),
+  );
 }
 
 /** Text without markup, for speaker notes and link previews. */
 export function plain(text) {
   return String(text ?? '')
+    .replace(COLOR_TAG, '')
     .replace(/\\\*/g, '\u0001')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
@@ -120,9 +167,11 @@ export function planks(w, h, u = 12, seed = '') {
 function textBlock(b) {
   const kind = b.type === 'big' ? 'vn-big vn-mc' : 'vn-' + b.type;
   const cls = [kind, 'vn-' + (b.size || 'm')];
-  if (b.color) cls.push('vn-c-' + b.color);
+  if (b.color && !MC[b.color.slice(3)]) cls.push('vn-c-' + b.color);
   if (b.align === 'center') cls.push('vn-center');
-  return el('p', cls.join(' '), inline(b.text));
+  const p = el('p', cls.join(' '), inline(b.text));
+  if (b.color && MC[b.color.slice(3)]) p.style.cssText = mcStyle(b.color.slice(3));
+  return p;
 }
 
 const BLOCKS = {
@@ -225,7 +274,7 @@ function storySlide(page, edition, base) {
   card.appendChild(body);
   s.appendChild(card);
   if (page.sign) {
-    const sign = el('div', 'vn-sign', esc(page.sign));
+    const sign = el('div', 'vn-sign', colorize(page.sign));
     sign.dataset.sign = '';
     s.appendChild(sign);
   }
@@ -240,7 +289,7 @@ export function renderPage(page, edition, { base = '' } = {}) {
   const front = el('div', 'vn-front');
   const v = page.villager;
   if (v && v.src) {
-    const img = el('img', 'vn-villager' + (v.flip ? ' flip' : ''));
+    const img = el('img', 'vn-villager' + (v.flip ? ' flip' : '') + (v.pixel ? ' pixel' : ''));
     img.src = resolve(v.src, base);
     img.alt = '';
     img.style.cssText = `left:${+v.x || 0}px;top:${+v.y || 0}px;width:${+v.w || 440}px`;
@@ -296,9 +345,17 @@ export function overflows(slide) {
 /** The news bar: a red label and the items running past, twice so the loop is seamless. */
 export function renderTicker(ticker = {}) {
   const t = el('div', 'vn-ticker');
-  const items = (ticker.items || []).map((s) => plain(s)).filter(Boolean);
-  const run = items.map((s) => esc(s) + '<i></i>').join('');
-  t.innerHTML = `<p class="vn-ticker__lbl vn-mc">${esc(ticker.label || 'Villager News')}</p><div class="vn-ticker__track"><div class="vn-ticker__run vn-mc"><span>${run}</span><span>${run}</span></div></div>`;
+  const flat = (x) =>
+    esc(
+      x
+        .replace(/\\\*/g, '\u0001')
+        .replace(/\*\*?(.+?)\*\*?/g, '$1')
+        .replace(/\u0001/g, '*')
+        .replace(/\s+/g, ' '),
+    );
+  const items = (ticker.items || []).filter((s) => plain(s));
+  const run = items.map((s) => colorize(s.trim(), flat) + '<i></i>').join('');
+  t.innerHTML = `<p class="vn-ticker__lbl vn-mc">${colorize(ticker.label || 'Villager News')}</p><div class="vn-ticker__track"><div class="vn-ticker__run vn-mc"><span>${run}</span><span>${run}</span></div></div>`;
   return t;
 }
 

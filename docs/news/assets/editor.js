@@ -15,7 +15,8 @@ import {
   resolve,
   VILLAGERS,
   COLORS,
-} from './news.js?v=4af17cf6';
+  MC_COLORS,
+} from './news.js?v=bf52e32f';
 
 const BASE = '../'; // the editor is at news/editor/, edition paths are relative to news/
 const SITE_ROOT = '../../';
@@ -530,6 +531,28 @@ function dragVillager(img) {
     img.addEventListener('pointerup', up, { once: true });
     img.addEventListener('pointercancel', up, { once: true });
   });
+  // Scroll on it to resize, keeping its feet where they are.
+  img.addEventListener(
+    'wheel',
+    (e) => {
+      e.preventDefault();
+      const v = page().villager;
+      const w0 = +v.w || img.offsetWidth;
+      const h0 = img.offsetHeight || w0;
+      const w = Math.round(Math.max(60, Math.min(1600, w0 * (e.deltaY < 0 ? 1.06 : 1 / 1.06))));
+      const hn = (h0 * w) / w0;
+      change(
+        () =>
+          Object.assign(v, {
+            w,
+            x: Math.round((+v.x || 0) + (w0 - w) / 2),
+            y: Math.round((+v.y || 0) + h0 - hn),
+          }),
+        { key: 'vsize', panel: true },
+      );
+    },
+    { passive: false },
+  );
 }
 
 // ---- Page thumbnails -----------------------------------------------------------------
@@ -765,6 +788,100 @@ function readImage(file, max = 1600) {
     fr.readAsDataURL(file);
   });
 }
+/** Reads a villager picture: crops the see-through edges away (so any canvas size works), keeps small pixel art
+ *  pixel for pixel and scales big pictures down to 900 px. Gives { src, ar, pixel }. */
+function readVillager(file) {
+  return new Promise((ok, fail) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onerror = () => (URL.revokeObjectURL(url), fail(new Error('Not an image')));
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const w = img.naturalWidth;
+      const hh = img.naturalHeight;
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = hh;
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0);
+      let x0 = w,
+        y0 = hh,
+        x1 = -1,
+        y1 = -1;
+      try {
+        const d = g.getImageData(0, 0, w, hh).data;
+        for (let y = 0; y < hh; y++)
+          for (let x = 0; x < w; x++)
+            if (d[(y * w + x) * 4 + 3] > 8) {
+              if (x < x0) x0 = x;
+              if (x > x1) x1 = x;
+              if (y < y0) y0 = y;
+              if (y > y1) y1 = y;
+            }
+      } catch {
+        /* keep the whole picture */
+      }
+      if (x1 < 0) [x0, y0, x1, y1] = [0, 0, w - 1, hh - 1];
+      const cw = x1 - x0 + 1;
+      const ch = y1 - y0 + 1;
+      const pixel = Math.max(cw, ch) <= 256;
+      const k = pixel ? 1 : Math.min(1, 900 / Math.max(cw, ch));
+      const out = document.createElement('canvas');
+      out.width = Math.round(cw * k);
+      out.height = Math.round(ch * k);
+      const og = out.getContext('2d');
+      og.imageSmoothingEnabled = !pixel;
+      og.drawImage(c, x0, y0, cw, ch, 0, 0, out.width, out.height);
+      const webp = pixel ? '' : out.toDataURL('image/webp', 0.9);
+      ok({
+        src: webp.startsWith('data:image/webp') ? webp : out.toDataURL('image/png'),
+        ar: +(cw / ch).toFixed(4),
+        pixel,
+      });
+    };
+    img.src = url;
+  });
+}
+
+/** Where a picture of this shape stands by default: about as big as the built-in villagers, feet on the news bar,
+ *  in the bottom right corner. */
+function fitVillager(ar) {
+  const w = Math.round(Math.min(640, 500 * (ar || 0.9)));
+  const hgt = w / (ar || 0.9);
+  return { x: Math.round(1850 - w), y: Math.round(1060 - hgt), w };
+}
+
+/** The pictures uploaded as a villager anywhere in this edition, so another page can use them again. */
+const uploaded = []; // pictures uploaded in this session, also after they were swapped out again
+function ownVillagers() {
+  const seen = new Map();
+  for (const u of uploaded) seen.set(u.src, u);
+  for (const pg of ed.pages)
+    if (pg.villager?.src && !VILLAGERS.some((x) => x.src === pg.villager.src) && !seen.has(pg.villager.src))
+      seen.set(pg.villager.src, {
+        src: pg.villager.src,
+        ar: pg.villager.ar,
+        pixel: pg.villager.pixel || undefined,
+      });
+  return [...seen.values()];
+}
+
+async function useVillagerFile(p, file) {
+  if (!file) return;
+  let pic = null;
+  try {
+    if (file.type.startsWith('image/')) pic = await readVillager(file);
+  } catch {
+    /* not an image */
+  }
+  if (!pic) return status('That file isn’t an image.');
+  const { src, ar, pixel } = pic;
+  uploaded.push({ src, ar, pixel: pixel || undefined });
+  change(() => (p.villager = { src, ar, pixel: pixel || undefined, ...fitVillager(ar), flip: false }), {
+    panel: true,
+  });
+}
+
 function pickFile(accept = 'image/*') {
   return new Promise((ok) => {
     const f = $('file');
@@ -859,7 +976,13 @@ function iconField(value, onPick) {
 // ---- Form fields -----------------------------------------------------------------------------
 
 let fieldN = 0;
-function textField(label, value, onInput, { rows = 0, hint = '', key, id, placeholder = '' } = {}) {
+let colorFields = true; // text fields get a colour button (not on the Edition tab: those never show on a slide)
+function textField(
+  label,
+  value,
+  onInput,
+  { rows = 0, hint = '', key, id, placeholder = '', colors = colorFields } = {},
+) {
   const fid = id || 'f' + ++fieldN;
   const input = rows
     ? h('textarea', { id: fid, rows, placeholder })
@@ -871,8 +994,79 @@ function textField(label, value, onInput, { rows = 0, hint = '', key, id, placeh
     { class: 'ne-field' },
     label ? h('label', { for: fid, class: 'ne-label' }, label) : null,
     input,
-    hint ? h('small', {}, hint) : null,
+    colors
+      ? h('div', { class: 'ne-field__foot' }, colorButton(input), hint ? h('small', {}, hint) : null)
+      : hint
+        ? h('small', {}, hint)
+        : null,
   );
+}
+
+const TAG = new RegExp(`\\{(/|${MC_COLORS.map((c) => c.id).join('|')})\\}`, 'g');
+const swatch = (c) => h('span', { class: 'ne-swatch', style: `background:${c}` });
+
+/** The Minecraft colours as a grid of swatches in the open menu. */
+function swatchGrid(m, current, onPick) {
+  m.append(
+    h(
+      'div',
+      { class: 'ne-swatches' },
+      MC_COLORS.map((c) =>
+        h('button', {
+          type: 'button',
+          title: c.name,
+          'aria-label': c.name,
+          'aria-pressed': String(current === c.id),
+          style: `background:${c.hex}`,
+          onclick: () => (hideMenu(), onPick(c.id)),
+        }),
+      ),
+    ),
+  );
+}
+
+/** A button that colours the selected text of a field: wraps it in {colour}…{/}. */
+function colorButton(input) {
+  const btn = h('button', {
+    type: 'button',
+    class: 'ne-colorbtn',
+    'aria-haspopup': 'true',
+    title: 'Colour the selected text',
+    'aria-label': 'Colour the selected text',
+    html: '<b>A</b><i></i>',
+  });
+  btn.onclick = () => {
+    const a = input.selectionStart ?? input.value.length;
+    const z = input.selectionEnd ?? a;
+    const apply = (val, s0, s1) => {
+      input.value = val;
+      input.focus();
+      input.setSelectionRange(s0, s1);
+      input.dispatchEvent(new Event('input'));
+    };
+    showMenu(btn, (m) => {
+      m.append(h('h4', {}, a === z ? 'Colour from the cursor' : 'Colour the selection'));
+      swatchGrid(m, null, (id) => {
+        const v = input.value;
+        const open = `{${id}}`;
+        const mid = v.slice(a, z).replace(TAG, '');
+        apply(v.slice(0, a) + open + mid + '{/}' + v.slice(z), a + open.length, a + open.length + mid.length);
+      });
+      m.append(
+        menuItem(
+          'No colour',
+          a === z ? 'Removes every colour in this field' : 'Removes colours from the selection',
+          () => {
+            const v = input.value;
+            if (a === z) return apply(v.replace(TAG, ''), 0, 0);
+            const mid = v.slice(a, z).replace(TAG, '');
+            apply(v.slice(0, a) + '{/}' + mid + v.slice(z), a + 3, a + 3 + mid.length);
+          },
+        ),
+      );
+    });
+  };
+  return btn;
 }
 function seg(options, value, onPick, label) {
   return h(
@@ -910,7 +1104,7 @@ const section = (title, ...kids) =>
     title ? h('div', { class: 'ne-section__head' }, h('h3', {}, title)) : null,
     ...kids,
   );
-const MARKUP = 'Use **bold**, *italic* and Enter for a new line.';
+const MARKUP = 'Select text and press A to colour it. **bold**, *italic*, Enter for a new line.';
 
 // ---- Page panel -------------------------------------------------------------------------------
 
@@ -1011,31 +1205,54 @@ function renderPanel() {
         h('img', { src: resolve(vl.src, BASE), alt: '' }),
       ),
     ),
-    v && !VILLAGERS.some((x) => x.src === v.src)
-      ? h(
-          'button',
-          { type: 'button', 'aria-pressed': 'true', title: 'Your own picture' },
-          h('img', { src: resolve(v.src, BASE), alt: '' }),
-        )
-      : null,
+    ownVillagers().map((o) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          title: 'Your own picture',
+          'aria-label': 'Your own picture',
+          'aria-pressed': String(v?.src === o.src),
+          onclick: () =>
+            edit(() => (p.villager = { ...o, ...fitVillager(o.ar), flip: v?.flip || false }), {
+              panel: true,
+            }),
+        },
+        h('img', { src: resolve(o.src, BASE), alt: '', class: o.pixel ? 'pixel' : null }),
+      ),
+    ),
     h(
       'button',
       {
         type: 'button',
-        title: 'Upload your own picture (PNG with a see-through background works best)',
-        onclick: async () => {
-          const src = await uploadImage(900);
-          if (src) edit(() => (p.villager = { src, x: 1380, y: 560, w: 460, flip: false }), { panel: true });
-        },
+        class: 'ne-villagers__add',
+        title:
+          'Upload your own picture, any size (PNG with a see-through background works best). Or drop it here.',
+        onclick: async () => useVillagerFile(p, await pickFile()),
       },
       '+ Own',
     ),
   );
   const vsec = section('Villager', vgrid);
+  vsec.classList.add('ne-drop');
+  vsec.addEventListener('dragover', (e) => {
+    if (![...(e.dataTransfer?.items || [])].some((i) => i.kind === 'file')) return;
+    e.preventDefault();
+    vsec.classList.add('is-over');
+  });
+  vsec.addEventListener(
+    'dragleave',
+    (e) => !vsec.contains(e.relatedTarget) && vsec.classList.remove('is-over'),
+  );
+  vsec.addEventListener('drop', (e) => {
+    e.preventDefault();
+    vsec.classList.remove('is-over');
+    useVillagerFile(p, e.dataTransfer.files[0]);
+  });
   if (v) {
     vsec.append(
       check('Mirror', v.flip, (val) => edit(() => (v.flip = val))),
-      range('Size', +v.w || 440, 200, 900, 10, (val) => change(() => (v.w = val), { key: 'vsize' }), ' px'),
+      range('Size', +v.w || 440, 60, 1600, 10, (val) => change(() => (v.w = val), { key: 'vsize' }), ' px'),
       h(
         'div',
         { class: 'ne-row' },
@@ -1047,7 +1264,7 @@ function renderPanel() {
             onclick: () =>
               edit(
                 () => {
-                  const d = VILLAGERS.find((x) => x.src === v.src) || { x: 1380, y: 560, w: 460 };
+                  const d = VILLAGERS.find((x) => x.src === v.src) || fitVillager(v.ar);
                   Object.assign(v, { x: d.x, y: d.y, w: d.w });
                 },
                 { panel: true },
@@ -1055,7 +1272,7 @@ function renderPanel() {
           },
           'Reset position',
         ),
-        h('span', { class: 'ne-small' }, 'Drag it on the slide to move it.'),
+        h('span', { class: 'ne-small' }, 'Drag it on the slide to move it, scroll on it to resize.'),
       ),
     );
   }
@@ -1422,20 +1639,64 @@ function blockCard(p, b, i) {
 }
 
 function colorSelect(b, edit) {
-  const s = h(
-    'select',
-    { 'aria-label': 'Colour', style: 'width:auto' },
-    h('option', { value: '' }, 'Colour'),
-    Object.entries(COLORS).map(([v, n]) => h('option', { value: v }, n)),
+  const hexOf = (v) =>
+    v?.startsWith('mc-')
+      ? MC_COLORS.find((c) => 'mc-' + c.id === v)?.hex
+      : { red: '#b0261f', green: '#1e7a45', ink: '#2e2a26', gold: '#9a6c00' }[v];
+  const name = (v) =>
+    v?.startsWith('mc-') ? MC_COLORS.find((c) => 'mc-' + c.id === v)?.name : COLORS[v] || 'Colour';
+  const btn = h(
+    'button',
+    {
+      type: 'button',
+      class: 'ne-btn ne-btn--small ne-colorpick',
+      'aria-haspopup': 'true',
+      title: 'Colour of the whole block',
+    },
+    b.color ? swatch(hexOf(b.color)) : null,
+    name(b.color),
   );
-  s.value = b.color || '';
-  s.onchange = () => edit(() => (b.color = s.value || undefined));
-  return s;
+  btn.onclick = () =>
+    showMenu(btn, (m) => {
+      m.append(
+        menuItem('Default', 'The colour this block usually has', () =>
+          edit(() => (b.color = undefined), { panel: true }),
+        ),
+      );
+      m.append(h('h4', {}, 'Newsroom'));
+      m.append(
+        h(
+          'div',
+          { class: 'ne-swatches' },
+          Object.entries(COLORS).map(([v, n]) =>
+            h('button', {
+              type: 'button',
+              title: n,
+              'aria-label': n,
+              'aria-pressed': String(b.color === v),
+              style: `background:${hexOf(v)}`,
+              onclick: () => (hideMenu(), edit(() => (b.color = v), { panel: true })),
+            }),
+          ),
+        ),
+      );
+      m.append(h('h4', {}, 'Minecraft'));
+      swatchGrid(m, b.color?.slice(3), (id) => edit(() => (b.color = 'mc-' + id), { panel: true }));
+    });
+  return btn;
 }
 
 // ---- Edition and news bar panels --------------------------------------------------------------
 
 function renderEditionPanel() {
+  colorFields = false;
+  try {
+    renderEditionFields();
+  } finally {
+    colorFields = true;
+  }
+}
+function renderEditionFields() {
   const panel = $('panel-edition');
   const typing =
     (fn, o = {}) =>
@@ -1532,7 +1793,12 @@ function renderTickerPanel() {
         { class: 'ne-field' },
         h('label', { for: 'f-ticker', class: 'ne-label' }, 'Headlines'),
         items,
-        h('small', {}, 'One per line. They run past in a loop.'),
+        h(
+          'div',
+          { class: 'ne-field__foot' },
+          colorButton(items),
+          h('small', {}, 'One per line. They run past in a loop.'),
+        ),
       ),
     ),
     section(
