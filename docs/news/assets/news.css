@@ -446,6 +446,9 @@
 .vn-villager.flip {
   transform: scaleX(-1);
 }
+.vn-villager.pixel {
+  image-rendering: pixelated;
+}
 
 /* ---- News bar --------------------------------------------------------------- */
 .vn-ticker {

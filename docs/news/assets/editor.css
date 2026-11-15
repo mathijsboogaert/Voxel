@@ -780,3 +780,76 @@
     display: none;
   }
 }
+
+/* ---- Colours and villager uploads ---------------------------------------------- */
+.ne-field__foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.ne-field__foot small {
+  padding-top: 3px;
+}
+.ne-colorbtn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: var(--stroke-2) solid var(--line-soft);
+  background: var(--paper);
+  cursor: pointer;
+  line-height: 1;
+}
+.ne-colorbtn b {
+  font:
+    700 13px/1 'Minecraft',
+    monospace;
+}
+.ne-colorbtn i {
+  display: block;
+  width: 16px;
+  height: 3px;
+  margin-top: 1px;
+  background: linear-gradient(90deg, #aa0000, #ffaa00, #ffff55, #55ff55, #55ffff, #5555ff, #ff55ff);
+}
+.ne-colorbtn:hover,
+.ne-colorbtn:focus-visible {
+  border-color: var(--action);
+}
+.ne-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 28px);
+  gap: 4px;
+  padding: 4px 8px 8px;
+}
+.ne-swatches button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+.ne-swatches button:hover,
+.ne-swatches button:focus-visible,
+.ne-swatches button[aria-pressed='true'] {
+  outline: 3px solid var(--action);
+  outline-offset: 1px;
+}
+.ne-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+.ne-drop.is-over {
+  outline: 3px dashed var(--action);
+  outline-offset: 4px;
+}
+.ne-villagers img.pixel {
+  image-rendering: pixelated;
+}
