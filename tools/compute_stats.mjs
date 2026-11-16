@@ -472,6 +472,8 @@ function publicPlayer(p) {
     advPoints: p.advPoints,
     advCount: p.adv.length,
     rarest: [...newest].sort((a, b) => a.earners - b.earners)[0]?.name || null,
+    // Every advancement by name, for the advancement filter on the Players page.
+    advs: [...new Set(p.adv.map((a) => a.name))].sort(),
     latestAdv: newest
       .slice(0, 5)
       .map(({ name, points: pts, at, earners }) => ({ name, points: pts, at, earners })),

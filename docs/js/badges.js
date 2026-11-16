@@ -1,20 +1,7 @@
 // Badges page: every community badge with its four tiers and who holds each, then a list of holders.
-// Data: data/badges.json, written by tools/build_badges.py from the VoxelBadges plugin's files on the server.
 // Deep link: badges/#road_runner scrolls to one badge.
-import { el, byId, getJSON, faceEl, playerHref, url } from './ui.js?v=4d932c1e';
-
-const TIERS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
-
-/** A badge's pixel icon at a tier (1-4). */
-const iconEl = (id, tier, cls) =>
-  el('img', {
-    class: cls,
-    src: url(`assets/voxel-badges/${TIERS[tier - 1].toLowerCase()}_${id}.png`),
-    alt: '',
-    width: 10,
-    height: 10,
-    decoding: 'async',
-  });
+import { el, byId, faceEl, playerHref, url } from './ui.js?v=4d932c1e';
+import { TIERS, iconEl, loadBadges } from './badges-core.js?v=dec7bc9f';
 
 const tierTag = (tier) =>
   el('span', { class: `ttag ttag--${TIERS[tier - 1].toLowerCase()}` }, TIERS[tier - 1]);
@@ -63,6 +50,13 @@ function card(b, holders) {
           total ? `${total} ${total === 1 ? 'holder' : 'holders'}` : 'Badge',
         ),
         el('h2', {}, b.name),
+        total
+          ? el(
+              'a',
+              { class: 'small', href: `${url('players/')}?badge=${encodeURIComponent(b.id)}` },
+              'Show in player list',
+            )
+          : null,
       ),
     ),
     el('ol', { class: 'tiers' }, tiers),
@@ -91,7 +85,7 @@ function holderRow(h, badges) {
 }
 
 async function main() {
-  const data = await getJSON('data/badges.json', { badges: [], holders: [] }, { fresh: true });
+  const data = await loadBadges();
   const badges = data.badges || [];
   const holders = data.holders || [];
 

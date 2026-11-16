@@ -6,7 +6,7 @@
     <title>Players · Voxel</title>
     <meta
       name="description"
-      content="Everyone who plays on Voxel, with their playtime and a page for each player."
+      content="Everyone who plays on Voxel: playtime, advancements, deaths and badges, with a page for each player."
     />
     <meta name="theme-color" content="#faf5ec" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#16120f" media="(prefers-color-scheme: dark)" />
@@ -18,7 +18,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../assets/brand.css?v=f4ed1d87" />
-    <link rel="stylesheet" href="../assets/site.css?v=72c9b4bc" />
+    <link rel="stylesheet" href="../assets/site.css?v=6b48be04" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -83,26 +83,6 @@
             />
             <span class="nav__label">Players</span>
           </a>
-          <a href="../shops/">
-            <img
-              class="nav__icon"
-              src="../assets/icons/nav/diamond.png?v=f095b32b"
-              alt=""
-              width="32"
-              height="32"
-            />
-            <span class="nav__label">Shops</span>
-          </a>
-          <a href="../badges/">
-            <img
-              class="nav__icon"
-              src="../assets/icons/nav/medal.png?v=3d7858a5"
-              alt=""
-              width="32"
-              height="32"
-            />
-            <span class="nav__label">Badges</span>
-          </a>
           <a href="../news/">
             <img
               class="nav__icon"
@@ -115,6 +95,10 @@
           </a>
         </nav>
       </div>
+      <nav class="subnav" aria-label="Players">
+        <a href="../players/" aria-current="page">Players</a>
+        <a href="../badges/">Badges</a>
+      </nav>
     </header>
 
     <main id="main">
@@ -126,17 +110,51 @@
         </div>
 
         <div class="toolbar">
-          <input
-            class="field"
-            id="filter"
-            type="text"
-            inputmode="search"
-            placeholder="Find a player"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-            aria-label="Find a player"
-          />
+          <div class="psearch">
+            <input
+              class="field"
+              id="filter"
+              type="text"
+              inputmode="search"
+              placeholder="Find a player"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              aria-label="Find a player"
+            />
+            <button
+              class="btn psearch__toggle"
+              type="button"
+              id="filters-toggle"
+              aria-expanded="false"
+              aria-controls="filters"
+            >
+              Filters
+            </button>
+          </div>
+          <div id="sort"></div>
+          <div class="pfilters" id="filters">
+            <label class="pfilter">
+              <span class="label">Badge</span>
+              <select class="field" id="badge">
+                <option value="">Any badge</option>
+              </select>
+            </label>
+            <label class="pfilter">
+              <span class="label">Advancement</span>
+              <input
+                class="field"
+                id="adv"
+                type="text"
+                list="adv-list"
+                placeholder="Any advancement"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+              />
+              <datalist id="adv-list"></datalist>
+            </label>
+          </div>
         </div>
 
         <ul class="plist" id="plist">
@@ -147,11 +165,13 @@
           <li class="skel skel--pcard" aria-hidden="true"></li>
           <li class="skel skel--pcard" aria-hidden="true"></li>
         </ul>
-        <p class="empty" id="none" hidden>Nobody by that name.</p>
+        <p class="empty" id="none" hidden>
+          Nobody matches. <button class="linkbtn" type="button" id="clear">Clear the filters</button>
+        </p>
       </div>
     </main>
 
     <script type="module" src="../js/nav.js?v=0aa91664"></script>
-    <script type="module" src="../js/players.js?v=19a58a79"></script>
+    <script type="module" src="../js/players.js?v=c900cb72"></script>
   </body>
 </html>

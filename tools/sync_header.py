@@ -22,24 +22,30 @@ MENU = [
     ('home', '', 'village', 'Home'),
     ('map', 'map/', 'map', 'Map'),
     ('players', 'players/', 'steve', 'Players'),
-    ('shops', 'shops/', 'diamond', 'Shops'),
-    ('badges', 'badges/', 'medal', 'Badges'),
     ('news', 'news/', 'news', 'News'),
 ]
+
+# Menu entries with more than one page: a row of tabs under the header switches between them.
+# (key, link from the site root, name). Shops live under Map, Badges under Players.
+SECTIONS = {
+    'map': [('map', 'map/', 'Map'), ('shops', 'shops/', 'Shops')],
+    'players': [('players', 'players/', 'Players'), ('badges', 'badges/', 'Badges')],
+}
 # The news editor (news/editor/) is not in the menu and not linked from the site: only people with the link find it.
 # The editor isn't linked from the site, but on its own page the menu shows it as the current page.
 EDITOR = ('editor', 'editor.html', 'editor', 'Editor')
 
-# Every page and the menu entry it belongs to (a player page belongs to Players).
+# Every page: (the menu entry it belongs to, its tab in that entry's section, or None).
+# A player page belongs to Players and has no tab of its own.
 PAGES = {
-    'index.html': 'home',
-    'map/index.html': 'map',
-    'players/index.html': 'players',
-    'player/index.html': 'players',
-    'shops/index.html': 'shops',
-    'badges/index.html': 'badges',
-    'news/index.html': 'news',
-    'editor.html': 'editor',
+    'index.html': ('home', None),
+    'map/index.html': ('map', 'map'),
+    'shops/index.html': ('map', 'shops'),
+    'players/index.html': ('players', 'players'),
+    'badges/index.html': ('players', 'badges'),
+    'player/index.html': ('players', None),
+    'news/index.html': ('news', None),
+    'editor.html': ('editor', None),
 }
 
 OLD_HEADER = re.compile(r'( *)(?:<a class="skip"[^>]*>[^<]*</a>\s*)?<header class="site-header">.*?</header>', re.S)
@@ -54,7 +60,22 @@ def link(key, href, icon, name, root, current):
 </a>"""
 
 
-def header(root, current):
+def tabs(root, current, tab):
+    """The section's tabs (Map and Shops, Players and Badges), or nothing for a page without a section."""
+    if current not in SECTIONS:
+        return ''
+    name = {key: label for key, _, _, label in MENU}[current]
+    here = ' aria-current="page"'
+    rows = '\n'.join(
+        f'    <a href="{root + href}"{here if key == tab else ""}>{label}</a>' for key, href, label in SECTIONS[current]
+    )
+    return f"""
+  <nav class="subnav" aria-label="{name}">
+{rows}
+  </nav>"""
+
+
+def header(root, current, tab=None):
     menu = MENU + ([EDITOR] if current == 'editor' else [])
     links = textwrap.indent('\n'.join(link(*item, root, current) for item in menu), ' ' * 6)
     return f"""<a class="skip" href="#main">Skip to content</a>
@@ -76,12 +97,12 @@ def header(root, current):
     <nav class="nav" id="site-nav" aria-label="Main">
 {links}
     </nav>
-  </div>
+  </div>{tabs(root, current, tab)}
 </header>"""
 
 
 def main():
-    for page, current in PAGES.items():
+    for page, (current, tab) in PAGES.items():
         path = DOCS / page
         root = '../' * page.count('/')
         text = path.read_text()
@@ -89,7 +110,7 @@ def main():
         if not m:
             raise SystemExit(f'No <header class="site-header"> in {page}')
         indent = m[1]
-        block = '\n'.join(indent + line if line else line for line in header(root, current).splitlines())
+        block = '\n'.join(indent + line if line else line for line in header(root, current, tab).splitlines())
         text = text[: m.start()] + block + text[m.end() :]
         text = MAIN.sub('<main id="main"', text, count=1)
         path.write_text(text)
