@@ -180,6 +180,44 @@ main > .wrap {
   }
 }
 
+/* The tabs of a menu entry with more than one page (Map and Shops, Players and Badges), on a row under the
+   header and sticky with it. Same width as .wrap; the current tab gets the teal underline the menu uses. */
+.subnav {
+  display: flex;
+  gap: var(--space-1);
+  width: 100%;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+  border-top: var(--stroke-1) solid var(--line-soft);
+}
+.subnav a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-2-5);
+  color: var(--ink-muted);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: var(--stroke-4) solid transparent;
+  margin-bottom: calc(-1 * var(--stroke-2)); /* the underline sits on the header's bottom line */
+}
+.subnav a:first-child {
+  margin-left: calc(-1 * var(--space-2-5)); /* the first name starts on the page edge, like the logo */
+}
+.subnav a:hover {
+  border-bottom-color: var(--line-soft);
+}
+.subnav a[aria-current='page'] {
+  color: var(--ink);
+  border-bottom-color: var(--teal);
+}
+@media (min-width: 768px) {
+  .subnav {
+    padding-inline: var(--space-4);
+  }
+}
+
 /* ---- Section and page heads ---- */
 .head {
   margin-bottom: var(--space-4);
@@ -781,6 +819,84 @@ main > .wrap {
 }
 .pcard:hover {
   background: var(--paper);
+}
+/* Badges on a card: each badge at the player's highest tier, at 2x so the 10px pixel art stays square. */
+.pcard__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.pcard__badge .pix {
+  width: 20px;
+  height: 20px;
+}
+/* Every card in a row as tall as the tallest, whether it has badges or not. */
+.plist > li {
+  display: flex;
+}
+.plist .pcard {
+  flex: 1;
+}
+/* Search with the Filters button beside it on a phone; from 560px the filters always show and the button goes. */
+.psearch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+.psearch__toggle[aria-expanded='true'] {
+  color: var(--on-brand);
+  background: var(--teal);
+}
+@media (max-width: 559px) {
+  .pfilters.is-closed {
+    display: none;
+  }
+}
+@media (min-width: 560px) {
+  .psearch {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .psearch__toggle {
+    display: none;
+  }
+}
+/* Badge and advancement filters: one under the other on a phone, side by side from 560px. */
+.pfilters {
+  display: grid;
+  gap: var(--space-3);
+}
+.pfilter {
+  display: grid;
+  gap: var(--space-1);
+}
+select.field {
+  appearance: none;
+  padding-right: var(--space-5);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(-45deg, transparent 50%, var(--ink) 50%);
+  background-position:
+    right var(--space-3) top 50%,
+    right calc(var(--space-3) - 6px) top 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+/* A button that reads as a link, for an action inside a sentence. */
+.linkbtn {
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+@media (min-width: 560px) {
+  .pfilters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ---- Player page ---- */

@@ -11,7 +11,7 @@ the stats come from the server's own logs.
 | ------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Home    | `docs/index.html`                  | News (a big achievement, a new shop, or a countdown to an event), a small map preview, the stats overview (with the advancement race graph), and who knows who (friends chart from `data/friends.json`, with a real or player name switch) |
 | Map     | `docs/map/index.html`              | The full pannable, zoomable world map with borders, shops and search. Read-only                                                                                                                                                            |
-| Players | `docs/players/index.html`          | Everyone, with face, playtime and when they were last on                                                                                                                                                                                   |
+| Players | `docs/players/index.html`          | Everyone, with face, badges and when they were last on. Sort by playtime, advancements, deaths or badges; filter by name, badge or advancement. Every choice is in the address (`players/?sort=adv&badge=road_runner&adv=Free`)            |
 | Shops   | `docs/shops/index.html`            | Every shop with its own icon, owners and what it sells for how much. Search by item (`shops/?q=planks`, `shops/#log-inn`)                                                                                                                  |
 | Player  | `docs/player/index.html?name=Name` | One player: stats, when they play, who they play with, their base and shop, latest achievements                                                                                                                                            |
 | Editor  | `docs/editor.html`                 | Your private tool for drawing borders, placing shops and assigning owners. Not linked from the site                                                                                                                                        |
@@ -62,11 +62,14 @@ Plain HTML, CSS and ES modules. There is no build step and no framework; Leaflet
 | `docs/js/nav.js`                                                                     | The menu: on a phone it folds out from the menu button, one row per page with its icon and name; from 768px the menu sits in the header, icons with names                                |
 | `docs/js/map-search.js`                                                              | The search box over a full-screen map, used by the Map page and the editor                                                                                                               |
 | `docs/js/shops-core.js`                                                              | Items, prices and the item search behind the Shops page and map search                                                                                                                   |
+| `docs/js/badges-core.js`                                                             | The badge tiers, a badge's pixel icon and loading `data/badges.json`, shared by the Badges and Players pages                                                                             |
 | `docs/js/race.js`, `pattern.js`                                                      | The advancement race chart and the brand pattern                                                                                                                                         |
 | `docs/js/home.js`, `map-page.js`, `players.js`, `player.js`, `shops.js`, `editor.js` | One per page                                                                                                                                                                             |
 
 **The header** (skip link, logo and menu) is the same on every page and is written in one place,
 `tools/sync_header.py`. Change the menu there and run it; it rewrites the header in every page.
+The menu has four entries: Home, Map, Players and News. Map and Players hold two pages each, switched by a row of tabs
+under the header (`SECTIONS`): Map and Shops, Players and Badges. A player page sits under Players without a tab of its own.
 
 **Tokens.** Colours, spacing (`--space-*`) and type sizes (`--text-*`, in rem so they follow the reader's font size) are
 custom properties at the top of `docs/assets/brand.css`; the other stylesheets use those instead of raw values.
