@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="../assets/brand.css?v=f4ed1d87" />
     <link rel="stylesheet" href="../assets/site.css?v=6b48be04" />
     <link rel="stylesheet" href="assets/news.css?v=fc37d03b" />
-    <link rel="stylesheet" href="assets/archive.css?v=0f69889b" />
+    <link rel="stylesheet" href="assets/archive.css?v=47409ca4" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -103,19 +103,27 @@
     <main id="main">
       <div class="wrap">
         <div class="page-head">
-          <p class="label eyebrow">Villager News</p>
-          <h1>The news from Voxel</h1>
-          <p class="small">Our own news show, straight from the studio. Pick an edition and press play.</p>
+          <p class="label eyebrow">News</p>
+          <h1>Villager News</h1>
+          <p class="small">
+            Voxel's own news show. Every edition is a short slideshow with a running news bar: press play and
+            click through the pages.
+          </p>
         </div>
 
-        <div id="latest"></div>
-        <h2 class="nw-older" id="older-title" hidden>Earlier editions</h2>
-        <ul class="nw-list" id="older"></ul>
+        <section class="nw-section" id="latest-section" aria-labelledby="latest-title" hidden>
+          <h2 class="label nw-section__title" id="latest-title">Latest edition</h2>
+          <div id="latest"></div>
+        </section>
+        <section class="nw-section" id="older-section" aria-labelledby="older-title" hidden>
+          <h2 class="label nw-section__title" id="older-title">Earlier editions</h2>
+          <ul class="nw-list" id="older"></ul>
+        </section>
         <p class="empty" id="none" hidden>No editions yet. The first one is on its way.</p>
       </div>
     </main>
 
     <script type="module" src="../js/nav.js?v=0aa91664"></script>
-    <script type="module" src="assets/archive.js?v=6dcdd4ca"></script>
+    <script type="module" src="assets/archive.js?v=4e3270f5"></script>
   </body>
 </html>

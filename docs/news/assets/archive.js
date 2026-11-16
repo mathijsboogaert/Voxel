@@ -27,6 +27,12 @@ async function drawCover(box, slug) {
   }
 }
 
+/** "15 November 2026 · 21 pages": the line under an edition's name. */
+const meta = (e) => [when(e.date), e.pages ? `${e.pages} pages` : ''].filter(Boolean).join(' · ');
+
+/** An edition's name: "Edition #2" or "Special Edition". The show's own name is already the page title. */
+const name = (e) => e.edition || e.title;
+
 async function main() {
   const list = await loadIndex();
   await fontsReady();
@@ -35,25 +41,28 @@ async function main() {
     return;
   }
   const [first, ...rest] = list;
+  document.getElementById('latest-section').hidden = false;
   const latest = document.getElementById('latest');
   latest.innerHTML = `<article class="nw-latest">
-    <a href="${esc(first.slug)}/" aria-label="Play ${esc(first.title)}"><div class="nw-cover">${`<span class="nw-play">${PLAY}</span>`}</div></a>
+    <a class="nw-cover-link" href="${esc(first.slug)}/" aria-label="Play ${esc(name(first))}"><div class="nw-cover"><span class="nw-play">${PLAY}</span></div></a>
     <div class="nw-latest__text">
-      <p class="nw-meta">Latest · ${esc(when(first.date))}${first.edition ? ' · ' + esc(first.edition) : ''}</p>
-      <h2>${esc(first.title)}</h2>
-      ${first.summary ? `<p>${esc(first.summary)}</p>` : ''}
-      <a class="btn btn--primary" href="${esc(first.slug)}/">Watch the news</a>
+      <h3 class="nw-latest__name">${esc(name(first))}</h3>
+      <p class="nw-latest__meta">${esc(meta(first))}</p>
+      ${first.summary ? `<p class="nw-latest__summary">${esc(first.summary)}</p>` : ''}
+      <a class="btn btn--primary" href="${esc(first.slug)}/">Watch ${esc(name(first))}</a>
     </div>
   </article>`;
   drawCover(latest.querySelector('.nw-cover'), first.slug);
 
   if (rest.length) {
-    document.getElementById('older-title').hidden = false;
+    document.getElementById('older-section').hidden = false;
     const ul = document.getElementById('older');
     for (const e of rest) {
       const li = document.createElement('li');
-      li.innerHTML = `<a href="${esc(e.slug)}/"><div class="nw-cover"><span class="nw-play">${PLAY}</span></div>
-        <h3>${esc(e.title)}</h3><p>${esc(when(e.date))}${e.edition ? ' · ' + esc(e.edition) : ''}</p></a>`;
+      li.innerHTML = `<a class="nw-item" href="${esc(e.slug)}/"><div class="nw-cover"><span class="nw-play">${PLAY}</span></div>
+        <h3 class="nw-item__name">${esc(name(e))}</h3>
+        <p class="nw-item__meta">${esc(meta(e))}</p>
+        ${e.summary ? `<p class="nw-item__summary">${esc(e.summary)}</p>` : ''}</a>`;
       ul.appendChild(li);
       drawCover(li.querySelector('.nw-cover'), e.slug);
     }
