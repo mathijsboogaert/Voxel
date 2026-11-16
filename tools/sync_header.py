@@ -20,7 +20,7 @@ DOCS = Path(__file__).resolve().parent.parent / 'docs'
 # The menu: (key, link from the site root, icon, name).
 MENU = [
     ('home', '', 'village', 'Home'),
-    ('map', 'map/', 'map', 'Map'),
+    ('map', 'map/', 'map', 'Map + Shops'),
     ('players', 'players/', 'steve', 'Players'),
     ('news', 'news/', 'news', 'News'),
 ]
