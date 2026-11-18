@@ -123,6 +123,12 @@
       }
     },
     {
+      "name": "Pantless_Hobo",
+      "badges": {
+        "highway_builder": 2
+      }
+    },
+    {
       "name": "ilyAfterlife",
       "badges": {
         "shopkeeper": 1
