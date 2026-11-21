@@ -125,11 +125,12 @@
     {
       "name": "Pantless_Hobo",
       "badges": {
-        "highway_builder": 2
+        "highway_builder": 2,
+        "road_runner": 1
       }
     },
     {
-      "name": "ilyAfterlife",
+      "name": "AfterLifye",
       "badges": {
         "shopkeeper": 1
       }
