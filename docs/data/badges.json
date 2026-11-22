@@ -115,6 +115,13 @@
       }
     },
     {
+      "name": "kayushka",
+      "badges": {
+        "shopkeeper": 1,
+        "cleanup_crew": 4
+      }
+    },
+    {
       "name": "_Farren",
       "badges": {
         "shopkeeper": 1,
@@ -131,12 +138,6 @@
     },
     {
       "name": "AfterLifye",
-      "badges": {
-        "shopkeeper": 1
-      }
-    },
-    {
-      "name": "kayushka",
       "badges": {
         "shopkeeper": 1
       }
