@@ -12,7 +12,7 @@
 //   callout:            { type, icon, lead, text }
 //   chips:              { type, items: [{ icon, label }] }
 //   list:               { type, items: [{ term, text }] }
-//   image:              { type, src, caption, h }
+//   image:              { type, src, caption, h, ar }  (ar: width / height of the picture)
 // Text takes **bold**, *italic* (\* for a plain star) and line breaks. Paths are relative to news/ (data: URLs work too).
 
 import { coverHost } from './cover-host.js?v=8195697f';
@@ -216,10 +216,22 @@ const BLOCKS = {
   image(b, base) {
     const fig = el('div', 'vn-figure');
     if (b.src)
-      fig.innerHTML = `<img src="${esc(resolve(b.src, base))}" alt="${esc(b.caption || '')}" style="max-height:${+b.h || 420}px">`;
+    {
+      // Keeps the picture's own shape: as tall as the Height setting, unless that makes it wider than the card.
+      const img = new Image();
+      img.alt = b.caption || '';
+      img.style.setProperty('--h', (+b.h || 420) + 'px');
+      if (+b.ar > 0) img.style.setProperty('--ar', +b.ar);
+      img.onload = () => {
+        if (!(+b.ar > 0) && img.naturalHeight) img.style.setProperty('--ar', img.naturalWidth / img.naturalHeight);
+        if (Math.max(img.naturalWidth, img.naturalHeight) <= 256) img.style.imageRendering = 'pixelated';
+      };
+      img.src = resolve(b.src, base);
+      fig.append(img);
+    }
     else
       fig.innerHTML = `<div style="height:${+b.h || 420}px;border:6px dashed #cfc8bc;display:grid;place-items:center;font-size:28px;color:#9a9187">Image</div>`;
-    if (b.caption) fig.innerHTML += `<p>${inline(b.caption)}</p>`;
+    if (b.caption) fig.insertAdjacentHTML('beforeend', `<p>${inline(b.caption)}</p>`);
     return fig;
   },
 };

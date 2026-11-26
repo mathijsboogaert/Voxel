@@ -300,9 +300,14 @@
   gap: 12px;
 }
 .vn-figure img {
-  max-width: 100%;
+  /* the picture's own shape, never stretched or cropped: --h tall, narrower when that would be too wide */
+  align-self: flex-start;
+  flex-shrink: 0;
+  box-sizing: content-box;
+  width: min(100% - 12px, var(--h, 420px) * var(--ar, 1.7778));
+  height: auto;
+  max-height: var(--h, 420px);
   object-fit: contain;
-  object-position: left;
   border: 6px solid #cfc8bc;
   background: #f1ece3;
 }
