@@ -10,7 +10,7 @@ import {
   fontsReady,
   fit,
   loadEdition,
-} from './news.js?v=bf52e32f';
+} from './news.js?v=eb81198d';
 
 const BASE = '../';
 const body = document.body;

@@ -16,7 +16,7 @@ import {
   VILLAGERS,
   COLORS,
   MC_COLORS,
-} from './news.js?v=bf52e32f';
+} from './news.js?v=eb81198d';
 
 const BASE = '../'; // the editor is at news/editor/, edition paths are relative to news/
 const SITE_ROOT = '../../';
@@ -891,6 +891,16 @@ function pickFile(accept = 'image/*') {
     f.click();
   });
 }
+/** Width / height of a picture (rounded), so a page knows its shape before the picture has loaded. */
+function aspectOf(src) {
+  return new Promise((ok) => {
+    const img = new Image();
+    img.onload = () => ok(img.naturalHeight ? Math.round((img.naturalWidth / img.naturalHeight) * 1e4) / 1e4 : 0);
+    img.onerror = () => ok(0);
+    img.src = src;
+  });
+}
+
 async function uploadImage(max) {
   const file = await pickFile();
   if (!file) return null;
@@ -1609,7 +1619,13 @@ function blockCard(p, b, i) {
             class: 'ne-btn ne-btn--small',
             onclick: async () => {
               const src = await uploadImage(1600);
-              if (src) edit(() => (b.src = src), { panel: true });
+              if (!src) return;
+              const ar = await aspectOf(src);
+              edit(() => {
+                b.src = src;
+                if (ar) b.ar = ar;
+                else delete b.ar;
+              }, { panel: true });
             },
           },
           b.src ? 'Replace image' : 'Upload image',
@@ -1620,7 +1636,7 @@ function blockCard(p, b, i) {
               {
                 type: 'button',
                 class: 'ne-btn ne-btn--small ne-btn--ghost',
-                onclick: () => edit(() => (b.src = ''), { panel: true }),
+                onclick: () => edit(() => ((b.src = ''), delete b.ar), { panel: true }),
               },
               'Remove',
             )
